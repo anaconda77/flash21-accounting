@@ -2,12 +2,14 @@ package com.flash21.accounting.contract.controller;
 
 import com.flash21.accounting.contract.dto.ContractRequestDto;
 import com.flash21.accounting.contract.dto.ContractResponseDto;
-import com.flash21.accounting.contract.service.ContractServiceImpl;
-import jakarta.validation.Valid;
+import com.flash21.accounting.contract.service.ContractService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -15,41 +17,40 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ContractController {
 
-    private final ContractServiceImpl contractService;
+    private final ContractService contractService;
 
-    // ✅ 계약서 등록 (POST)
+    @Operation(summary = "계약서 생성", description = "새로운 계약서를 등록합니다.")
     @PostMapping
-    public ResponseEntity<ContractResponseDto> createContract(@RequestBody ContractRequestDto requestDto) {
-        ContractResponseDto responseDto = contractService.createContract(requestDto);
-        return ResponseEntity.ok(responseDto);
+    public ResponseEntity<ContractResponseDto> createContract(
+            @Valid @RequestBody ContractRequestDto requestDto) {
+        return ResponseEntity.ok(contractService.createContract(requestDto));
     }
 
-    // ✅ 특정 계약서 조회 (GET)
-    @GetMapping("/{contractId}")
-    public ResponseEntity<ContractResponseDto> getContractById(@PathVariable Integer contractId) {
-        ContractResponseDto responseDto = contractService.getContractById(contractId);
-        return ResponseEntity.ok(responseDto);
-    }
-
-    // ✅ 모든 계약서 조회 (GET)
+    @Operation(summary = "모든 계약서 조회", description = "등록된 모든 계약서를 조회합니다.")
     @GetMapping
     public ResponseEntity<List<ContractResponseDto>> getAllContracts() {
-        List<ContractResponseDto> responseDtos = contractService.getAllContracts();
-        return ResponseEntity.ok(responseDtos);
+        return ResponseEntity.ok(contractService.getAllContracts());
     }
 
-    // ✅ 계약서 수정 (PUT)
+    @Operation(summary = "특정 계약서 조회", description = "ID를 기반으로 특정 계약서를 조회합니다.")
+    @GetMapping("/{contractId}")
+    public ResponseEntity<ContractResponseDto> getContractById(
+            @Parameter(description = "조회할 계약서의 ID") @PathVariable Integer contractId) {
+        return ResponseEntity.ok(contractService.getContractById(contractId));
+    }
+
+    @Operation(summary = "계약서 수정", description = "ID를 기반으로 계약서를 수정합니다.")
     @PutMapping("/{contractId}")
     public ResponseEntity<ContractResponseDto> updateContract(
-            @PathVariable Integer contractId,
+            @Parameter(description = "수정할 계약서의 ID") @PathVariable Integer contractId,
             @Valid @RequestBody ContractRequestDto requestDto) {
-        ContractResponseDto responseDto = contractService.updateContract(contractId, requestDto);
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok(contractService.updateContract(contractId, requestDto));
     }
 
-    // ✅ 계약서 삭제 (DELETE)
+    @Operation(summary = "계약서 삭제", description = "ID를 기반으로 계약서를 삭제합니다.")
     @DeleteMapping("/{contractId}")
-    public ResponseEntity<Void> deleteContract(@PathVariable Integer contractId) {
+    public ResponseEntity<Void> deleteContract(
+            @Parameter(description = "삭제할 계약서의 ID") @PathVariable Integer contractId) {
         contractService.deleteContract(contractId);
         return ResponseEntity.noContent().build();
     }

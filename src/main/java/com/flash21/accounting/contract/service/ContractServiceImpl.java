@@ -21,7 +21,7 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public ContractResponseDto createContract(ContractRequestDto requestDto) {
         Contract contract = Contract.builder()
-                .adminId(requestDto.getAdminId()) // ✅ 외래키 대신 ID 값 저장
+                .adminId(requestDto.getAdminId())
                 .headSignId(requestDto.getHeadSignId())
                 .directorSignId(requestDto.getDirectorSignId())
                 .category(requestDto.getCategory())
@@ -44,7 +44,7 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public ContractResponseDto getContractById(Integer contractId) {
         Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND)); // ✅ 수정
+                .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
 
         return new ContractResponseDto(contract.getContractId(), contract.getCategory(),
                 contract.getStatus(), contract.getName(),
@@ -55,7 +55,7 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public ContractResponseDto updateContract(Integer contractId, ContractRequestDto requestDto) {
         Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND)); // ✅ 404 에러 발생
+                .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
 
         if (requestDto.getName() != null) contract.setName(requestDto.getName());
         if (requestDto.getContractStartDate() != null) contract.setContractStartDate(requestDto.getContractStartDate());
@@ -77,7 +77,7 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public void deleteContract(Integer contractId) {
         if (!contractRepository.existsById(contractId)) {
-            throw new AccountingException(ContractErrorCode.NOT_FOUND); // ✅ 수정
+            throw new AccountingException(ContractErrorCode.NOT_FOUND);
         }
         contractRepository.deleteById(contractId);
     }
