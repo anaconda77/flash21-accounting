@@ -20,6 +20,13 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public ContractResponseDto createContract(ContractRequestDto requestDto) {
+        if (requestDto.getCategoryId() == null) {
+            throw new AccountingException(ContractErrorCode.MISSING_REQUIRED_FIELD);
+        }
+        if (requestDto.getContractStartDate() == null) {
+            throw new AccountingException(ContractErrorCode.MISSING_REQUIRED_FIELD);
+        }
+
         Contract contract = Contract.builder()
                 .adminId(requestDto.getAdminId())
                 .headSignId(requestDto.getHeadSignId())
@@ -57,6 +64,10 @@ public class ContractServiceImpl implements ContractService {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
 
+        if (!isAuthorized(requestDto.getAdminId())) {
+            throw new AccountingException(ContractErrorCode.FORBIDDEN);
+        }
+
         if (requestDto.getName() != null) contract.setName(requestDto.getName());
         if (requestDto.getContractStartDate() != null) contract.setContractStartDate(requestDto.getContractStartDate());
         if (requestDto.getContractEndDate() != null) contract.setContractEndDate(requestDto.getContractEndDate());
@@ -73,12 +84,16 @@ public class ContractServiceImpl implements ContractService {
                 updatedContract.getWorkEndDate());
     }
 
-
     @Override
     public void deleteContract(Integer contractId) {
         if (!contractRepository.existsById(contractId)) {
             throw new AccountingException(ContractErrorCode.NOT_FOUND);
         }
+
+        if (!isSuperAdmin()) {
+            throw new AccountingException(ContractErrorCode.SUPER_ADMIN_ONLY);
+        }
+
         contractRepository.deleteById(contractId);
     }
 
@@ -90,5 +105,15 @@ public class ContractServiceImpl implements ContractService {
                         contract.getContractStartDate(), contract.getContractEndDate(),
                         contract.getWorkEndDate()))
                 .collect(Collectors.toList());
+    }
+
+    private boolean isAuthorized(Integer adminId) {
+        // TODO: 관리자 권한 체크 로직 구현 필요
+        return true;
+    }
+
+    private boolean isSuperAdmin() {
+        // TODO: 슈퍼 관리자 권한 체크 로직 구현 필요
+        return true;
     }
 }
