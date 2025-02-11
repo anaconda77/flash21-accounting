@@ -28,14 +28,11 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        //request의 header에서 "Authorization" key를 가진 값을 찾음
         String authorization = request.getHeader("Authorization");
 
         //Authorization 헤더 검증
         if(authorization == null || !authorization.startsWith("Bearer ")) {
 
-            System.out.println("token null");
-            //지금 filter에서 request와 response를 다음 filter로 전달
             filterChain.doFilter(request, response);
             return;
         }
@@ -44,10 +41,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         //토큰 소멸 시간 검증
         if(jwtUtil.isExpired(token)) {
-
-            System.out.println("token is expired");
             filterChain.doFilter(request, response);
-
             return;
         }
 

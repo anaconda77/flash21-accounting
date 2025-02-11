@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("application")
+@RequestMapping("/application")
 @RequiredArgsConstructor
 @Tag(name = "계정", description = "회원가입 및 로그인 API")
 public class UserController {
@@ -45,10 +45,6 @@ public class UserController {
     public ResponseEntity<UserReadDto> findByUsername(@PathVariable String username) {
         UserReadDto responseBody = userService.findByUsername(username);
 
-        if (responseBody == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(responseBody);
@@ -67,10 +63,6 @@ public class UserController {
             @Valid @RequestBody UserUpdateDto userUpdateDto
     ) {
         UserReadDto responseBody = userService.updateUser(userUpdateDto);
-
-        if (responseBody == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -92,10 +84,6 @@ public class UserController {
             @RequestParam String password
     ) {
         Long responseBody = userService.deleteUser(username, password);
-
-        if (responseBody == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
 
         return ResponseEntity
                 .status(HttpStatus.OK)
