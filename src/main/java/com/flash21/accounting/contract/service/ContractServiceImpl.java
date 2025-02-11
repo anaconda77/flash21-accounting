@@ -112,7 +112,7 @@ public class ContractServiceImpl implements ContractService {
         if (requestDto.getCategoryId() != null) contract.setCategoryId(requestDto.getCategoryId());
     }
 
-    // 🔥 ContractResponseDto로 변환할 때 Correspondent의 ID 포함
+    // ContractResponseDto로 변환할 때 Correspondent의 ID 포함
     private ContractResponseDto toResponseDto(Contract contract) {
         return new ContractResponseDto(
                 contract.getContractId(),

@@ -17,5 +17,5 @@ public class ContractResponseDto {
     private LocalDate contractStartDate;
     private LocalDate contractEndDate;
     private LocalDate workEndDate;
-    private Long correspondentId;  // Correspondent ID 포함
+    private Long correspondentId;
 }
