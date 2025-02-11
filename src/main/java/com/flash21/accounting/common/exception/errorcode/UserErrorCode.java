@@ -4,10 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 @RequiredArgsConstructor
-public enum CorrespondentErrorCode implements ErrorCode {
+public enum UserErrorCode implements ErrorCode {
 
-    EXISTING_CORRESPONDENT(HttpStatus.BAD_REQUEST, "C001", "동일한 이름의 거래처가 존재합니다.");
-
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "존재하지 않는 회원입니다."),
+    PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "U002", "비밀번호가 일치하지 않습니다."),
+    DUPLICATE_USERNAME(HttpStatus.CONFLICT, "U003", "중복된 아이디의 회원이 존재합니다.");
 
     private final HttpStatus status;
     private final String code;
