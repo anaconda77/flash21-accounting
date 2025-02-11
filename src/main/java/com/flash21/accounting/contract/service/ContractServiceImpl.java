@@ -6,6 +6,7 @@ import com.flash21.accounting.contract.dto.ContractRequestDto;
 import com.flash21.accounting.contract.dto.ContractResponseDto;
 import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.contract.repository.ContractRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,46 +21,36 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public ContractResponseDto createContract(ContractRequestDto requestDto) {
-        if (requestDto.getCategoryId() == null) {
-            throw new AccountingException(ContractErrorCode.MISSING_REQUIRED_FIELD);
-        }
-        if (requestDto.getContractStartDate() == null) {
-            throw new AccountingException(ContractErrorCode.MISSING_REQUIRED_FIELD);
-        }
+        validateRequest(requestDto);
 
-        Contract contract = Contract.builder()
-                .adminId(requestDto.getAdminId())
-                .headSignId(requestDto.getHeadSignId())
-                .directorSignId(requestDto.getDirectorSignId())
-                .category(requestDto.getCategory())
-                .status(requestDto.getStatus())
-                .name(requestDto.getName())
-                .contractStartDate(requestDto.getContractStartDate())
-                .contractEndDate(requestDto.getContractEndDate())
-                .workEndDate(requestDto.getWorkEndDate())
-                .categoryId(requestDto.getCategoryId())
-                .correspondentId(requestDto.getCorrespondentId())
-                .build();
+        Contract contract = contractRepository.save(
+                Contract.builder()
+                        .adminId(requestDto.getAdminId())
+                        .headSignId(requestDto.getHeadSignId())
+                        .directorSignId(requestDto.getDirectorSignId())
+                        .category(requestDto.getCategory())
+                        .status(requestDto.getStatus())
+                        .name(requestDto.getName())
+                        .contractStartDate(requestDto.getContractStartDate())
+                        .contractEndDate(requestDto.getContractEndDate())
+                        .workEndDate(requestDto.getWorkEndDate())
+                        .categoryId(requestDto.getCategoryId())
+                        .correspondentId(requestDto.getCorrespondentId())
+                        .build()
+        );
 
-        Contract savedContract = contractRepository.save(contract);
-        return new ContractResponseDto(savedContract.getContractId(), savedContract.getCategory(),
-                savedContract.getStatus(), savedContract.getName(),
-                savedContract.getContractStartDate(), savedContract.getContractEndDate(),
-                savedContract.getWorkEndDate());
+        return toResponseDto(contract);
     }
 
     @Override
     public ContractResponseDto getContractById(Integer contractId) {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
-
-        return new ContractResponseDto(contract.getContractId(), contract.getCategory(),
-                contract.getStatus(), contract.getName(),
-                contract.getContractStartDate(), contract.getContractEndDate(),
-                contract.getWorkEndDate());
+        return toResponseDto(contract);
     }
 
     @Override
+    @Transactional
     public ContractResponseDto updateContract(Integer contractId, ContractRequestDto requestDto) {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
@@ -68,20 +59,9 @@ public class ContractServiceImpl implements ContractService {
             throw new AccountingException(ContractErrorCode.FORBIDDEN);
         }
 
-        if (requestDto.getName() != null) contract.setName(requestDto.getName());
-        if (requestDto.getContractStartDate() != null) contract.setContractStartDate(requestDto.getContractStartDate());
-        if (requestDto.getContractEndDate() != null) contract.setContractEndDate(requestDto.getContractEndDate());
-        if (requestDto.getWorkEndDate() != null) contract.setWorkEndDate(requestDto.getWorkEndDate());
-        if (requestDto.getCategoryId() != null) contract.setCategoryId(requestDto.getCategoryId());
-        if (requestDto.getCorrespondentId() != null) contract.setCorrespondentId(requestDto.getCorrespondentId());
+        updateFields(contract, requestDto);
 
-        Contract updatedContract = contractRepository.save(contract);
-
-        return new ContractResponseDto(
-                updatedContract.getContractId(), updatedContract.getCategory(),
-                updatedContract.getStatus(), updatedContract.getName(),
-                updatedContract.getContractStartDate(), updatedContract.getContractEndDate(),
-                updatedContract.getWorkEndDate());
+        return toResponseDto(contract);
     }
 
     @Override
@@ -89,7 +69,6 @@ public class ContractServiceImpl implements ContractService {
         if (!contractRepository.existsById(contractId)) {
             throw new AccountingException(ContractErrorCode.NOT_FOUND);
         }
-
         if (!isSuperAdmin()) {
             throw new AccountingException(ContractErrorCode.SUPER_ADMIN_ONLY);
         }
@@ -99,21 +78,55 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public List<ContractResponseDto> getAllContracts() {
-        return contractRepository.findAll().stream()
-                .map(contract -> new ContractResponseDto(contract.getContractId(), contract.getCategory(),
-                        contract.getStatus(), contract.getName(),
-                        contract.getContractStartDate(), contract.getContractEndDate(),
-                        contract.getWorkEndDate()))
+        return contractRepository.findAll()
+                .stream()
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
+    // 필드 업데이트 로직을 별도 메서드로 분리 (Dirty Checking)
+    private void updateFields(Contract contract, ContractRequestDto requestDto) {
+        if (requestDto.getCategory() != null && !requestDto.getCategory().equals(contract.getCategory())) {
+            contract.setCategory(requestDto.getCategory());
+        }
+        if (requestDto.getStatus() != null && !requestDto.getStatus().equals(contract.getStatus())) {
+            contract.setStatus(requestDto.getStatus());
+        }
+        if (requestDto.getName() != null) contract.setName(requestDto.getName());
+        if (requestDto.getContractStartDate() != null) contract.setContractStartDate(requestDto.getContractStartDate());
+        if (requestDto.getContractEndDate() != null) contract.setContractEndDate(requestDto.getContractEndDate());
+        if (requestDto.getWorkEndDate() != null) contract.setWorkEndDate(requestDto.getWorkEndDate());
+        if (requestDto.getCategoryId() != null) contract.setCategoryId(requestDto.getCategoryId());
+        if (requestDto.getCorrespondentId() != null) contract.setCorrespondentId(requestDto.getCorrespondentId());
+    }
+
+    // DTO 변환 로직을 따로 빼서 중복 제거
+    private ContractResponseDto toResponseDto(Contract contract) {
+        return new ContractResponseDto(
+                contract.getContractId(),
+                contract.getCategory(),
+                contract.getStatus(),
+                contract.getName(),
+                contract.getContractStartDate(),
+                contract.getContractEndDate(),
+                contract.getWorkEndDate()
+        );
+    }
+
+    // 입력값 검증 (필수 필드 확인)
+    private void validateRequest(ContractRequestDto requestDto) {
+        if (requestDto.getCategoryId() == null || requestDto.getContractStartDate() == null) {
+            throw new AccountingException(ContractErrorCode.MISSING_REQUIRED_FIELD);
+        }
+    }
+
     private boolean isAuthorized(Integer adminId) {
-        // TODO: 관리자 권한 체크 로직 구현 필요
+        // 권한 체크 로직이 있다면 여기에 추가
         return true;
     }
 
     private boolean isSuperAdmin() {
-        // TODO: 슈퍼 관리자 권한 체크 로직 구현 필요
+        // 관리자 체크 로직이 있다면 여기에 추가
         return true;
     }
 }

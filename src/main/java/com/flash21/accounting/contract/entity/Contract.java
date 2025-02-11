@@ -33,7 +33,7 @@ public class Contract {
     private LocalDate contractEndDate;
     private LocalDate workEndDate;
 
-    // FK 대신 숫자로 우선 저장
+    // FK 대신 숫자로 저장 -- 우선 테스트, 이후 변경예정
     @Column(nullable = false)
     private Integer adminId;
 
