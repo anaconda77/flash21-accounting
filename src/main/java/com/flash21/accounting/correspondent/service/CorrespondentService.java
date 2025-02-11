@@ -51,9 +51,6 @@ public class CorrespondentService {
 
         Method method = ReflectionUtils.findMethod(CorrespondentRepository.class,
             "findBy" + capitalizedCondition + "StartsWith", String.class);
-        if (method == null) {
-            throw AccountingException.of(ReflectionErrorCode.REFLECTION_UNFOUND_METHOD);
-        }
 
         Object result = ReflectionUtils.invokeMethod(method, correspondentRepository, searchValue);
         List<Correspondent> correspondents = (List<Correspondent>) result;
