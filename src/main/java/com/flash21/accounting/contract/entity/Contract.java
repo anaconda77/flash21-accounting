@@ -1,10 +1,11 @@
 package com.flash21.accounting.contract.entity;
 
+import com.flash21.accounting.correspondent.model.Correspondent;
 import com.flash21.accounting.user.User;
 import jakarta.persistence.*;
-        import lombok.*;
+import lombok.*;
 
-        import java.time.LocalDate;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "contract")
@@ -39,7 +40,7 @@ public class Contract {
     @JoinColumn(name = "admin_id", nullable = false)
     private User admin;
 
-    // 서명 관련 (User 테이블과 연관이므로 이후 수정)
+    // 서명 관련 (User 테이블과 연관)
     @Column(name = "head_sign_id")
     private Integer headSignId;
 
@@ -49,15 +50,16 @@ public class Contract {
     @Column(nullable = false)
     private Integer categoryId;
 
-    // 계약 상대방 (User가 아닌 다른 엔티티의 ID를 우선 그대로 저장)
-    @Column(nullable = false)
-    private Integer correspondentId;
+    // 계약 상대방 (Correspondent 테이블과 ManyToOne 관계 설정)
+    @ManyToOne
+    @JoinColumn(name = "correspondent_id", nullable = false)
+    private Correspondent correspondent;
 
     // 빌더 패턴을 위한 생성자 추가
     @Builder
     public Contract(User admin, Integer headSignId, Integer directorSignId, String category, String status,
                     String name, LocalDate contractStartDate, LocalDate contractEndDate, LocalDate workEndDate,
-                    Integer categoryId, Integer correspondentId) {
+                    Integer categoryId, Correspondent correspondent) {
         this.admin = admin;
         this.headSignId = headSignId;
         this.directorSignId = directorSignId;
@@ -68,7 +70,6 @@ public class Contract {
         this.contractEndDate = contractEndDate;
         this.workEndDate = workEndDate;
         this.categoryId = categoryId;
-        this.correspondentId = correspondentId;
+        this.correspondent = correspondent;
     }
 }
-

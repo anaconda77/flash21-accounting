@@ -6,6 +6,8 @@ import com.flash21.accounting.contract.dto.ContractRequestDto;
 import com.flash21.accounting.contract.dto.ContractResponseDto;
 import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.contract.repository.ContractRepository;
+import com.flash21.accounting.correspondent.model.Correspondent;
+import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
 import com.flash21.accounting.user.User;
 import com.flash21.accounting.user.UserRepository;
 import jakarta.transaction.Transactional;
@@ -20,21 +22,26 @@ import java.util.stream.Collectors;
 public class ContractServiceImpl implements ContractService {
 
     private final ContractRepository contractRepository;
-    private final UserRepository userRepository;  // User 조회를 위한 Repository 추가
+    private final UserRepository userRepository;
+    private final CorrespondentRepository correspondentRepository;
 
     @Override
     public ContractResponseDto createContract(ContractRequestDto requestDto) {
         validateRequest(requestDto);
 
-        // adminId를 User 객체로 변환 (DB에서 조회)
+        // adminId를 User 객체로 변환
         User admin = userRepository.findById(requestDto.getAdminId())
+                .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
+
+        // correspondentId를 Correspondent 객체로 변환
+        Correspondent correspondent = correspondentRepository.findById(Long.valueOf(requestDto.getCorrespondentId()))
                 .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
 
         Contract contract = contractRepository.save(
                 Contract.builder()
-                        .admin(admin)  // User 객체로 저장
-                        .headSignId(requestDto.getHeadSignId())  // Integer 유지
-                        .directorSignId(requestDto.getDirectorSignId())  // Integer 유지
+                        .admin(admin)
+                        .headSignId(requestDto.getHeadSignId())
+                        .directorSignId(requestDto.getDirectorSignId())
                         .category(requestDto.getCategory())
                         .status(requestDto.getStatus())
                         .name(requestDto.getName())
@@ -42,7 +49,7 @@ public class ContractServiceImpl implements ContractService {
                         .contractEndDate(requestDto.getContractEndDate())
                         .workEndDate(requestDto.getWorkEndDate())
                         .categoryId(requestDto.getCategoryId())
-                        .correspondentId(requestDto.getCorrespondentId())
+                        .correspondent(correspondent)
                         .build()
         );
 
@@ -62,11 +69,16 @@ public class ContractServiceImpl implements ContractService {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
 
-        // adminId 검증 후 User 변환
         if (requestDto.getAdminId() != null) {
             User admin = userRepository.findById(requestDto.getAdminId())
                     .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
             contract.setAdmin(admin);
+        }
+
+        if (requestDto.getCorrespondentId() != null) {
+            Correspondent correspondent = correspondentRepository.findById(Long.valueOf(requestDto.getCorrespondentId()))
+                    .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
+            contract.setCorrespondent(correspondent);
         }
 
         updateFields(contract, requestDto);
@@ -79,10 +91,6 @@ public class ContractServiceImpl implements ContractService {
         if (!contractRepository.existsById(contractId)) {
             throw new AccountingException(ContractErrorCode.NOT_FOUND);
         }
-        if (!isSuperAdmin()) {
-            throw new AccountingException(ContractErrorCode.SUPER_ADMIN_ONLY);
-        }
-
         contractRepository.deleteById(contractId);
     }
 
@@ -102,9 +110,9 @@ public class ContractServiceImpl implements ContractService {
         if (requestDto.getContractEndDate() != null) contract.setContractEndDate(requestDto.getContractEndDate());
         if (requestDto.getWorkEndDate() != null) contract.setWorkEndDate(requestDto.getWorkEndDate());
         if (requestDto.getCategoryId() != null) contract.setCategoryId(requestDto.getCategoryId());
-        if (requestDto.getCorrespondentId() != null) contract.setCorrespondentId(requestDto.getCorrespondentId());
     }
 
+    // 🔥 ContractResponseDto로 변환할 때 Correspondent의 ID 포함
     private ContractResponseDto toResponseDto(Contract contract) {
         return new ContractResponseDto(
                 contract.getContractId(),
@@ -113,7 +121,8 @@ public class ContractServiceImpl implements ContractService {
                 contract.getName(),
                 contract.getContractStartDate(),
                 contract.getContractEndDate(),
-                contract.getWorkEndDate()
+                contract.getWorkEndDate(),
+                contract.getCorrespondent() != null ? contract.getCorrespondent().getId() : null // Correspondent ID 포함
         );
     }
 
@@ -121,9 +130,5 @@ public class ContractServiceImpl implements ContractService {
         if (requestDto.getCategoryId() == null || requestDto.getContractStartDate() == null) {
             throw new AccountingException(ContractErrorCode.MISSING_REQUIRED_FIELD);
         }
-    }
-
-    private boolean isSuperAdmin() {
-        return true;
     }
 }
