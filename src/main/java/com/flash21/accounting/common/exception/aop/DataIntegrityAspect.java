@@ -19,7 +19,7 @@ public class DataIntegrityAspect {
         try {
             return joinPoint.proceed();
         } catch (DataIntegrityViolationException e) {
-            String message = e.getCause().getCause().getMessage();
+            String message = e.getMessage();
             if (message.contains("UK_CORRESPONDENT_NAME")) {
                 throw AccountingException.of(CorrespondentErrorCode.EXISTING_CORRESPONDENT);
             }
