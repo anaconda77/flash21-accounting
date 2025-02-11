@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccountingException.class)
-    public ResponseEntity<ErrorResponse> handleTalKakException(AccountingException e) {
+    public ResponseEntity<ErrorResponse> handleAccountingException(AccountingException e) {
         log.error("=== Accounting Exception ===");
         log.error("Status: {}, Code: {}, Message: {}", e.status(), e.code(), e.message());
         log.error("Stack trace:", e);

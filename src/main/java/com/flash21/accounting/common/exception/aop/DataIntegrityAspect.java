@@ -21,10 +21,10 @@ public class DataIntegrityAspect {
         } catch (DataIntegrityViolationException e) {
             String message = e.getMessage();
             if (message.contains("UK_CORRESPONDENT_NAME")) {
-                throw AccountingException.of(CorrespondentErrorCode.EXISTING_CORRESPONDENT);
+                throw AccountingException.of(CorrespondentErrorCode.EXISTING_CORRESPONDENT, e);
             }
 
-            throw AccountingException.of(CommonErrorCode.UNKNOWN_INTEGRITY);
+            throw AccountingException.of(CommonErrorCode.UNKNOWN_INTEGRITY, e);
         }
     }
 }
