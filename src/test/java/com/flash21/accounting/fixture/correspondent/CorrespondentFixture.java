@@ -10,4 +10,12 @@ public class CorrespondentFixture {
             .build();
     }
 
+    public static Correspondent createWithAllSearchConditions() {
+        return Correspondent.builder()
+            .correspondentName("name")
+            .businessRegNumber("123456789")
+            .ownerName("owner")
+            .build();
+    }
+
 }

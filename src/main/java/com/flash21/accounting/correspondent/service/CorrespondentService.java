@@ -3,6 +3,7 @@ package com.flash21.accounting.correspondent.service;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.aop.ReflectionOperation;
 import com.flash21.accounting.common.exception.errorcode.CommonErrorCode;
+import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;
 import com.flash21.accounting.common.exception.errorcode.ReflectionErrorCode;
 import com.flash21.accounting.common.util.EntityToDtoMapper;
 import com.flash21.accounting.correspondent.dto.request.CorrespondentRequest;
@@ -33,10 +34,16 @@ public class CorrespondentService {
 
     @ReflectionOperation
     public List<CorrespondentResponse> getCorrespondents(String searchCondition, String searchValue) {
+        // 검색 조건이 없는 경우 전체 거래처 데이터 리턴
         if (searchCondition == null || searchCondition.isEmpty()) {
             return correspondentRepository.findAll().stream()
                 .map(this::convertToDto)
                 .toList();
+        }
+
+        // 검색 조건이 있는데 빈 값을 보내면 안 됨
+        if (searchValue == null || searchValue.isEmpty()) {
+            throw AccountingException.of(CorrespondentErrorCode.NOT_ALLOWING_EMPTY_SEARCH_VALUES);
         }
 
         String capitalizedCondition = searchCondition.substring(0, 1).toUpperCase()
