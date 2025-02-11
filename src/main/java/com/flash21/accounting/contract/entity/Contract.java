@@ -53,7 +53,7 @@ public class Contract {
     @Column(nullable = false)
     private Integer correspondentId;
 
-    // **🔹 빌더 패턴을 위한 생성자 추가**
+    // 빌더 패턴을 위한 생성자 추가
     @Builder
     public Contract(User admin, Integer headSignId, Integer directorSignId, String category, String status,
                     String name, LocalDate contractStartDate, LocalDate contractEndDate, LocalDate workEndDate,
