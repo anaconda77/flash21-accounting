@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface ContractService {
     ContractResponseDto createContract(ContractRequestDto requestDto);
-    ContractResponseDto getContractById(Integer contractId);
-    ContractResponseDto updateContract(Integer contractId, ContractRequestDto requestDto);
-    void deleteContract(Integer contractId);
+    ContractResponseDto getContractById(Long contractId);
+    ContractResponseDto updateContract(Long contractId, ContractRequestDto requestDto);
+    void deleteContract(Long contractId);
     List<ContractResponseDto> getAllContracts();
 }

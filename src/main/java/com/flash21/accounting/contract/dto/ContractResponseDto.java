@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ContractResponseDto {
-    private Integer contractId;
+    private Long contractId;
     private String category;
     private String status;
     private String name;

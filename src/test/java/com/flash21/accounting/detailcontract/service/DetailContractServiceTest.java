@@ -2,6 +2,11 @@ package com.flash21.accounting.detailcontract.service;
 
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.errorcode.DetailContractErrorCode;
+import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.correspondent.model.Correspondent;
+import com.flash21.accounting.user.User;
+import com.flash21.accounting.user.Role;
+import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
 import com.flash21.accounting.detailcontract.domain.repository.DetailContractRepository;
 import com.flash21.accounting.detailcontract.domain.repository.OutsourcingRepository;
@@ -11,6 +16,7 @@ import com.flash21.accounting.detailcontract.dto.request.UpdateDetailContractReq
 import com.flash21.accounting.detailcontract.dto.response.CreateDetailContractResponse;
 import com.flash21.accounting.detailcontract.dto.response.GetDetailContractResponse;
 import com.flash21.accounting.detailcontract.dto.response.UpdateDetailContractResponse;
+import io.swagger.v3.oas.models.info.Contact;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -42,15 +49,30 @@ public class DetailContractServiceTest {
     @Mock
     private PaymentRepository paymentRepository;
 
+    @Mock
+    private ContractRepository contractRepository;
+
     @InjectMocks
     private DetailContractService detailContractService;
 
     private CreateDetailContractRequest createRequest;
     private UpdateDetailContractRequest updateRequest;
     private DetailContract detailContract;
+    private Contract contract;
 
     @BeforeEach
     void setUp() {
+        // Contract 객체 생성
+        contract = Contract.builder()
+                .category("IT")
+                .status("진행중")
+                .name("테스트 계약")
+                .contractStartDate(LocalDate.now())
+                .admin(createUser())
+                .categoryId(1)
+                .correspondent(createCorrespondent())
+                .build();
+
         createRequest = CreateDetailContractRequest.builder()
                 .contractId(1L)
                 .contractType("일반")
@@ -79,7 +101,7 @@ public class DetailContractServiceTest {
                 .build();
 
         detailContract = DetailContract.builder()
-                .contractId(1L)
+                .contract(contract)
                 .contractType("일반")
                 .contractStatus("진행중")
                 .largeCategory("IT")
@@ -93,20 +115,73 @@ public class DetailContractServiceTest {
                 .build();
     }
 
+    private User createUser() {
+        return User.builder()
+                .username("admin")
+                .password("password")
+                .name("관리자")
+                .phoneNumber("010-1234-5678")
+                .email("admin@test.com")
+                .address("서울시")
+                .addressDetail("강남구")
+                .role(Role.ROLE_ADMIN)
+                .grade("A")
+                .companyPhoneNumber("02-1234-5678")
+                .companyFaxNumber("02-1234-5679")
+                .build();
+    }
+
+    private Correspondent createCorrespondent() {
+        return Correspondent.builder()
+                .correspondentName("테스트 업체")
+                .businessRegNumber("123-45-67890")
+                .address("서울시")
+                .build();
+    }
+
+
     @Test
     @DisplayName("세부계약서 생성 성공")
     void createDetailContractSuccess() {
         // given
-        given(detailContractRepository.save(any(DetailContract.class))).willReturn(detailContract);
+        Contract savedContract = Contract.builder()
+                .contractId(1L)  // ID 설정
+                .category("IT")
+                .status("진행중")
+                .name("테스트 계약")
+                .contractStartDate(LocalDate.now())
+                .admin(createUser())
+                .categoryId(1)
+                .correspondent(createCorrespondent())
+                .build();
+
+        // Contract 조회 Mock 설정
+        given(contractRepository.findById(1L)).willReturn(Optional.of(savedContract));
+
+        DetailContract savedDetailContract = DetailContract.builder()
+                .contract(savedContract)
+                .contractType(createRequest.getContractType())
+                .contractStatus(createRequest.getContractStatus())
+                .largeCategory(createRequest.getLargeCategory())
+                .smallCategory(createRequest.getSmallCategory())
+                .content(createRequest.getContent())
+                .quantity(createRequest.getQuantity())
+                .unitPrice(createRequest.getUnitPrice())
+                .supplyPrice(createRequest.getSupplyPrice())
+                .totalPrice(createRequest.getTotalPrice())
+                .lastModifyUser(createRequest.getLastModifyUser())
+                .build();
+
+        given(detailContractRepository.save(any(DetailContract.class))).willReturn(savedDetailContract);
 
         // when
         CreateDetailContractResponse response = detailContractService.createDetailContract(createRequest);
 
         // then
         assertThat(response).isNotNull();
+        verify(contractRepository).findById(1L);
         verify(detailContractRepository).save(any(DetailContract.class));
     }
-
     @Test
     @DisplayName("세부계약서 조회 성공")
     void getDetailContractSuccess() {
@@ -140,8 +215,19 @@ public class DetailContractServiceTest {
     void getDetailContractsByParentContractIdSuccess() {
         // given
         Long parentContractId = 1L;
-        DetailContract detailContract1 = DetailContract.builder()
+        Contract parentContract = Contract.builder()
                 .contractId(parentContractId)
+                .category("IT")
+                .status("진행중")
+                .name("테스트 계약")
+                .contractStartDate(LocalDate.now())
+                .admin(createUser())
+                .categoryId(1)
+                .correspondent(createCorrespondent())
+                .build();
+
+        DetailContract detailContract1 = DetailContract.builder()
+                .contract(parentContract)
                 .contractType("일반")
                 .contractStatus("진행중")
                 .largeCategory("IT")
@@ -155,7 +241,7 @@ public class DetailContractServiceTest {
                 .build();
 
         DetailContract detailContract2 = DetailContract.builder()
-                .contractId(parentContractId)
+                .contract(parentContract)
                 .contractType("외주")
                 .contractStatus("진행중")
                 .largeCategory("IT")
@@ -168,7 +254,8 @@ public class DetailContractServiceTest {
                 .lastModifyUser("admin")
                 .build();
 
-        given(detailContractRepository.findByContractId(parentContractId))
+        // 불필요한 Contract 조회 Mock 제거
+        given(detailContractRepository.findByContract_ContractId(parentContractId))
                 .willReturn(List.of(detailContract1, detailContract2));
 
         // when
@@ -176,10 +263,10 @@ public class DetailContractServiceTest {
 
         // then
         assertThat(responses).hasSize(2);
-        assertThat(responses).extracting("contractId")
-                .containsOnly(parentContractId);
         assertThat(responses).extracting("content")
                 .containsExactlyInAnyOrder("웹 개발 A", "웹 개발 B");
+
+        verify(detailContractRepository).findByContract_ContractId(parentContractId);
     }
 
     @Test
@@ -187,7 +274,7 @@ public class DetailContractServiceTest {
     void getDetailContractsByParentContractIdNotFound() {
         // given
         Long nonExistentParentId = 999L;
-        given(detailContractRepository.findByContractId(nonExistentParentId))
+        given(detailContractRepository.findByContract_ContractId(nonExistentParentId))
                 .willReturn(Collections.emptyList());
 
         // when & then

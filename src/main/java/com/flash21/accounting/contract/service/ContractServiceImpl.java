@@ -72,7 +72,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public ContractResponseDto getContractById(Integer contractId) {
+    public ContractResponseDto getContractById(Long contractId) {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND));
         return toResponseDto(contract);
@@ -80,7 +80,7 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
-    public ContractResponseDto updateContract(Integer contractId, ContractRequestDto requestDto) {
+    public ContractResponseDto updateContract(Long contractId, ContractRequestDto requestDto) {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND));
 
@@ -102,7 +102,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public void deleteContract(Integer contractId) {
+    public void deleteContract(Long contractId) {
         if (!contractRepository.existsById(contractId)) {
             throw new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND);
         }
