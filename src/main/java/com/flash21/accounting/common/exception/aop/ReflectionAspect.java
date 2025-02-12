@@ -1,8 +1,6 @@
 package com.flash21.accounting.common.exception.aop;
 
 import com.flash21.accounting.common.exception.AccountingException;
-import com.flash21.accounting.common.exception.errorcode.CommonErrorCode;
-import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;
 import com.flash21.accounting.common.exception.errorcode.ReflectionErrorCode;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;

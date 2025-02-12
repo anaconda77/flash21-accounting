@@ -1,5 +1,6 @@
 package com.flash21.accounting.correspondent.model;
 
+import com.flash21.accounting.correspondent.dto.request.CorrespondentRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -46,5 +47,19 @@ public class Correspondent {
     @Lob @Column(length = 65535)
     private String memo;
 
+
+    public void updateCorrespondent(CorrespondentRequest request) {
+        correspondentName = request.correspondentName();
+        presidentName = request.presidentName();
+        ownerName = request.ownerName();
+        ownerPosition = request.ownerPosition();
+        ownerPhoneNumber = request.ownerPhoneNumber();
+        ownerEmail = request.ownerEmail();
+        taxEmail = request.taxEmail();
+        businessRegNumber = request.businessRegNumber();
+        address = request.address();
+        detailedAddress = request.detailedAddress();
+        memo = request.memo();
+    }
 }
 

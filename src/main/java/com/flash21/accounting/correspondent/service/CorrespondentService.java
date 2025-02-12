@@ -2,18 +2,14 @@ package com.flash21.accounting.correspondent.service;
 
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.aop.ReflectionOperation;
-import com.flash21.accounting.common.exception.errorcode.CommonErrorCode;
 import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;
-import com.flash21.accounting.common.exception.errorcode.ReflectionErrorCode;
 import com.flash21.accounting.common.util.EntityToDtoMapper;
 import com.flash21.accounting.correspondent.dto.request.CorrespondentRequest;
 import com.flash21.accounting.correspondent.dto.response.CorrespondentResponse;
 import com.flash21.accounting.correspondent.model.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,13 +23,17 @@ public class CorrespondentService {
 
     private final CorrespondentRepository correspondentRepository;
 
-    public CorrespondentResponse createCorrespondent(CorrespondentRequest correspondentRequest, MultipartFile businessRegNumberImage) {
-        Correspondent correspondent = correspondentRepository.save(convertToEntity(correspondentRequest));
+    @Transactional
+    public CorrespondentResponse createCorrespondent(CorrespondentRequest correspondentRequest,
+        MultipartFile businessRegNumberImage) {
+        Correspondent correspondent = correspondentRepository.save(
+            convertToEntity(correspondentRequest));
         return convertToDto(correspondent);
     }
 
     @ReflectionOperation
-    public List<CorrespondentResponse> getCorrespondents(String searchCondition, String searchValue) {
+    public List<CorrespondentResponse> getCorrespondents(String searchCondition,
+        String searchValue) {
         // 검색 조건이 없는 경우 전체 거래처 데이터 리턴
         if (searchCondition == null || searchCondition.isEmpty()) {
             return correspondentRepository.findAll().stream()
@@ -60,6 +60,23 @@ public class CorrespondentService {
             .toList();
     }
 
+    @Transactional
+    public void updateCorrespondent(Long correspondentId, CorrespondentRequest correspondentRequest,
+        MultipartFile businessRegNumberImage) {
+        Correspondent correspondent = correspondentRepository.findById(correspondentId)
+            .orElseThrow(
+                () -> AccountingException.of(CorrespondentErrorCode.NOT_FOUND_CORRESPONDENT));
+
+        correspondent.updateCorrespondent(correspondentRequest);
+    }
+
+    @Transactional
+    public void deleteCorrespondent(Long correspondentId) {
+        Correspondent correspondent = correspondentRepository.findById(correspondentId)
+            .orElseThrow(
+                () -> AccountingException.of(CorrespondentErrorCode.NOT_FOUND_CORRESPONDENT));
+        correspondentRepository.delete(correspondent);
+    }
 
     public Correspondent convertToEntity(CorrespondentRequest correspondentRequest) {
         return EntityToDtoMapper.INSTANCE.dtoToCorrespondent(correspondentRequest);
