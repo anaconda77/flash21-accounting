@@ -8,7 +8,6 @@ public enum CorrespondentErrorCode implements ErrorCode {
 
     EXISTING_CORRESPONDENT(HttpStatus.BAD_REQUEST, "C001", "동일한 이름의 거래처가 존재합니다.");
 
-
     private final HttpStatus status;
     private final String code;
     private final String message;
