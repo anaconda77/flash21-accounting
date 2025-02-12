@@ -7,6 +7,7 @@ import lombok.*;
 @Entity
 @Table(name = "sign")
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -15,7 +16,7 @@ public class Sign {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "sign_id")
-    private Integer signId;
+    private Long signId;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

@@ -34,22 +34,22 @@ public class ContractServiceImpl implements ContractService {
 
         // adminId를 User 객체로 변환
         User admin = userRepository.findById(requestDto.getAdminId())
-                .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND));
 
         // correspondentId를 Correspondent 객체로 변환
         Correspondent correspondent = correspondentRepository.findById(Long.valueOf(requestDto.getCorrespondentId()))
-                .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND));
 
         // headSignId를 Sign 객체로 변환
         Sign headSign = requestDto.getHeadSignId() != null ?
                 signRepository.findById(requestDto.getHeadSignId())
-                        .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND))
+                        .orElseThrow(() -> new AccountingException(ContractErrorCode.INVALID_SIGN))
                 : null;
 
         // directorSignId를 Sign 객체로 변환 (선택 사항)
         Sign directorSign = requestDto.getDirectorSignId() != null ?
                 signRepository.findById(requestDto.getDirectorSignId())
-                        .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND))
+                        .orElseThrow(() -> new AccountingException(ContractErrorCode.INVALID_SIGN))
                 : null;
 
         Contract contract = contractRepository.save(
@@ -74,7 +74,7 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public ContractResponseDto getContractById(Integer contractId) {
         Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND));
         return toResponseDto(contract);
     }
 
@@ -82,17 +82,17 @@ public class ContractServiceImpl implements ContractService {
     @Transactional
     public ContractResponseDto updateContract(Integer contractId, ContractRequestDto requestDto) {
         Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND));
 
         if (requestDto.getAdminId() != null) {
             User admin = userRepository.findById(requestDto.getAdminId())
-                    .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
+                    .orElseThrow(() -> new AccountingException(ContractErrorCode.USER_UNAUTHORIZED));
             contract.setAdmin(admin);
         }
 
         if (requestDto.getCorrespondentId() != null) {
             Correspondent correspondent = correspondentRepository.findById(Long.valueOf(requestDto.getCorrespondentId()))
-                    .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
+                    .orElseThrow(() -> new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND));
             contract.setCorrespondent(correspondent);
         }
 
@@ -104,7 +104,7 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public void deleteContract(Integer contractId) {
         if (!contractRepository.existsById(contractId)) {
-            throw new AccountingException(ContractErrorCode.NOT_FOUND);
+            throw new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND);
         }
         contractRepository.deleteById(contractId);
     }
@@ -143,7 +143,7 @@ public class ContractServiceImpl implements ContractService {
 
     private void validateRequest(ContractRequestDto requestDto) {
         if (requestDto.getCategoryId() == null || requestDto.getContractStartDate() == null) {
-            throw new AccountingException(ContractErrorCode.MISSING_REQUIRED_FIELD);
+            throw new AccountingException(ContractErrorCode.REQUIRED_FIELD_MISSING);
         }
     }
 }
