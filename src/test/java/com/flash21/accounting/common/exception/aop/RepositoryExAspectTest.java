@@ -13,7 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
-class DataIntegrityAspectTest {
+class RepositoryExAspectTest {
 
     Correspondent originalCorrespondent = CorrespondentFixture.createDefault();
     Correspondent dupliactedCorrespondent = CorrespondentFixture.createDefault();
