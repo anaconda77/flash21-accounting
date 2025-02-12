@@ -8,6 +8,8 @@ import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
+import com.flash21.accounting.sign.entity.Sign;
+import com.flash21.accounting.sign.repository.SignRepository;
 import com.flash21.accounting.user.User;
 import com.flash21.accounting.user.UserRepository;
 import jakarta.transaction.Transactional;
@@ -24,6 +26,7 @@ public class ContractServiceImpl implements ContractService {
     private final ContractRepository contractRepository;
     private final UserRepository userRepository;
     private final CorrespondentRepository correspondentRepository;
+    private final SignRepository signRepository;
 
     @Override
     public ContractResponseDto createContract(ContractRequestDto requestDto) {
@@ -37,11 +40,23 @@ public class ContractServiceImpl implements ContractService {
         Correspondent correspondent = correspondentRepository.findById(Long.valueOf(requestDto.getCorrespondentId()))
                 .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND));
 
+        // headSignId를 Sign 객체로 변환
+        Sign headSign = requestDto.getHeadSignId() != null ?
+                signRepository.findById(requestDto.getHeadSignId())
+                        .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND))
+                : null;
+
+        // directorSignId를 Sign 객체로 변환 (선택 사항)
+        Sign directorSign = requestDto.getDirectorSignId() != null ?
+                signRepository.findById(requestDto.getDirectorSignId())
+                        .orElseThrow(() -> new AccountingException(ContractErrorCode.NOT_FOUND))
+                : null;
+
         Contract contract = contractRepository.save(
                 Contract.builder()
                         .admin(admin)
-                        .headSignId(requestDto.getHeadSignId())
-                        .directorSignId(requestDto.getDirectorSignId())
+                        .headSign(headSign)
+                        .directorSign(directorSign)
                         .category(requestDto.getCategory())
                         .status(requestDto.getStatus())
                         .name(requestDto.getName())
