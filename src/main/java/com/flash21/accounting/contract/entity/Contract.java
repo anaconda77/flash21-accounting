@@ -1,6 +1,7 @@
 package com.flash21.accounting.contract.entity;
 
 import com.flash21.accounting.correspondent.domain.Correspondent;
+import com.flash21.accounting.sign.entity.Sign;
 import com.flash21.accounting.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,12 +41,14 @@ public class Contract {
     @JoinColumn(name = "admin_id", nullable = false)
     private User admin;
 
-    // 서명 관련 (User 테이블과 연관)
-    @Column(name = "head_sign_id")
-    private Integer headSignId;
+    // 서명 관련 (Sign 테이블과 연관)
+    @ManyToOne
+    @JoinColumn(name = "head_sign_id")
+    private Sign headSign;
 
-    @Column(name = "director_sign_id")
-    private Integer directorSignId;
+    @ManyToOne
+    @JoinColumn(name = "director_sign_id")  // 🔹 @Column 제거하고 @JoinColumn 사용
+    private Sign directorSign;
 
     @Column(nullable = false)
     private Integer categoryId;
@@ -57,12 +60,12 @@ public class Contract {
 
     // 빌더 패턴을 위한 생성자 추가
     @Builder
-    public Contract(User admin, Integer headSignId, Integer directorSignId, String category, String status,
+    public Contract(User admin, Sign headSign, Sign directorSign, String category, String status,
                     String name, LocalDate contractStartDate, LocalDate contractEndDate, LocalDate workEndDate,
                     Integer categoryId, Correspondent correspondent) {
         this.admin = admin;
-        this.headSignId = headSignId;
-        this.directorSignId = directorSignId;
+        this.headSign = headSign; // 🔹 Integer → Sign 변경
+        this.directorSign = directorSign; // 🔹 Integer → Sign 변경
         this.category = category;
         this.status = status;
         this.name = name;
