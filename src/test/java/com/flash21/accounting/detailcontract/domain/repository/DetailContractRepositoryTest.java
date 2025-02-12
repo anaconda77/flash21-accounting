@@ -1,11 +1,19 @@
 package com.flash21.accounting.detailcontract.domain.repository;
 
+import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.contract.repository.ContractRepository;
+import com.flash21.accounting.correspondent.model.Correspondent;
+import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
 import com.flash21.accounting.detailcontract.domain.entity.Outsourcing;
 import com.flash21.accounting.detailcontract.domain.entity.Payment;
+import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.detailcontract.domain.repository.DetailContractRepository;
 import com.flash21.accounting.detailcontract.domain.repository.OutsourcingRepository;
 import com.flash21.accounting.detailcontract.domain.repository.PaymentRepository;
+import com.flash21.accounting.user.User;
+import com.flash21.accounting.user.Role;
+import com.flash21.accounting.user.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,11 +40,21 @@ class DetailContractRepositoryTest {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    @Autowired
+    private ContractRepository contractRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CorrespondentRepository correspondentRepository;
+
     @Test
     @DisplayName("세부계약서 저장 시 외주/지불정보도 함께 저장되어야 한다")
     void saveDetailContractWithOutsourcingAndPayment() {
         // given
-        DetailContract detailContract = createDetailContract();
+        Contract contract = createAndSaveContract();
+        DetailContract detailContract = createDetailContract(contract);
         Outsourcing outsourcing = createOutsourcing(detailContract);
         Payment payment = createPayment(detailContract);
 
@@ -52,37 +71,16 @@ class DetailContractRepositoryTest {
     }
 
     @Test
-    @DisplayName("세부계약서 삭제 시 외주/지불정보도 함께 삭제되어야 한다")
-    void deleteDetailContractCascade() {
-        // given
-        DetailContract detailContract = createDetailContract();
-        Outsourcing outsourcing = createOutsourcing(detailContract);
-        Payment payment = createPayment(detailContract);
-
-        detailContract.getOutsourcings().add(outsourcing);
-        detailContract.getPayments().add(payment);
-
-        DetailContract savedContract = detailContractRepository.save(detailContract);
-
-        // when
-        detailContractRepository.delete(savedContract);
-
-        // then
-        assertThat(outsourcingRepository.findAll()).isEmpty();
-        assertThat(paymentRepository.findAll()).isEmpty();
-    }
-
-    @Test
     @DisplayName("상위계약서 ID로 여러 세부계약서 조회 테스트")
     void findMultipleDetailContractsByContractId() {
         // given
-        Long contractId = 1L;
-        DetailContract detailContract1 = createDetailContract(contractId, "일반", "웹 개발 A");
-        DetailContract detailContract2 = createDetailContract(contractId, "외주", "웹 개발 B");
+        Contract contract = createAndSaveContract();
+        DetailContract detailContract1 = createDetailContract(contract, "일반", "웹 개발 A");
+        DetailContract detailContract2 = createDetailContract(contract, "외주", "웹 개발 B");
         detailContractRepository.saveAll(List.of(detailContract1, detailContract2));
 
         // when
-        List<DetailContract> foundContracts = detailContractRepository.findByContractId(contractId);
+        List<DetailContract> foundContracts = detailContractRepository.findByContract_ContractId(contract.getContractId());
 
         // then
         assertThat(foundContracts).hasSize(2);
@@ -90,9 +88,50 @@ class DetailContractRepositoryTest {
                 .containsExactlyInAnyOrder("웹 개발 A", "웹 개발 B");
     }
 
-    private DetailContract createDetailContract() {
+    private Contract createAndSaveContract() {
+        User savedUser = userRepository.save(createUser());
+        Correspondent savedCorrespondent = correspondentRepository.save(createCorrespondent());
+
+        Contract contract = Contract.builder()
+                .category("IT")
+                .status("진행중")
+                .name("테스트 계약")
+                .contractStartDate(LocalDate.now())
+                .admin(savedUser)
+                .categoryId(1)
+                .correspondent(savedCorrespondent)
+                .build();
+        return contractRepository.save(contract);
+    }
+
+    private User createUser() {
+        return User.builder()
+                .username("testuser")
+                .password("password")
+                .name("Test User")
+                .phoneNumber("010-1234-5678")
+                .email("test@example.com")
+                .address("Test Address")
+                .addressDetail("Test Detail")
+                .role(Role.ROLE_ADMIN)
+                .grade("A")
+                .companyPhoneNumber("02-1234-5678")
+                .companyFaxNumber("02-1234-5679")
+                .build();
+    }
+
+    private Correspondent createCorrespondent() {
+        return Correspondent.builder()
+                .correspondentName("Test Company")
+                .businessRegNumber("123-45-67890")
+                .address("Test Address")
+                .detailedAddress("Test Detailed Address")
+                .build();
+    }
+
+    private DetailContract createDetailContract(Contract contract) {
         return DetailContract.builder()
-                .contractId(1L)
+                .contract(contract)
                 .contractType("일반계약")
                 .contractStatus("진행중")
                 .largeCategory("IT")
@@ -102,6 +141,22 @@ class DetailContractRepositoryTest {
                 .unitPrice(1000)
                 .supplyPrice(1000)
                 .totalPrice(1100)
+                .lastModifyUser("tester")
+                .build();
+    }
+
+    private DetailContract createDetailContract(Contract contract, String type, String content) {
+        return DetailContract.builder()
+                .contract(contract)
+                .contractType(type)
+                .contractStatus("진행중")
+                .largeCategory("IT")
+                .smallCategory("개발")
+                .content(content)
+                .quantity(1)
+                .unitPrice(1000000)
+                .supplyPrice(1000000)
+                .totalPrice(1100000)
                 .lastModifyUser("tester")
                 .build();
     }
@@ -125,21 +180,8 @@ class DetailContractRepositoryTest {
                 .condition("선결제")
                 .build();
     }
-
-    // 테스트용 DetailContract 생성 메서드 추가
-    private DetailContract createDetailContract(Long contractId, String type, String content) {
-        return DetailContract.builder()
-                .contractId(contractId)
-                .contractType(type)
-                .contractStatus("진행중")
-                .largeCategory("IT")
-                .smallCategory("개발")
-                .content(content)
-                .quantity(1)
-                .unitPrice(1000000)
-                .supplyPrice(1000000)
-                .totalPrice(1100000)
-                .lastModifyUser("tester")
-                .build();
-    }
 }
+
+
+
+

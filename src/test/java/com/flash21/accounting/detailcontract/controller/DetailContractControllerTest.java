@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -27,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -169,15 +171,18 @@ public class DetailContractControllerTest {
     void getDetailContractsByParentContractIdNotFoundTest() throws Exception {
         // given
         Long nonExistentParentId = 999L;
+        DetailContractErrorCode errorCode = DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND;
+
         given(detailContractService.getDetailContractByContractId(nonExistentParentId))
-                .willThrow(new AccountingException(DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND));
+                .willThrow(new AccountingException(errorCode));
 
         // when & then
         mockMvc.perform(get("/api/detail-contract/by-contract/{contractId}", nonExistentParentId))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND.code()))
-                .andExpect(jsonPath("$.message").value(DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND.message()))
-                .andExpect(jsonPath("$.data").exists());
+                .andExpect(jsonPath("$.code").value(errorCode.code()))
+                .andExpect(jsonPath("$.message").value(errorCode.message()))
+                .andExpect(jsonPath("$.data").value(HttpStatus.NOT_FOUND.value() + " " + HttpStatus.NOT_FOUND.getReasonPhrase()))
+                .andDo(print());
     }
 
     @Test

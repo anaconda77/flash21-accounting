@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 
 @RequiredArgsConstructor
 public enum ContractErrorCode implements ErrorCode {
-
     // 계약서 관련 에러 코드
     CONTRACT_NOT_FOUND(HttpStatus.NOT_FOUND, "CT001", "요청한 계약서를 찾을 수 없습니다."),
     USER_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "CT002", "해당 작업을 수행할 권한이 없습니다."),
@@ -26,6 +25,7 @@ public enum ContractErrorCode implements ErrorCode {
     SIGN_NOT_FOUND(HttpStatus.NOT_FOUND, "CT008", "해당 서명을 찾을 수 없습니다.");
 
     private final HttpStatus status;
+
     private final String code;
     private final String message;
 

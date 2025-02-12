@@ -1,8 +1,11 @@
 package com.flash21.accounting.detailcontract.service;
 
 import com.flash21.accounting.common.exception.AccountingException;
+import com.flash21.accounting.common.exception.errorcode.ContractErrorCode;
 import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;
 import com.flash21.accounting.common.exception.errorcode.DetailContractErrorCode;
+import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
 import com.flash21.accounting.detailcontract.domain.entity.Outsourcing;
 import com.flash21.accounting.detailcontract.domain.entity.Payment;
@@ -28,13 +31,17 @@ public class DetailContractService {
     private final DetailContractRepository detailContractRepository;
     private final OutsourcingRepository outsourcingRepository;
     private final PaymentRepository paymentRepository;
+    private final ContractRepository contractRepository;
 
     // 세부계약서(외주/지출) 생성
     @Transactional
     public CreateDetailContractResponse createDetailContract(CreateDetailContractRequest request) {
+        // 계약서 조회
+        Contract contract = contractRepository.findById(request.getContractId())
+                .orElseThrow(() -> new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND));
         // 세부계약서 생성
         DetailContract detailContract = DetailContract.builder()
-                .contractId(request.getContractId())
+                .contract(contract)  // contract 엔티티 설정
                 .contractType(request.getContractType())
                 .contractStatus(request.getContractStatus())
                 .largeCategory(request.getLargeCategory())
@@ -149,7 +156,7 @@ public class DetailContractService {
 
     // 상위계약서 ID로 세부계약서 조회
     public List<GetDetailContractResponse> getDetailContractByContractId(Long contractId) {
-        List<DetailContract> detailContracts = detailContractRepository.findByContractId(contractId);
+        List<DetailContract> detailContracts = detailContractRepository.findByContract_ContractId(contractId);
         if (detailContracts.isEmpty()) {
             throw new AccountingException(DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND);
         }

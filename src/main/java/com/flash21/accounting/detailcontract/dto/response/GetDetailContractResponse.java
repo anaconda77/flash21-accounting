@@ -80,7 +80,7 @@ public class GetDetailContractResponse {
     public static GetDetailContractResponse from(DetailContract detailContract) {
         return GetDetailContractResponse.builder()
                 .detailContractId(detailContract.getDetailContractId())
-                .contractId(detailContract.getContractId())
+                .contractId(detailContract.getContract().getContractId())
                 .contractType(detailContract.getContractType())
                 .contractStatus(detailContract.getContractStatus())
                 .largeCategory(detailContract.getLargeCategory())

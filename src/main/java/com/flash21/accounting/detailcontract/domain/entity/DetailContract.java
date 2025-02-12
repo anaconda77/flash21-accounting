@@ -1,5 +1,6 @@
 package com.flash21.accounting.detailcontract.domain.entity;
 
+import com.flash21.accounting.contract.entity.Contract;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -19,8 +20,9 @@ public class DetailContract {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long detailContractId;
 
-    @Column(nullable = false)
-    private Long contractId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contract_id")
+    private Contract contract;
 
     @Column(nullable = false, length = 20)
     private String contractType;
@@ -71,13 +73,13 @@ public class DetailContract {
     private List<Payment> payments = new ArrayList<>();
 
     @Builder
-    public DetailContract(Long contractId, String contractType, String contractStatus,
+    public DetailContract(Contract contract, String contractType, String contractStatus,
                           String largeCategory, String smallCategory, String content,
                           Integer quantity, Integer unitPrice, Integer supplyPrice,
                           Integer totalPrice, String mainContractContent,
                           String outsourcingContent, String lastModifyUser,
                           String history) {
-        this.contractId = contractId;
+        this.contract = contract;
         this.contractType = contractType;
         this.contractStatus = contractStatus;
         this.largeCategory = largeCategory;
