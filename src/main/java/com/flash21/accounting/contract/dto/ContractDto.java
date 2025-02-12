@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 @Data
 public class ContractDto {
-    private Integer contractId;
+    private Long contractId;
     private String category;
     private String status;
     private String name;

@@ -17,16 +17,16 @@ public enum DetailContractErrorCode implements ErrorCode {
 
     @Override
     public HttpStatus status() {
-        return null;
+        return status;
     }
 
     @Override
     public String code() {
-        return "";
+        return code;
     }
 
     @Override
     public String message() {
-        return "";
+        return message;
     }
 }

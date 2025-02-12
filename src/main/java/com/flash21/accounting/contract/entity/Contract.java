@@ -1,11 +1,15 @@
 package com.flash21.accounting.contract.entity;
 
 import com.flash21.accounting.correspondent.model.Correspondent;
+import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
+import com.flash21.accounting.correspondent.model.Correspondent;
 import com.flash21.accounting.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "contract")
@@ -18,7 +22,7 @@ public class Contract {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer contractId;
+    private Long contractId;
 
     @Column(nullable = false, length = 20)
     private String category;
@@ -54,6 +58,9 @@ public class Contract {
     @ManyToOne
     @JoinColumn(name = "correspondent_id", nullable = false)
     private Correspondent correspondent;
+
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
+    private List<DetailContract> detailContracts = new ArrayList<>();
 
     // 빌더 패턴을 위한 생성자 추가
     @Builder

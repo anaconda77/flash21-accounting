@@ -36,14 +36,14 @@ public class ContractController {
     @Operation(summary = "특정 계약서 조회", description = "ID를 기반으로 특정 계약서를 조회합니다.")
     @GetMapping("/{contractId}")
     public ResponseEntity<ContractResponseDto> getContractById(
-            @Parameter(description = "조회할 계약서의 ID") @PathVariable Integer contractId) {
+            @Parameter(description = "조회할 계약서의 ID") @PathVariable Long contractId) {
         return ResponseEntity.ok(contractService.getContractById(contractId));
     }
 
     @Operation(summary = "계약서 수정", description = "ID를 기반으로 계약서를 수정합니다.")
     @PutMapping("/{contractId}")
     public ResponseEntity<ContractResponseDto> updateContract(
-            @Parameter(description = "수정할 계약서의 ID") @PathVariable Integer contractId,
+            @Parameter(description = "수정할 계약서의 ID") @PathVariable Long contractId,
             @Valid @RequestBody ContractRequestDto requestDto) {
         return ResponseEntity.ok(contractService.updateContract(contractId, requestDto));
     }
@@ -51,7 +51,7 @@ public class ContractController {
     @Operation(summary = "계약서 삭제", description = "ID를 기반으로 계약서를 삭제합니다.")
     @DeleteMapping("/{contractId}")
     public ResponseEntity<Void> deleteContract(
-            @Parameter(description = "삭제할 계약서의 ID") @PathVariable Integer contractId) {
+            @Parameter(description = "삭제할 계약서의 ID") @PathVariable Long contractId) {
         contractService.deleteContract(contractId);
         return ResponseEntity.noContent().build();
     }
