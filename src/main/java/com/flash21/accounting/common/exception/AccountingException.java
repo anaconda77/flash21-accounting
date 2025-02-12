@@ -11,8 +11,17 @@ public class AccountingException extends RuntimeException {
         this.errorCode = errorCode;
     }
 
+    public AccountingException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode.message(), cause);
+        this.errorCode = errorCode;
+    }
+
     public static AccountingException of(ErrorCode errorCode) {
         return new AccountingException(errorCode);
+    }
+
+    public static AccountingException of(ErrorCode errorCode, Throwable cause) {
+        return new AccountingException(errorCode, cause);
     }
 
     public HttpStatus status() {
