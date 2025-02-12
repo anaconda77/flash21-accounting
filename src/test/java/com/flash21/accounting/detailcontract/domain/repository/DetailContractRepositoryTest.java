@@ -2,7 +2,7 @@ package com.flash21.accounting.detailcontract.domain.repository;
 
 import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.contract.repository.ContractRepository;
-import com.flash21.accounting.correspondent.model.Correspondent;
+import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
 import com.flash21.accounting.detailcontract.domain.entity.Outsourcing;
