@@ -2,16 +2,14 @@ package com.flash21.accounting.correspondent.service;
 
 import static com.flash21.accounting.common.ErrorCodeAssertions.assertErrorCode;
 
-import com.flash21.accounting.common.ErrorCodeAssertions;
 import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;
 import com.flash21.accounting.common.exception.errorcode.ReflectionErrorCode;
-import com.flash21.accounting.correspondent.model.Correspondent;
+import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
 import com.flash21.accounting.fixture.correspondent.CorrespondentFixture;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;

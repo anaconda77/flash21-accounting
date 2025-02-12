@@ -1,4 +1,4 @@
-package com.flash21.accounting.correspondent.model;
+package com.flash21.accounting.correspondent.domain;
 
 import com.flash21.accounting.correspondent.dto.request.CorrespondentRequest;
 import jakarta.persistence.Column;

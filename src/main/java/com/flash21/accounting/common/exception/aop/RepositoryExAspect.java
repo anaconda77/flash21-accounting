@@ -1,6 +1,7 @@
 package com.flash21.accounting.common.exception.aop;
 
 import com.flash21.accounting.common.exception.AccountingException;
+import com.flash21.accounting.common.exception.errorcode.CategoryErrorCode;
 import com.flash21.accounting.common.exception.errorcode.CommonErrorCode;
 import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -21,6 +22,9 @@ public class RepositoryExAspect {
             String message = e.getMessage();
             if (message.contains("UK_CORRESPONDENT_NAME")) {
                 throw AccountingException.of(CorrespondentErrorCode.EXISTING_CORRESPONDENT, e);
+            }
+            if (message.contains("UK_CATEGORY_NAME")) {
+                throw AccountingException.of(CategoryErrorCode.EXISTING_CATEGORY);
             }
 
             throw AccountingException.of(CommonErrorCode.UNKNOWN_DATA_ERROR, e);

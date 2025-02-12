@@ -1,6 +1,6 @@
 package com.flash21.accounting.fixture.correspondent;
 
-import com.flash21.accounting.correspondent.model.Correspondent;
+import com.flash21.accounting.correspondent.domain.Correspondent;
 
 public class CorrespondentFixture {
     public static Correspondent createDefault() {
