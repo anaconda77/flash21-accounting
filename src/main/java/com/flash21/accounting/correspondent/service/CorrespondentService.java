@@ -6,7 +6,7 @@ import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;
 import com.flash21.accounting.common.util.EntityToDtoMapper;
 import com.flash21.accounting.correspondent.dto.request.CorrespondentRequest;
 import com.flash21.accounting.correspondent.dto.response.CorrespondentResponse;
-import com.flash21.accounting.correspondent.model.Correspondent;
+import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
 import java.lang.reflect.Method;
 import java.util.List;

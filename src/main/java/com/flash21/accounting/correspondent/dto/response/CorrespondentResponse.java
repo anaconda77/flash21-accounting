@@ -1,7 +1,5 @@
 package com.flash21.accounting.correspondent.dto.response;
 
-import com.flash21.accounting.correspondent.model.Correspondent;
-
 public record CorrespondentResponse(
     Long correspondentId,
     String correspondentName,

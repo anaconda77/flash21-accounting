@@ -1,6 +1,6 @@
 package com.flash21.accounting.contract.entity;
 
-import com.flash21.accounting.correspondent.model.Correspondent;
+import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.user.User;
 import jakarta.persistence.*;
 import lombok.*;
