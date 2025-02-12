@@ -3,7 +3,7 @@ package com.flash21.accounting.detailcontract.service;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.errorcode.DetailContractErrorCode;
 import com.flash21.accounting.contract.entity.Contract;
-import com.flash21.accounting.correspondent.model.Correspondent;
+import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.user.User;
 import com.flash21.accounting.user.Role;
 import com.flash21.accounting.contract.repository.ContractRepository;
