@@ -1,9 +1,9 @@
 package com.flash21.accounting.common.exception.aop;
 
 import com.flash21.accounting.common.exception.AccountingException;
+import com.flash21.accounting.common.exception.errorcode.CategoryErrorCode;
 import com.flash21.accounting.common.exception.errorcode.CommonErrorCode;
 import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;
-import jakarta.validation.ConstraintViolationException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
-public class DataIntegrityAspect {
+public class RepositoryExAspect {
 
-    @Around("execution(* com.flash21.accounting.*.repository.*.save*(..))")
+    @Around("execution(* com.flash21.accounting.*.repository.*.*(..))")
     public Object handleDataIntegrity(ProceedingJoinPoint joinPoint) throws Throwable {
         try {
             return joinPoint.proceed();
@@ -23,8 +23,11 @@ public class DataIntegrityAspect {
             if (message.contains("UK_CORRESPONDENT_NAME")) {
                 throw AccountingException.of(CorrespondentErrorCode.EXISTING_CORRESPONDENT, e);
             }
+            if (message.contains("UK_CATEGORY_NAME")) {
+                throw AccountingException.of(CategoryErrorCode.EXISTING_CATEGORY);
+            }
 
-            throw AccountingException.of(CommonErrorCode.UNKNOWN_INTEGRITY, e);
+            throw AccountingException.of(CommonErrorCode.UNKNOWN_DATA_ERROR, e);
         }
     }
 }
