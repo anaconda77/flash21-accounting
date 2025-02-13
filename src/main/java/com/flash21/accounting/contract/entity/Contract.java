@@ -11,22 +11,18 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
 @Entity
 @Table(name = "contract")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor  // 기본 생성자 추가
+@AllArgsConstructor // 모든 필드를 받는 생성자 추가
 @Builder
 public class Contract {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long contractId;
-
-    @Column(nullable = false, length = 20)
-    private String category;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
@@ -63,9 +59,14 @@ public class Contract {
     @JoinColumn(name = "director_sign_id")
     private Sign directorSign;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    @Builder.Default
+    private Method method = Method.GENERAL;
+
     @ManyToOne
     @JoinColumn(name = "category_id")
-    private Category categoryId;
+    private Category category;
 
     @ManyToOne
     @JoinColumn(name = "correspondent_id", nullable = false)
@@ -73,4 +74,5 @@ public class Contract {
 
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
     private List<DetailContract> detailContracts = new ArrayList<>();
+
 }

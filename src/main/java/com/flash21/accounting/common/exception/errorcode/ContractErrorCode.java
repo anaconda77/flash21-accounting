@@ -20,9 +20,10 @@ public enum ContractErrorCode implements ErrorCode {
     ONLY_SUPER_ADMIN_ALLOWED(HttpStatus.FORBIDDEN, "CE006", "해당 작업은 슈퍼관리자만 수행할 수 있습니다."),
 
     // Enum 변환 실패 관련 에러
-    INVALID_ENUM(HttpStatus.BAD_REQUEST, "CE009", "유효하지 않은 Enum 값입니다."),
-    INVALID_STATUS(HttpStatus.BAD_REQUEST, "CE010", "유효하지 않은 계약 상태(Status) 값입니다."),
-    INVALID_PROCESS_STATUS(HttpStatus.BAD_REQUEST, "CE011", "유효하지 않은 진행 상태(ProcessStatus) 값입니다.");
+    INVALID_ENUM(HttpStatus.BAD_REQUEST, "CE007", "유효하지 않은 Enum 값입니다."),
+    INVALID_METHOD(HttpStatus.BAD_REQUEST, "CE08", "유효하지 않은 계약방식(Method) 값입니다."),
+    INVALID_STATUS(HttpStatus.BAD_REQUEST, "CE09", "유효하지 않은 계약 상태(Status) 값입니다."),
+    INVALID_PROCESS_STATUS(HttpStatus.BAD_REQUEST, "CE010", "유효하지 않은 진행 상태(ProcessStatus) 값입니다.");
 
     private final HttpStatus status;
 

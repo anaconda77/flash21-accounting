@@ -1,6 +1,11 @@
 package com.flash21.accounting.detailcontract.domain.repository;
 
+import com.flash21.accounting.category.domain.Category;
+import com.flash21.accounting.category.repository.CategoryRepository;
 import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.contract.entity.Method;
+import com.flash21.accounting.contract.entity.ProcessStatus;
+import com.flash21.accounting.contract.entity.Status;
 import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
@@ -49,6 +54,9 @@ class DetailContractRepositoryTest {
     @Autowired
     private CorrespondentRepository correspondentRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository; // 추가: CategoryRepository
+
     @Test
     @DisplayName("세부계약서 저장 시 외주/지불정보도 함께 저장되어야 한다")
     void saveDetailContractWithOutsourcingAndPayment() {
@@ -91,14 +99,16 @@ class DetailContractRepositoryTest {
     private Contract createAndSaveContract() {
         User savedUser = userRepository.save(createUser());
         Correspondent savedCorrespondent = correspondentRepository.save(createCorrespondent());
+        Category category = categoryRepository.save(new Category(null, "테스트 카테고리"));
 
         Contract contract = Contract.builder()
-                .category("IT")
-                .status("진행중")
+                .category(category)
                 .name("테스트 계약")
                 .contractStartDate(LocalDate.now())
+                .status(Status.ONGOING) // 변경된 ENUM 사용
+                .processStatus(ProcessStatus.CONTRACTED) // 변경된 ENUM 사용
+                .method(Method.GENERAL) // 변경된 ENUM 사용
                 .admin(savedUser)
-                .categoryId(1)
                 .correspondent(savedCorrespondent)
                 .build();
         return contractRepository.save(contract);
