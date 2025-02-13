@@ -3,6 +3,7 @@ package com.flash21.accounting.common;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.ErrorResponse;
 import com.flash21.accounting.common.exception.errorcode.ContractErrorCode;
+import com.flash21.accounting.common.exception.errorcode.FileErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 @Slf4j
@@ -58,5 +60,15 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(errorCode.status())
                 .body(ErrorResponse.of(errorCode.status(), errorCode.code(), errorCode.message()));
+    }
+
+    // 첨부파일 크기 초과
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+        log.error("=== Max Upload Size Exceeded Exception ===");
+        log.error("Max Upload Size Exceeded: {}", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse.of(HttpStatus.BAD_REQUEST, FileErrorCode.EXCEEDED_ALLOWING_FILE_SIZE.code(), FileErrorCode.EXCEEDED_ALLOWING_FILE_SIZE.message()));
     }
 }

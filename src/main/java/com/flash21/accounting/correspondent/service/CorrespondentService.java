@@ -1,5 +1,6 @@
 package com.flash21.accounting.correspondent.service;
 
+import com.flash21.accounting.category.domain.APINumber;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.aop.ReflectionOperation;
 import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;
@@ -8,6 +9,7 @@ import com.flash21.accounting.correspondent.dto.request.CorrespondentRequest;
 import com.flash21.accounting.correspondent.dto.response.CorrespondentResponse;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
+import com.flash21.accounting.file.service.AttachmentFileService;
 import java.lang.reflect.Method;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,12 +24,23 @@ import org.springframework.web.multipart.MultipartFile;
 public class CorrespondentService {
 
     private final CorrespondentRepository correspondentRepository;
+    private final AttachmentFileService attachmentFileService;
 
     @Transactional
     public CorrespondentResponse createCorrespondent(CorrespondentRequest correspondentRequest,
-        MultipartFile businessRegNumberImage) {
+        MultipartFile businessRegNumberImage, MultipartFile bankBookImage) {
         Correspondent correspondent = correspondentRepository.save(
             convertToEntity(correspondentRequest));
+
+        // 2개의 첨부 파일 저장
+        if (businessRegNumberImage != null) {
+            attachmentFileService.saveFile(correspondent.getId(), 1, businessRegNumberImage,
+                APINumber.CORRESPONDENT);
+        }
+        if (bankBookImage != null) {
+            attachmentFileService.saveFile(correspondent.getId(), 2, bankBookImage,
+                APINumber.CORRESPONDENT);
+        }
         return convertToDto(correspondent);
     }
 

@@ -45,7 +45,15 @@ public interface CorrespondentSpecification {
                 schema = @Schema(type = "string", format = "binary")
             )
         )
-        @RequestPart(name = "file", required = false) MultipartFile file);
+        @RequestPart(name = "businessRegNumberImage", required = false) MultipartFile businessRegNumberImage,
+        @Parameter(
+            description = "통장사본",
+            content = @Content(
+                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                schema = @Schema(type = "string", format = "binary")
+            )
+        )
+        @RequestPart(name = "bankBookImage", required = false) MultipartFile bankBookImage);
 
     @Operation(summary = "거래처 조회", description = "거래처를 검색합니다.")
     @ApiResponses(value = {

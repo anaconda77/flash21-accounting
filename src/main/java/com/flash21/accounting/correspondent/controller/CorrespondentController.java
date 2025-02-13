@@ -31,8 +31,9 @@ public class CorrespondentController implements CorrespondentSpecification {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CorrespondentResponse> createCorrespondent(
         @RequestPart("json") @Valid CorrespondentRequest correspondentRequest,
-        @RequestPart(name = "file", required = false) MultipartFile file) {
-        return new ResponseEntity<>(correspondentService.createCorrespondent(correspondentRequest, file),
+        @RequestPart(name = "businessRegNumberImage", required = false) MultipartFile businessRegNumberImage,
+        @RequestPart(name = "bankBookImage", required = false) MultipartFile bankBookImage) {
+        return new ResponseEntity<>(correspondentService.createCorrespondent(correspondentRequest, businessRegNumberImage, bankBookImage),
         HttpStatus.CREATED);
     }
 
