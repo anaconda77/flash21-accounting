@@ -139,6 +139,93 @@ class ContractControllerTest {
     }
 
     @Test
+    @DisplayName("특정 계약서 조회 API 테스트")
+    void getContractByIdTest() throws Exception {
+        // Given
+        Long contractId = 1L;
+        ContractResponseDto response = ContractResponseDto.builder()
+                .contractId(contractId)
+                .admin(admin)
+                .category(category)
+                .status(Status.ONGOING)
+                .processStatus(ProcessStatus.CONTRACTED)
+                .method(Method.GENERAL)
+                .name("테스트 계약")
+                .contractStartDate(LocalDate.now())
+                .contractEndDate(LocalDate.now().plusDays(30))
+                .workEndDate(LocalDate.now().plusDays(60))
+                .correspondent(correspondent)
+                .build();
+
+        given(contractService.getContractById(contractId)).willReturn(response);
+
+        // When & Then
+        mockMvc.perform(get("/api/contract/{contractId}", contractId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contractId").value(contractId))
+                .andExpect(jsonPath("$.name").value("테스트 계약"));
+    }
+
+    @Test
+    @DisplayName("계약서 수정 API 테스트")
+    void updateContractTest() throws Exception {
+        // Given
+        Long contractId = 1L;
+        ContractRequestDto request = ContractRequestDto.builder()
+                .adminId(admin.getId())
+                .writerSignId(1)
+                .headSignId(1)
+                .directorSignId(1)
+                .categoryId(category.getId())
+                .status(Status.DONE)
+                .processStatus(ProcessStatus.DONE)
+                .method(Method.BID.name())
+                .name("수정된 계약")
+                .contractStartDate(LocalDate.now())
+                .contractEndDate(LocalDate.now().plusDays(15))
+                .workEndDate(LocalDate.now().plusDays(45))
+                .correspondentId(1)
+                .build();
+
+        ContractResponseDto response = ContractResponseDto.builder()
+                .contractId(contractId)
+                .admin(admin)
+                .category(category)
+                .status(Status.DONE)
+                .processStatus(ProcessStatus.DONE)
+                .method(Method.BID)
+                .name("수정된 계약")
+                .contractStartDate(LocalDate.now())
+                .contractEndDate(LocalDate.now().plusDays(15))
+                .workEndDate(LocalDate.now().plusDays(45))
+                .correspondent(correspondent)
+                .build();
+
+        given(contractService.updateContract(any(Long.class), any(ContractRequestDto.class))).willReturn(response);
+
+        // When & Then
+        mockMvc.perform(put("/api/contract/{contractId}", contractId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contractId").value(contractId))
+                .andExpect(jsonPath("$.name").value("수정된 계약"))
+                .andExpect(jsonPath("$.status").value(Status.DONE.name()))
+                .andExpect(jsonPath("$.processStatus").value(ProcessStatus.DONE.name()));
+    }
+
+    @Test
+    @DisplayName("계약서 삭제 API 테스트")
+    void deleteContractTest() throws Exception {
+        // Given
+        Long contractId = 1L;
+
+        // When & Then
+        mockMvc.perform(delete("/api/contract/{contractId}", contractId))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
     @DisplayName("계약서 전체 조회 API 테스트")
     void getAllContractsTest() throws Exception {
         // Given
