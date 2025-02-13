@@ -1,6 +1,7 @@
 package com.flash21.accounting.contract.dto;
 
 import com.flash21.accounting.category.domain.Category;
+import com.flash21.accounting.contract.entity.Method;
 import com.flash21.accounting.contract.entity.ProcessStatus;
 import com.flash21.accounting.contract.entity.Status;
 import com.flash21.accounting.correspondent.domain.Correspondent;
@@ -15,11 +16,12 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ContractResponseDto {
-    private User adminId;
     private Long contractId;
+    private User adminId;
     private Category category;
     private Status status;
     private ProcessStatus processStatus;
+    private Method method;
     private String name;
     private LocalDate contractStartDate;
     private LocalDate contractEndDate;
