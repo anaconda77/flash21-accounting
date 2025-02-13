@@ -1,5 +1,6 @@
 package com.flash21.accounting.contract.entity;
 
+import com.flash21.accounting.category.domain.Category;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
 import com.flash21.accounting.sign.entity.Sign;
@@ -62,8 +63,9 @@ public class Contract {
     @JoinColumn(name = "director_sign_id")
     private Sign directorSign;
 
-    @Column(nullable = false)
-    private Integer categoryId;
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category categoryId;
 
     @ManyToOne
     @JoinColumn(name = "correspondent_id", nullable = false)

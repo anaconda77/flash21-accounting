@@ -19,11 +19,6 @@ public enum ContractErrorCode implements ErrorCode {
     // 관리자 권한 관련
     ONLY_SUPER_ADMIN_ALLOWED(HttpStatus.FORBIDDEN, "CE006", "해당 작업은 슈퍼관리자만 수행할 수 있습니다."),
 
-    // 서명 관련 에러
-
-    INVALID_SIGN(HttpStatus.BAD_REQUEST, "CE007", "유효하지 않은 서명 ID입니다."),
-    SIGN_NOT_FOUND(HttpStatus.NOT_FOUND, "CE008", "해당 서명을 찾을 수 없습니다."),
-
     // Enum 변환 실패 관련 에러
     INVALID_ENUM(HttpStatus.BAD_REQUEST, "CE009", "유효하지 않은 Enum 값입니다."),
     INVALID_STATUS(HttpStatus.BAD_REQUEST, "CE010", "유효하지 않은 계약 상태(Status) 값입니다."),
