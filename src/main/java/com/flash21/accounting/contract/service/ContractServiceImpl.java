@@ -60,11 +60,9 @@ public class ContractServiceImpl implements ContractService {
                         .orElseThrow(() -> new AccountingException(ContractErrorCode.INVALID_SIGN))
                 : null;
 
-        // Status Enum 변환
-        Status status = Status.valueOf(requestDto.getStatus().toString());
-
-        // ProcessStatus Enum 변환
-        ProcessStatus processStatus = ProcessStatus.valueOf(requestDto.getProcessStatus().toString());
+        // Status 및 ProcessStatus 검증 후 변환
+        Status status = parseStatus(requestDto.getStatus().toString());
+        ProcessStatus processStatus = parseProcessStatus(requestDto.getProcessStatus().toString());
 
 
         Contract contract = contractRepository.save(
@@ -136,14 +134,15 @@ public class ContractServiceImpl implements ContractService {
 
     private void updateFields(Contract contract, ContractRequestDto requestDto) {
         if (requestDto.getCategory() != null) contract.setCategory(requestDto.getCategory());
-        if (requestDto.getStatus() != null) contract.setStatus(Status.valueOf(requestDto.getStatus().toString()));
-        if (requestDto.getProcessStatus()!= null) contract.setProcessStatus(ProcessStatus.valueOf(requestDto.getProcessStatus().toString()));
+        if (requestDto.getStatus() != null) contract.setStatus(parseStatus(requestDto.getStatus().toString()));
+        if (requestDto.getProcessStatus() != null) contract.setProcessStatus(parseProcessStatus(requestDto.getProcessStatus().toString()));
         if (requestDto.getName() != null) contract.setName(requestDto.getName());
         if (requestDto.getContractStartDate() != null) contract.setContractStartDate(requestDto.getContractStartDate());
         if (requestDto.getContractEndDate() != null) contract.setContractEndDate(requestDto.getContractEndDate());
         if (requestDto.getWorkEndDate() != null) contract.setWorkEndDate(requestDto.getWorkEndDate());
         if (requestDto.getCategoryId() != null) contract.setCategoryId(requestDto.getCategoryId());
     }
+
 
     // ContractResponseDto로 변환할 때 Correspondent의 ID 포함
     private ContractResponseDto toResponseDto(Contract contract) {
@@ -165,4 +164,21 @@ public class ContractServiceImpl implements ContractService {
             throw new AccountingException(ContractErrorCode.REQUIRED_FIELD_MISSING);
         }
     }
+
+    private Status parseStatus(String status) {
+        try {
+            return Status.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new AccountingException(ContractErrorCode.INVALID_STATUS);
+        }
+    }
+
+    private ProcessStatus parseProcessStatus(String processStatus) {
+        try {
+            return ProcessStatus.valueOf(processStatus.toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new AccountingException(ContractErrorCode.INVALID_PROCESS_STATUS);
+        }
+    }
+
 }
