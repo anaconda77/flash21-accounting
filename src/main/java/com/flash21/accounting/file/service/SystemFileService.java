@@ -5,8 +5,10 @@ import com.flash21.accounting.common.exception.errorcode.FileErrorCode;
 import com.flash21.accounting.file.domain.AttachmentFile;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,11 +46,11 @@ public class SystemFileService {
         }
     }
 
-    public void createFileInSystemStorage(InputStream inputStream, Path targetPath) {
+    public void createFileInSystemStorage(InputStream inputStream, Path fileSource) {
         try {
             Files.copy(
                 inputStream,
-                targetPath,
+                fileSource,
                 StandardCopyOption.REPLACE_EXISTING
             );
         } catch (IOException e) {
@@ -150,6 +152,24 @@ public class SystemFileService {
                 Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxr-xr-x");
                 Files.setPosixFilePermissions(path, permissions);
             }
+        } catch (IOException e) {
+            throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR, e);
+        }
+    }
+
+    public void deleteFile(String fileSource) {
+        Path filePath = Paths.get(fileSource);
+
+        try {
+            boolean deleted = Files.deleteIfExists(filePath);
+            if (!deleted) {
+                throw AccountingException.of(FileErrorCode.NOT_FOUND_FILE);
+            }
+
+        } catch (DirectoryNotEmptyException e) {
+            throw AccountingException.of(FileErrorCode.CANNOT_DELETE_DIRECTORY);
+        } catch (SecurityException e) {
+            throw AccountingException.of(FileErrorCode.ACCESS_REFUSED);
         } catch (IOException e) {
             throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR, e);
         }

@@ -76,6 +76,50 @@ public class AttachmentFileService {
         return new AttachmentFilesResponse(files);
     }
 
+    @Transactional
+    public void deleteAllFiles(Long referenceId, APINumber apiNumber) {
+        List<AttachmentFile> candidates = attachmentFileRepository.findByReferenceId(
+            referenceId);
+        List<AttachmentFile> deleteFiles = candidates.stream()
+            .filter(attachmentFile -> checkApiId(attachmentFile, apiNumber))
+            .toList();
+
+        deleteFiles.forEach(file -> {
+            systemFileService.deleteFile(file.getFileSource());
+            attachmentFileRepository.delete(file);
+        });
+    }
+
+    @Transactional
+    public void deleteFileHavingTypeId(Long referenceId, Integer typeId, APINumber apiNumber) {
+        if (!APINumber.isNecessaryTypeId(apiNumber)) {
+            throw AccountingException.of(FileErrorCode.WRONG_METHOD_CALL);
+        }
+
+        List<AttachmentFile> candidates = attachmentFileRepository.findByReferenceId(
+            referenceId);
+        AttachmentFile deleteFile = candidates.stream()
+            .filter(attachmentFile -> checkApiIdAndTypeId(attachmentFile, apiNumber, typeId))
+            .findFirst()
+            .orElseThrow(() -> AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR));
+        systemFileService.deleteFile(deleteFile.getFileSource());
+        attachmentFileRepository.delete(deleteFile);
+    }
+
+    @Transactional
+    public void deleteFileNotHavingTypeId(Long referenceId, String fileName, APINumber apiNumber) {
+        List<AttachmentFile> candidates = attachmentFileRepository.findByReferenceId(
+            referenceId);
+        List<AttachmentFile> deleteFiles = candidates.stream()
+            .filter(attachmentFile -> checkApiIdAndFileName(attachmentFile, apiNumber, fileName))
+            .toList();
+
+        deleteFiles.forEach(file -> {
+            systemFileService.deleteFile(file.getFileSource());
+            attachmentFileRepository.delete(file);
+        });
+    }
+
 
     private boolean checkApiId(AttachmentFile attachmentFile, APINumber apiNumber) {
         return attachmentFile.getApinumber().equals(apiNumber);
@@ -88,6 +132,10 @@ public class AttachmentFileService {
         }
         return attachmentFile.getApinumber().equals(apiNumber) && attachmentFile.getTypeId()
             .equals(typeId);
+    }
+
+    private boolean checkApiIdAndFileName(AttachmentFile attachmentFile, APINumber apiNumber, String fileName) {
+        return attachmentFile.getApinumber().equals(apiNumber) && attachmentFile.getFileName().equals(fileName);
     }
 
 

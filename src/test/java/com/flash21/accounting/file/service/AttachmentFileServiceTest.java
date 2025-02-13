@@ -1,6 +1,7 @@
 package com.flash21.accounting.file.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.flash21.accounting.category.domain.APINumber;
 import com.flash21.accounting.file.domain.AttachmentFile;
@@ -11,6 +12,9 @@ import com.flash21.accounting.fixture.file.AttachmentFileFixture;
 import jakarta.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +26,6 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.multipart.MultipartFile;
 
 @SpringBootTest
 @TestPropertySource(properties = {
@@ -35,6 +38,8 @@ class AttachmentFileServiceTest {
 
     @Autowired
     AttachmentFileService attachmentFileService;
+    @Autowired
+    SystemFileService systemFileService;
     AttachmentFile attachmentFile;
     @Autowired
     AttachmentFileRepository attachmentFileRepository;
@@ -84,6 +89,32 @@ class AttachmentFileServiceTest {
             boolean deleteFile = new File(createdAttachmentFile.getFileSource()).delete();
             assertThat(deleteFile).isTrue();
         }
+    }
+
+    @DisplayName("파일 삭제 테스트, 저장할 파일명: newFile.txt")
+    @Test
+    void deleteAttachmentFile() throws IOException {
+        String originalFilename = "newFile";
+        String content = "test content";
+        MockMultipartFile file = new MockMultipartFile(
+            originalFilename,
+            originalFilename,
+            MediaType.TEXT_PLAIN_VALUE,
+            content.getBytes()
+        );
+
+        AttachmentFile createdAttachmentFile = attachmentFileService.saveFile(2L, null, file,
+            APINumber.CONTRACT);;
+        attachmentFileService.deleteFileNotHavingTypeId(createdAttachmentFile.getReferenceId(), createdAttachmentFile.getFileName(), APINumber.CONTRACT);
+        // 파일을 삭제하였으므로 존재하면 안 됨
+        assertFalse(isExistingFile(createdAttachmentFile.getFileSource()));
+    }
+
+
+    // 추가로 디렉토리 검사도 필요하다면
+    public boolean isExistingFile(String path) {
+        Path targetPath = Paths.get(path);
+        return Files.exists(targetPath);
     }
 
 }

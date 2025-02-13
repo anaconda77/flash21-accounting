@@ -95,6 +95,8 @@ public class CorrespondentService {
         Correspondent correspondent = correspondentRepository.findById(correspondentId)
             .orElseThrow(
                 () -> AccountingException.of(CorrespondentErrorCode.NOT_FOUND_CORRESPONDENT));
+
+        attachmentFileService.deleteAllFiles(correspondent.getId(), APINumber.CORRESPONDENT);
         correspondentRepository.delete(correspondent);
     }
 
