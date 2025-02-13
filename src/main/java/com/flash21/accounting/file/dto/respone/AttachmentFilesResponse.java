@@ -1,6 +1,7 @@
 package com.flash21.accounting.file.dto.respone;
 
-import com.flash21.accounting.common.exception.aop.FileOperation;
+import com.flash21.accounting.common.exception.AccountingException;
+import com.flash21.accounting.common.exception.errorcode.FileErrorCode;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,7 +16,6 @@ public record AttachmentFilesResponse(
         byte[] content
     ) {
 
-        @FileOperation
         public static AttachmentFileResponse of(MultipartFile file) {
             try {
                 return new AttachmentFileResponse(
@@ -25,7 +25,7 @@ public record AttachmentFilesResponse(
                     file.getBytes()
                 );
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR);
             }
         }
     }

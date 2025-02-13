@@ -1,7 +1,6 @@
 package com.flash21.accounting.file.service;
 
 import com.flash21.accounting.common.exception.AccountingException;
-import com.flash21.accounting.common.exception.aop.FileOperation;
 import com.flash21.accounting.common.exception.errorcode.FileErrorCode;
 import com.flash21.accounting.file.domain.AttachmentFile;
 import java.io.File;
@@ -98,16 +97,19 @@ public class SystemFileService {
         }
     }
 
-    @FileOperation
-    public void createBaseDirectory() throws IOException {
+    public void createBaseDirectory() {
         Path directory = Paths.get(baseDirectory);
-        if (!Files.exists(directory)) {
-            Files.createDirectories(directory);
+        try {
+            if (!Files.exists(directory)) {
+                Files.createDirectories(directory);
 
-            // POSIX 호환 시스템(Linux, macOS)에서만 권한 설정
-            if (isPosixCompliant()) {
-                setFilePermissions(directory);
+                // POSIX 호환 시스템(Linux, macOS)에서만 권한 설정
+                if (isPosixCompliant()) {
+                    setFilePermissions(directory);
+                }
             }
+        } catch (IOException e) {
+            throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR);
         }
     }
 
@@ -115,11 +117,14 @@ public class SystemFileService {
         return FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
     }
 
-    @FileOperation
-    public void setFilePermissions(Path path) throws IOException {
-        if (isPosixCompliant()) {
-            Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxr-xr-x");
-            Files.setPosixFilePermissions(path, permissions);
+    public void setFilePermissions(Path path) {
+        try {
+            if (isPosixCompliant()) {
+                Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxr-xr-x");
+                Files.setPosixFilePermissions(path, permissions);
+            }
+        } catch (IOException e) {
+            throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR);
         }
     }
 }

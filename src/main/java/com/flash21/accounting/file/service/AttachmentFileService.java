@@ -2,7 +2,6 @@ package com.flash21.accounting.file.service;
 
 import com.flash21.accounting.category.domain.APINumber;
 import com.flash21.accounting.common.exception.AccountingException;
-import com.flash21.accounting.common.exception.aop.FileOperation;
 import com.flash21.accounting.common.exception.errorcode.FileErrorCode;
 import com.flash21.accounting.file.domain.AttachmentFile;
 import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse;
@@ -27,7 +26,6 @@ public class AttachmentFileService {
     private final SystemFileService systemFileService;
 
     @Transactional
-    @FileOperation
     public AttachmentFile saveFile(Long referenceId, Integer typeId, MultipartFile file,
         APINumber apiNumber) throws IOException {
         String originalFileName = file.getOriginalFilename();
@@ -52,7 +50,6 @@ public class AttachmentFileService {
         return attachmentFileRepository.save(attachmentFile);
     }
 
-    @FileOperation
     public AttachmentFilesResponse getFiles(Long referenceId, APINumber apiNumber, Integer typeId) {
         if (apiNumber == null) {
             throw AccountingException.of(FileErrorCode.MISSING_ID);
@@ -73,7 +70,6 @@ public class AttachmentFileService {
         return new AttachmentFilesResponse(List.of((AttachmentFileResponse.of(multipartFile))));
     }
 
-    @FileOperation
     public AttachmentFilesResponse getFiles(Long referenceId, APINumber apiNumber) {
         List<AttachmentFile> candidates = attachmentFileRepository.findByReferenceId(referenceId);
         List<AttachmentFileResponse> files = candidates.stream()
