@@ -7,7 +7,9 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -86,5 +88,37 @@ public class UpdateDetailContractRequestTest {
         // then
         assertThat(violations).isNotEmpty();
         assertThat(violations.size()).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("파일 수정 필드 테스트")
+    void fileUpdateFieldsValidationTest() {
+        // given
+        MockMultipartFile newFile = new MockMultipartFile(
+                "newFiles",
+                "new.pdf",
+                "application/pdf",
+                "new content".getBytes()
+        );
+
+        UpdateDetailContractRequest request = UpdateDetailContractRequest.builder()
+                .contractType("일반")
+                .contractStatus("진행중")
+                .largeCategory("IT")
+                .smallCategory("개발")
+                .content("웹 개발")
+                .quantity(1)
+                .unitPrice(1000000)
+                .supplyPrice(1000000)
+                .totalPrice(1100000)
+                .lastModifyUser("admin")
+                .newFiles(List.of(newFile))
+                .build();
+
+        // when
+        Set<ConstraintViolation<UpdateDetailContractRequest>> violations = validator.validate(request);
+
+        // then
+        assertThat(violations).isEmpty();
     }
 }

@@ -54,7 +54,6 @@ public class UpdateDetailContractRequest {
 
     private List<Outsourcing> outsourcings;
     private List<Payment> payments;
-    private List<Long> deleteFileIds; // 삭제할 파일 ID 목록
     private List<MultipartFile> newFiles; // 새로 추가할 파일들
 
     @Getter
@@ -99,7 +98,7 @@ public class UpdateDetailContractRequest {
                                        Integer totalPrice, String mainContractContent,
                                        String outsourcingContent, String lastModifyUser,
                                        String history, List<Outsourcing> outsourcings,
-                                       List<Payment> payments, List<Long> deleteFileIds, List<MultipartFile> newFiles) {
+                                       List<Payment> payments, List<MultipartFile> newFiles) {
         this.contractType = contractType;
         this.contractStatus = contractStatus;
         this.largeCategory = largeCategory;
@@ -115,7 +114,6 @@ public class UpdateDetailContractRequest {
         this.history = history;
         this.outsourcings = outsourcings;
         this.payments = payments;
-        this.deleteFileIds = deleteFileIds;
         this.newFiles = newFiles;
     }
 }

@@ -99,16 +99,12 @@ public class DetailContractService {
         // 첨부파일 처리
         if (request.getFiles() != null && !request.getFiles().isEmpty()) {
             for (MultipartFile file : request.getFiles()) {
-                try {
-                    attachmentFileService.saveFile(
-                            savedDetailContract.getDetailContractId(), // referenceId
-                            null, // typeId
-                            file,
-                            APINumber.OUTSOURCING // apiNumber = 4
-                    );
-                } catch (IOException e) {
-                    throw new AccountingException(FileErrorCode.FILE_PROCESSING_ERROR);
-                }
+                attachmentFileService.saveFile(
+                        savedDetailContract.getDetailContractId(), // referenceId
+                        null, // typeId
+                        file,
+                        APINumber.OUTSOURCING // apiNumber = 4
+                );
             }
         }
 
@@ -182,16 +178,12 @@ public class DetailContractService {
         // 새로운 파일 추가
         if (request.getNewFiles() != null && !request.getNewFiles().isEmpty()) {
             for (MultipartFile file : request.getNewFiles()) {
-                try {
-                    attachmentFileService.saveFile(
-                            detailContractId,
-                            null,
-                            file,
-                            APINumber.OUTSOURCING
-                    );
-                } catch (IOException e) {
-                    throw new AccountingException(FileErrorCode.FILE_PROCESSING_ERROR);
-                }
+                attachmentFileService.saveFile(
+                        detailContractId,
+                        null,
+                        file,
+                        APINumber.OUTSOURCING
+                );
             }
         }
 

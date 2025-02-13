@@ -22,6 +22,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -257,10 +258,21 @@ public class DetailContractControllerTest {
                 // required fields missing
                 .build();
 
+        MockMultipartFile requestPart;
+        try {
+            requestPart = new MockMultipartFile(
+                    "request",
+                    "",
+                    "application/json",
+                    objectMapper.writeValueAsString(request).getBytes()
+            );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         // when & then
-        mockMvc.perform(post("/api/detail-contract")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(multipart("/api/detail-contract")
+                        .file(requestPart))
                 .andExpect(status().isBadRequest());
     }
 }

@@ -199,12 +199,12 @@ public class DetailContractServiceTest {
                 null // typeId
         );
 
-        try {
-            given(attachmentFileService.saveFile(any(), any(), any(), any()))
-                    .willReturn(mockAttachmentFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        given(attachmentFileService.saveFile(
+                any(),
+                isNull(),
+                any(MultipartFile.class),
+                eq(APINumber.OUTSOURCING)
+        )).willReturn(mockAttachmentFile);
 
         DetailContract savedDetailContract = DetailContract.builder()
                 .contract(savedContract)
@@ -389,7 +389,7 @@ public class DetailContractServiceTest {
 
     @Test
     @DisplayName("세부계약서 수정 성공")
-    void updateDetailContractSuccess() {
+    void updateDetailContractSuccess() throws IOException {
         // given
         Long detailContractId = 1L;
         given(detailContractRepository.findById(detailContractId)).willReturn(Optional.of(detailContract));
@@ -407,16 +407,12 @@ public class DetailContractServiceTest {
                 null
         );
 
-        try {
-            given(attachmentFileService.saveFile(
-                    eq(detailContractId),
-                    isNull(),
-                    any(MultipartFile.class),
-                    eq(APINumber.OUTSOURCING)
-            )).willReturn(mockAttachmentFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        given(attachmentFileService.saveFile(
+                eq(detailContractId),
+                isNull(),
+                any(MultipartFile.class),
+                eq(APINumber.OUTSOURCING)
+        )).willReturn(mockAttachmentFile);
 
         // when
         UpdateDetailContractResponse response = detailContractService.updateDetailContract(detailContractId, updateRequest);
@@ -425,16 +421,12 @@ public class DetailContractServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.getMessage()).isEqualTo("수정이 완료되었습니다");
         verify(detailContractRepository).findById(detailContractId);
-        try {
-            verify(attachmentFileService).saveFile(
-                    eq(detailContractId),
-                    isNull(),
-                    any(MultipartFile.class),
-                    eq(APINumber.OUTSOURCING)
-            );
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        verify(attachmentFileService).saveFile(
+                eq(detailContractId),
+                isNull(),
+                any(MultipartFile.class),
+                eq(APINumber.OUTSOURCING)
+        );
     }
 
     @Test
@@ -454,10 +446,6 @@ public class DetailContractServiceTest {
                 .hasFieldOrPropertyWithValue("errorCode", DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND);
 
         // 파일 저장 시도하지 않았음을 검증
-        try {
-            verify(attachmentFileService, never()).saveFile(any(), any(), any(), any());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        verify(attachmentFileService, never()).saveFile(any(), any(), any(), any());
     }
 }
