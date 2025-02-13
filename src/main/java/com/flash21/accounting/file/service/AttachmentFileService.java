@@ -7,10 +7,8 @@ import com.flash21.accounting.file.domain.AttachmentFile;
 import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse;
 import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse.AttachmentFileResponse;
 import com.flash21.accounting.file.repository.AttachmentFileRepository;
-import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,18 +25,16 @@ public class AttachmentFileService {
 
     @Transactional
     public AttachmentFile saveFile(Long referenceId, Integer typeId, MultipartFile file,
-        APINumber apiNumber) throws IOException {
+        APINumber apiNumber) {
         String originalFileName = file.getOriginalFilename();
+        InputStream inputStream = systemFileService.getInputStream(file);
         // 파일을 분석하여 확장자 추출
-        String contentType = systemFileService.detectFileType(file.getInputStream());
+        String contentType = systemFileService.detectFileType(inputStream);
         String systemFileName = systemFileService.generateUniqueFileName(contentType);
         Path targetPath = systemFileService.getPath(systemFileName);
 
-        Files.copy(
-            file.getInputStream(),
-            targetPath,
-            StandardCopyOption.REPLACE_EXISTING
-        );
+        // 지정된 경로에 파일 복사(저장)
+        systemFileService.createFileInSystemStorage(inputStream, targetPath);
 
         if (systemFileService.isPosixCompliant()) {
             systemFileService.setFilePermissions(targetPath);

@@ -9,7 +9,8 @@ public enum FileErrorCode implements ErrorCode {
     UNSUPPORTED_OS(HttpStatus.BAD_REQUEST, "F002", "지원하지 않는 운영체제입니다."),
     UNSUPPORTED_FILE_TYPE(HttpStatus.BAD_REQUEST, "F003", "지원하지 않는 확장자 타입입니다."),
     MISSING_ID(HttpStatus.BAD_REQUEST, "F004", "요청 대상 API Id 값 혹은 타입 Id 값이 누락되었습니다."),
-    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "F005", "해당 API Id에 대한 유효하지 않은 다운로드 요청입니다. 파라미터 값을 다시 확인해주세요");
+    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "F005", "해당 API Id에 대한 유효하지 않은 다운로드 요청입니다. 파라미터 값을 다시 확인해주세요"),
+    EXCEEDED_ALLOWING_FILE_SIZE(HttpStatus.BAD_REQUEST, "F006", "파일 크기 제한을 초과하였습니다. (10MB 이하 첨부 가능)");
 
     private final HttpStatus status;
     private final String code;

@@ -11,6 +11,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.LocalDateTime;
@@ -35,6 +36,26 @@ public class SystemFileService {
         return Paths.get(baseDirectory, fileName);
     }
 
+    public InputStream getInputStream(MultipartFile file) {
+        try {
+            return file.getInputStream();
+        } catch (IOException e) {
+            throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR, e);
+        }
+    }
+
+    public void createFileInSystemStorage(InputStream inputStream, Path targetPath) {
+        try {
+            Files.copy(
+                inputStream,
+                targetPath,
+                StandardCopyOption.REPLACE_EXISTING
+            );
+        } catch (IOException e) {
+            throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR, e);
+        }
+    }
+
     public MultipartFile findFileInSystem(AttachmentFile attachmentFile) {
         File file = new File(attachmentFile.getFileSource());
         try {
@@ -46,7 +67,7 @@ public class SystemFileService {
                 input
             );
         } catch (IOException e) {
-            throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR);
+            throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR, e);
         }
     }
 
@@ -67,7 +88,8 @@ public class SystemFileService {
             case "image/png" -> "png";
             case "image/gif" -> "gif";
             case "application/msword" -> "doc";
-            case "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> "docx";
+            case "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ->
+                "docx";
             case "application/vnd.ms-excel" -> "xls";
             case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" -> "xlsx";
             case "text/plain" -> "txt";
@@ -78,10 +100,15 @@ public class SystemFileService {
         };
     }
 
-    public String detectFileType(InputStream inputStream) throws IOException {
+    public String detectFileType(InputStream inputStream) {
         // Apache Tika 등을 사용하여 실제 파일 내용 기반으로 타입 탐지
-        Tika tika = new Tika();
-        return tika.detect(inputStream);
+        try {
+            Tika tika = new Tika();
+            return tika.detect(inputStream);
+        } catch (IOException e) {
+            throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR, e);
+        }
+
     }
 
     public String getOsSpecificBaseDirectory() {
@@ -109,7 +136,7 @@ public class SystemFileService {
                 }
             }
         } catch (IOException e) {
-            throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR);
+            throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR, e);
         }
     }
 
@@ -124,7 +151,7 @@ public class SystemFileService {
                 Files.setPosixFilePermissions(path, permissions);
             }
         } catch (IOException e) {
-            throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR);
+            throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR, e);
         }
     }
 }
