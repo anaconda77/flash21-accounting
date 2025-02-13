@@ -99,10 +99,10 @@ class DetailContractRepositoryTest {
     private Contract createAndSaveContract() {
         User savedUser = userRepository.save(createUser());
         Correspondent savedCorrespondent = correspondentRepository.save(createCorrespondent());
-        Category category = new Category(1L, "테스트 카테고리"); // ID는 무시되고 DB에서 자동 생성됨
+        Category category = categoryRepository.save(new Category(null, "테스트 카테고리"));
 
         Contract contract = Contract.builder()
-                .category(category) // ✅ 직접 생성한 카테고리 넣기
+                .category(category)
                 .name("테스트 계약")
                 .contractStartDate(LocalDate.now())
                 .status(Status.ONGOING) // 변경된 ENUM 사용
