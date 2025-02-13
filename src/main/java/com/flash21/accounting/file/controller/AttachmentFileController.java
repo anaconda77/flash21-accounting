@@ -1,7 +1,7 @@
 package com.flash21.accounting.file.controller;
 
 import com.flash21.accounting.category.domain.APINumber;
-import com.flash21.accounting.file.dto.respone.AttachmentFileResponse;
+import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse;
 import com.flash21.accounting.file.service.AttachmentFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ public class AttachmentFileController {
 
 
     @GetMapping
-    public ResponseEntity<AttachmentFileResponse> downloadFile(
+    public ResponseEntity<AttachmentFilesResponse> downloadFile(
         @RequestParam("referenceId") Long referenceId,
         @RequestParam("apiId") Integer apiId,
         @RequestParam(required = false, name = "typeId") Integer typeId

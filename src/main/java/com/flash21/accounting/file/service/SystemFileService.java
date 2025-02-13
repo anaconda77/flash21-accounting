@@ -36,16 +36,19 @@ public class SystemFileService {
         return Paths.get(baseDirectory, fileName);
     }
 
-    @FileOperation
-    public MultipartFile findFileInSystem(AttachmentFile attachmentFile) throws IOException {
+    public MultipartFile findFileInSystem(AttachmentFile attachmentFile) {
         File file = new File(attachmentFile.getFileSource());
-        FileInputStream input = new FileInputStream(file);
-        return new MockMultipartFile(
-            attachmentFile.getFileName(),
-            attachmentFile.getFileName(),
-            attachmentFile.getFileContentType(),
-            input
-        );
+        try {
+            FileInputStream input = new FileInputStream(file);
+            return new MockMultipartFile(
+                attachmentFile.getFileName(),
+                attachmentFile.getFileName(),
+                attachmentFile.getFileContentType(),
+                input
+            );
+        } catch (IOException e) {
+            throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR);
+        }
     }
 
     // 날짜+랜덤 문자열+확장자 형식으로 로컬 스토리지에 저장함
