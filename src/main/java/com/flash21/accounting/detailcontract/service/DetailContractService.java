@@ -1,9 +1,11 @@
 package com.flash21.accounting.detailcontract.service;
 
+import com.flash21.accounting.category.domain.APINumber;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.errorcode.ContractErrorCode;
 import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;
 import com.flash21.accounting.common.exception.errorcode.DetailContractErrorCode;
+import com.flash21.accounting.common.exception.errorcode.FileErrorCode;
 import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
@@ -17,10 +19,15 @@ import com.flash21.accounting.detailcontract.dto.request.UpdateDetailContractReq
 import com.flash21.accounting.detailcontract.dto.response.CreateDetailContractResponse;
 import com.flash21.accounting.detailcontract.dto.response.GetDetailContractResponse;
 import com.flash21.accounting.detailcontract.dto.response.UpdateDetailContractResponse;
+import com.flash21.accounting.file.domain.AttachmentFile;
+import com.flash21.accounting.file.repository.AttachmentFileRepository;
+import com.flash21.accounting.file.service.AttachmentFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +39,8 @@ public class DetailContractService {
     private final OutsourcingRepository outsourcingRepository;
     private final PaymentRepository paymentRepository;
     private final ContractRepository contractRepository;
+    private final AttachmentFileRepository attachmentFileRepository;
+    private final AttachmentFileService attachmentFileService;
 
     // 세부계약서(외주/지출) 생성
     @Transactional
@@ -87,6 +96,18 @@ public class DetailContractService {
             });
         }
 
+        // 첨부파일 처리
+        if (request.getFiles() != null && !request.getFiles().isEmpty()) {
+            for (MultipartFile file : request.getFiles()) {
+                attachmentFileService.saveFile(
+                        savedDetailContract.getDetailContractId(), // referenceId
+                        null, // typeId
+                        file,
+                        APINumber.OUTSOURCING // apiNumber = 4
+                );
+            }
+        }
+
         return CreateDetailContractResponse.of(savedDetailContract.getDetailContractId());
     }
 
@@ -95,7 +116,10 @@ public class DetailContractService {
         DetailContract detailContract = detailContractRepository.findById(detailContractId)
                 .orElseThrow(() -> new AccountingException(DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND));
 
-        return GetDetailContractResponse.from(detailContract);
+        // referenceId로 첨부파일 조회
+        List<AttachmentFile> attachmentFiles = attachmentFileRepository.findByReferenceId(detailContractId);
+
+        return GetDetailContractResponse.of(detailContract, attachmentFiles);
     }
 
     // 기존 세부계약서 수정
@@ -151,6 +175,18 @@ public class DetailContractService {
             });
         }
 
+        // 새로운 파일 추가
+        if (request.getNewFiles() != null && !request.getNewFiles().isEmpty()) {
+            for (MultipartFile file : request.getNewFiles()) {
+                attachmentFileService.saveFile(
+                        detailContractId,
+                        null,
+                        file,
+                        APINumber.OUTSOURCING
+                );
+            }
+        }
+
         return UpdateDetailContractResponse.success();
     }
 
@@ -161,7 +197,10 @@ public class DetailContractService {
             throw new AccountingException(DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND);
         }
         return detailContracts.stream()
-                .map(GetDetailContractResponse::from)
+                .map(detailContract -> {
+                    List<AttachmentFile> attachmentFiles = attachmentFileRepository.findByReferenceId(detailContract.getDetailContractId());
+                    return GetDetailContractResponse.of(detailContract, attachmentFiles);
+                })
                 .collect(Collectors.toList());
     }
 }

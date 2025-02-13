@@ -1,5 +1,6 @@
 package com.flash21.accounting.detailcontract.domain.repository;
 
+import com.flash21.accounting.category.domain.APINumber;
 import com.flash21.accounting.category.domain.Category;
 import com.flash21.accounting.category.repository.CategoryRepository;
 import com.flash21.accounting.contract.entity.Contract;
@@ -16,6 +17,8 @@ import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.detailcontract.domain.repository.DetailContractRepository;
 import com.flash21.accounting.detailcontract.domain.repository.OutsourcingRepository;
 import com.flash21.accounting.detailcontract.domain.repository.PaymentRepository;
+import com.flash21.accounting.file.domain.AttachmentFile;
+import com.flash21.accounting.file.repository.AttachmentFileRepository;
 import com.flash21.accounting.user.User;
 import com.flash21.accounting.user.Role;
 import com.flash21.accounting.user.UserRepository;
@@ -56,6 +59,8 @@ class DetailContractRepositoryTest {
 
     @Autowired
     private CategoryRepository categoryRepository; // 추가: CategoryRepository
+    @Autowired
+    private AttachmentFileRepository attachmentFileRepository;
 
     @Test
     @DisplayName("세부계약서 저장 시 외주/지불정보도 함께 저장되어야 한다")
@@ -94,6 +99,34 @@ class DetailContractRepositoryTest {
         assertThat(foundContracts).hasSize(2);
         assertThat(foundContracts).extracting("content")
                 .containsExactlyInAnyOrder("웹 개발 A", "웹 개발 B");
+    }
+
+    @Test
+    @DisplayName("세부계약서 저장 시 첨부파일 연관관계 테스트")
+    void saveDetailContractWithAttachmentFiles() {
+        // given
+        Contract contract = createAndSaveContract();
+        DetailContract detailContract = createDetailContract(contract);
+        DetailContract savedContract = detailContractRepository.save(detailContract);
+
+        AttachmentFile attachmentFile = new AttachmentFile(
+                detailContract.getDetailContractId(),
+                "test.pdf",
+                "/path/to/file",
+                "application/pdf",
+                APINumber.OUTSOURCING,
+                null
+        );
+
+        // when
+        AttachmentFile savedFile = attachmentFileRepository.save(attachmentFile);
+
+        // then
+        assertThat(savedContract.getDetailContractId()).isNotNull();
+        List<AttachmentFile> foundFiles = attachmentFileRepository
+                .findByReferenceId(savedContract.getDetailContractId());
+        assertThat(foundFiles).hasSize(1);
+        assertThat(foundFiles.get(0).getFileName()).isEqualTo("test.pdf");
     }
 
     private Contract createAndSaveContract() {

@@ -9,11 +9,13 @@ import com.flash21.accounting.detailcontract.service.DetailContractService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,12 +25,13 @@ import java.util.List;
 public class DetailContractController {
     private final DetailContractService detailContractService;
 
-
     // 새로운 세부계약서 등록
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CreateDetailContractResponse> createDetailContract(
-            @Valid @RequestBody CreateDetailContractRequest request
+            @Valid @RequestPart(value = "request") CreateDetailContractRequest request,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
+        request.setFiles(files);
         CreateDetailContractResponse response = detailContractService.createDetailContract(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -43,11 +46,13 @@ public class DetailContractController {
     }
 
     // 기존 세부계약서 수정
-    @PutMapping("/{detailContractId}")
+    @PutMapping(value = "/{detailContractId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UpdateDetailContractResponse> updateDetailContract(
             @PathVariable Long detailContractId,
-            @Valid @RequestBody UpdateDetailContractRequest request
+            @Valid @RequestPart(value = "request") UpdateDetailContractRequest request,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
+        request.setNewFiles(files);
         UpdateDetailContractResponse response = detailContractService.updateDetailContract(detailContractId, request);
         return ResponseEntity.ok(response);
     }

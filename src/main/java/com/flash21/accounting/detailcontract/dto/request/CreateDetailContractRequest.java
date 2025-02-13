@@ -6,10 +6,12 @@ import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@Getter
+@Getter @Setter
 @NoArgsConstructor
 public class CreateDetailContractRequest {
     // 세부계약서 기본 정보
@@ -60,6 +62,8 @@ public class CreateDetailContractRequest {
     // 지출 정보 목록
     private List<Payment> payments;
 
+    private List<MultipartFile> files;
+
     @Getter
     @NoArgsConstructor
     public static class Outsourcing {
@@ -102,7 +106,7 @@ public class CreateDetailContractRequest {
                                        Integer totalPrice, String mainContractContent,
                                        String outsourcingContent, String lastModifyUser,
                                        String history, List<Outsourcing> outsourcings,
-                                       List<Payment> payments) {
+                                       List<Payment> payments, List<MultipartFile> files) {
         this.contractId = contractId;
         this.contractType = contractType;
         this.contractStatus = contractStatus;
@@ -119,5 +123,6 @@ public class CreateDetailContractRequest {
         this.history = history;
         this.outsourcings = outsourcings;
         this.payments = payments;
+        this.files = files;
     }
 }

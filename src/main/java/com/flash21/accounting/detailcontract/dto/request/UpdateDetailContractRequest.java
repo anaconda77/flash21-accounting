@@ -6,10 +6,12 @@ import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@Getter
+@Getter @Setter
 @NoArgsConstructor
 public class UpdateDetailContractRequest {
     @NotBlank(message = "계약 유형은 필수입니다.")
@@ -52,6 +54,7 @@ public class UpdateDetailContractRequest {
 
     private List<Outsourcing> outsourcings;
     private List<Payment> payments;
+    private List<MultipartFile> newFiles; // 새로 추가할 파일들
 
     @Getter
     @NoArgsConstructor
@@ -95,7 +98,7 @@ public class UpdateDetailContractRequest {
                                        Integer totalPrice, String mainContractContent,
                                        String outsourcingContent, String lastModifyUser,
                                        String history, List<Outsourcing> outsourcings,
-                                       List<Payment> payments) {
+                                       List<Payment> payments, List<MultipartFile> newFiles) {
         this.contractType = contractType;
         this.contractStatus = contractStatus;
         this.largeCategory = largeCategory;
@@ -111,5 +114,6 @@ public class UpdateDetailContractRequest {
         this.history = history;
         this.outsourcings = outsourcings;
         this.payments = payments;
+        this.newFiles = newFiles;
     }
 }

@@ -7,7 +7,9 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -88,5 +90,38 @@ public class CreateDetailContractRequestTest {
         // then
         assertThat(violations).isNotEmpty();
         assertThat(violations.size()).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("첨부파일 필드 테스트")
+    void fileFieldsValidationTest() {
+        // given
+        MockMultipartFile file = new MockMultipartFile(
+                "files",
+                "test.pdf",
+                "application/pdf",
+                "test content".getBytes()
+        );
+
+        CreateDetailContractRequest request = CreateDetailContractRequest.builder()
+                .contractId(1L)
+                .contractType("일반")
+                .contractStatus("진행중")
+                .largeCategory("IT")
+                .smallCategory("개발")
+                .content("웹 개발")
+                .quantity(1)
+                .unitPrice(1000000)
+                .supplyPrice(1000000)
+                .totalPrice(1100000)
+                .lastModifyUser("admin")
+                .files(List.of(file))
+                .build();
+
+        // when
+        Set<ConstraintViolation<CreateDetailContractRequest>> violations = validator.validate(request);
+
+        // then
+        assertThat(violations).isEmpty();
     }
 }
