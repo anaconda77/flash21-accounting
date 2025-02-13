@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,15 +24,16 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/correspondent")
 @RequiredArgsConstructor
-public class CorrespondentController {
+public class CorrespondentController implements CorrespondentSpecification {
 
     private final CorrespondentService correspondentService;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CorrespondentResponse> createCorrespondent(
         @RequestPart("json") @Valid CorrespondentRequest correspondentRequest,
-        @RequestPart(name = "file", required = false) MultipartFile file) {
-        return new ResponseEntity<>(correspondentService.createCorrespondent(correspondentRequest, file),
+        @RequestPart(name = "businessRegNumberImage", required = false) MultipartFile businessRegNumberImage,
+        @RequestPart(name = "bankBookImage", required = false) MultipartFile bankBookImage) {
+        return new ResponseEntity<>(correspondentService.createCorrespondent(correspondentRequest, businessRegNumberImage, bankBookImage),
         HttpStatus.CREATED);
     }
 
