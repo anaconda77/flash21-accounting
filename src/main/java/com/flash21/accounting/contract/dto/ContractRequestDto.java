@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Data
 public class ContractRequestDto {
     private Long adminId;  // Integer → Long 변경 (User ID와 일치)
+    private Integer writerSignId;
     private Integer headSignId;
     private Integer directorSignId;
     private String category;

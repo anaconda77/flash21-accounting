@@ -42,12 +42,14 @@ public class Contract {
     private LocalDate contractEndDate;
     private LocalDate workEndDate;
 
-    // 관리자 (User 테이블과 ManyToOne 관계 설정)
     @ManyToOne
     @JoinColumn(name = "admin_id", nullable = false)
     private User admin;
+    
+    @ManyToOne
+    @JoinColumn(name = "writer_sign_id")
+    private Sign writerSign;
 
-    // 서명 관련 (Sign 테이블과 연관)
     @ManyToOne
     @JoinColumn(name = "head_sign_id")
     private Sign headSign;
@@ -59,7 +61,6 @@ public class Contract {
     @Column(nullable = false)
     private Integer categoryId;
 
-    // 계약 상대방 (Correspondent 테이블과 ManyToOne 관계 설정)
     @ManyToOne
     @JoinColumn(name = "correspondent_id", nullable = false)
     private Correspondent correspondent;

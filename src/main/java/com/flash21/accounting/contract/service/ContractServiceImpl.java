@@ -42,12 +42,18 @@ public class ContractServiceImpl implements ContractService {
                 .orElseThrow(() -> new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND));
 
         // headSignId를 Sign 객체로 변환
+        Sign writerSign = requestDto.getWriterSignId() != null ?
+                signRepository.findById(requestDto.getWriterSignId())
+                        .orElseThrow(() -> new AccountingException(ContractErrorCode.INVALID_SIGN))
+                : null;
+
+        // headSignId를 Sign 객체로 변환
         Sign headSign = requestDto.getHeadSignId() != null ?
                 signRepository.findById(requestDto.getHeadSignId())
                         .orElseThrow(() -> new AccountingException(ContractErrorCode.INVALID_SIGN))
                 : null;
 
-        // directorSignId를 Sign 객체로 변환 (선택 사항)
+        // directorSignId를 Sign 객체로 변환
         Sign directorSign = requestDto.getDirectorSignId() != null ?
                 signRepository.findById(requestDto.getDirectorSignId())
                         .orElseThrow(() -> new AccountingException(ContractErrorCode.INVALID_SIGN))
@@ -60,6 +66,7 @@ public class ContractServiceImpl implements ContractService {
         Contract contract = contractRepository.save(
                 Contract.builder()
                         .admin(admin)
+                        .writerSign(writerSign)
                         .headSign(headSign)
                         .directorSign(directorSign)
                         .category(requestDto.getCategory())
