@@ -1,14 +1,19 @@
 package com.flash21.accounting.detailcontract.service;
 
+import com.flash21.accounting.category.domain.APINumber;
 import com.flash21.accounting.category.domain.Category;
 import com.flash21.accounting.category.repository.CategoryRepository;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.errorcode.DetailContractErrorCode;
+import com.flash21.accounting.common.exception.errorcode.FileErrorCode;
 import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.contract.entity.Method;
 import com.flash21.accounting.contract.entity.ProcessStatus;
 import com.flash21.accounting.contract.entity.Status;
 import com.flash21.accounting.correspondent.domain.Correspondent;
+import com.flash21.accounting.file.domain.AttachmentFile;
+import com.flash21.accounting.file.repository.AttachmentFileRepository;
+import com.flash21.accounting.file.service.AttachmentFileService;
 import com.flash21.accounting.user.User;
 import com.flash21.accounting.user.Role;
 import com.flash21.accounting.contract.repository.ContractRepository;
@@ -30,7 +35,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class DetailContractServiceTest {
@@ -62,6 +69,12 @@ public class DetailContractServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private AttachmentFileRepository attachmentFileRepository;
+
+    @Mock
+    private AttachmentFileService attachmentFileService;
 
 
     private CreateDetailContractRequest createRequest;
@@ -173,6 +186,26 @@ public class DetailContractServiceTest {
         // Contract 조회 Mock 설정
         given(contractRepository.findById(1L)).willReturn(Optional.of(savedContract));
 
+        // 첨부파일 Mock 설정
+        MultipartFile mockFile = mock(MultipartFile.class);
+        createRequest.setFiles(List.of(mockFile));
+
+        AttachmentFile mockAttachmentFile = new AttachmentFile(
+                1L, // referenceId
+                "test.pdf", // fileName
+                "/path/to/file", // fileSource
+                "application/pdf", // fileContentType
+                APINumber.OUTSOURCING, // apiNumber
+                null // typeId
+        );
+
+        try {
+            given(attachmentFileService.saveFile(any(), any(), any(), any()))
+                    .willReturn(mockAttachmentFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         DetailContract savedDetailContract = DetailContract.builder()
                 .contract(savedContract)
                 .contractType(createRequest.getContractType())
@@ -189,6 +222,7 @@ public class DetailContractServiceTest {
 
         given(detailContractRepository.save(any(DetailContract.class))).willReturn(savedDetailContract);
 
+
         // when
         CreateDetailContractResponse response = detailContractService.createDetailContract(createRequest);
 
@@ -197,12 +231,28 @@ public class DetailContractServiceTest {
         verify(contractRepository).findById(1L);
         verify(detailContractRepository).save(any(DetailContract.class));
     }
+
+
     @Test
     @DisplayName("세부계약서 조회 성공")
     void getDetailContractSuccess() {
         // given
         Long detailContractId = 1L;
         given(detailContractRepository.findById(detailContractId)).willReturn(Optional.of(detailContract));
+
+        List<AttachmentFile> mockAttachmentFiles = List.of(
+                new AttachmentFile(
+                        detailContractId,  // referenceId
+                        "test.pdf",        // fileName
+                        "/path/to/file",   // fileSource
+                        "application/pdf", // fileContentType
+                        APINumber.OUTSOURCING, // apiNumber
+                        null               // typeId
+                )
+        );
+
+        given(attachmentFileRepository.findByReferenceId(detailContractId))
+                .willReturn(mockAttachmentFiles);
 
         // when
         var response = detailContractService.getDetailContract(detailContractId);
@@ -211,6 +261,10 @@ public class DetailContractServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.getContractType()).isEqualTo("일반");
         assertThat(response.getContent()).isEqualTo("웹 개발");
+
+        // 첨부파일 검증 추가
+        assertThat(response.getAttachmentFiles()).hasSize(1);
+        assertThat(response.getAttachmentFiles().get(0).getFileName()).isEqualTo("test.pdf");
     }
 
     @Test
@@ -274,6 +328,30 @@ public class DetailContractServiceTest {
         given(detailContractRepository.findByContract_ContractId(parentContractId))
                 .willReturn(List.of(detailContract1, detailContract2));
 
+        // 첨부파일 Mock 설정 추가
+        AttachmentFile mockFile1 = new AttachmentFile(
+                1L,                    // referenceId
+                "test1.pdf",          // fileName
+                "/path/to/file1",     // fileSource
+                "application/pdf",     // fileContentType
+                APINumber.OUTSOURCING, // apiNumber
+                null                  // typeId
+        );
+
+        AttachmentFile mockFile2 = new AttachmentFile(
+                2L,                    // referenceId
+                "test2.pdf",          // fileName
+                "/path/to/file2",     // fileSource
+                "application/pdf",     // fileContentType
+                APINumber.OUTSOURCING, // apiNumber
+                null                  // typeId
+        );
+
+        // 각 DetailContract의 ID에 대한 첨부파일 Mock 설정
+        given(attachmentFileRepository.findByReferenceId(any()))
+                .willReturn(List.of(mockFile1))
+                .willReturn(List.of(mockFile2));
+
         // when
         List<GetDetailContractResponse> responses = detailContractService.getDetailContractByContractId(parentContractId);
 
@@ -282,7 +360,15 @@ public class DetailContractServiceTest {
         assertThat(responses).extracting("content")
                 .containsExactlyInAnyOrder("웹 개발 A", "웹 개발 B");
 
+        // 첨부파일 검증 추가
+        assertThat(responses.get(0).getAttachmentFiles()).hasSize(1);
+        assertThat(responses.get(1).getAttachmentFiles()).hasSize(1);
+        assertThat(responses.get(0).getAttachmentFiles().get(0).getFileName()).isEqualTo("test1.pdf");
+        assertThat(responses.get(1).getAttachmentFiles().get(0).getFileName()).isEqualTo("test2.pdf");
+
         verify(detailContractRepository).findByContract_ContractId(parentContractId);
+        verify(detailContractRepository).findByContract_ContractId(parentContractId); verify(attachmentFileRepository, times(2)).findByReferenceId(any());
+
     }
 
     @Test
@@ -308,6 +394,30 @@ public class DetailContractServiceTest {
         Long detailContractId = 1L;
         given(detailContractRepository.findById(detailContractId)).willReturn(Optional.of(detailContract));
 
+        // 첨부파일 Mock 설정
+        MultipartFile mockNewFile = mock(MultipartFile.class);
+        updateRequest.setNewFiles(List.of(mockNewFile));
+
+        AttachmentFile mockAttachmentFile = new AttachmentFile(
+                detailContractId,
+                "new_file.pdf",
+                "/path/to/new/file",
+                "application/pdf",
+                APINumber.OUTSOURCING,
+                null
+        );
+
+        try {
+            given(attachmentFileService.saveFile(
+                    eq(detailContractId),
+                    isNull(),
+                    any(MultipartFile.class),
+                    eq(APINumber.OUTSOURCING)
+            )).willReturn(mockAttachmentFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         // when
         UpdateDetailContractResponse response = detailContractService.updateDetailContract(detailContractId, updateRequest);
 
@@ -315,6 +425,16 @@ public class DetailContractServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.getMessage()).isEqualTo("수정이 완료되었습니다");
         verify(detailContractRepository).findById(detailContractId);
+        try {
+            verify(attachmentFileService).saveFile(
+                    eq(detailContractId),
+                    isNull(),
+                    any(MultipartFile.class),
+                    eq(APINumber.OUTSOURCING)
+            );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -324,8 +444,20 @@ public class DetailContractServiceTest {
         Long detailContractId = 999L;
         given(detailContractRepository.findById(detailContractId)).willReturn(Optional.empty());
 
+        // 첨부파일 설정
+        MultipartFile mockNewFile = mock(MultipartFile.class);
+        updateRequest.setNewFiles(List.of(mockNewFile));
+
         // when & then
         assertThatThrownBy(() -> detailContractService.updateDetailContract(detailContractId, updateRequest))
-                .isInstanceOf(AccountingException.class);
+                .isInstanceOf(AccountingException.class)
+                .hasFieldOrPropertyWithValue("errorCode", DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND);
+
+        // 파일 저장 시도하지 않았음을 검증
+        try {
+            verify(attachmentFileService, never()).saveFile(any(), any(), any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

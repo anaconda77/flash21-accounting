@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -70,13 +71,29 @@ public class DetailContractControllerTest {
                 .lastModifyUser("admin")
                 .build();
 
+        // 파일 Mock 생성
+        MockMultipartFile file = new MockMultipartFile(
+                "files",
+                "test.pdf",
+                "application/pdf",
+                "test file content".getBytes()
+        );
+
+        // JSON request를 MultipartFile로 변환
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                "application/json",
+                objectMapper.writeValueAsString(request).getBytes()
+        );
+
         given(detailContractService.createDetailContract(any(CreateDetailContractRequest.class)))
                 .willReturn(CreateDetailContractResponse.of(1L));
 
         // when & then
-        mockMvc.perform(post("/api/detail-contract")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(multipart("/api/detail-contract")
+                        .file(file)
+                        .file(requestPart))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.contractId").exists());
@@ -91,6 +108,13 @@ public class DetailContractControllerTest {
                 .detailContractId(detailContractId)
                 .contractType("일반")
                 .content("웹 개발")
+                .attachmentFiles(List.of(
+                        GetDetailContractResponse.FileResponse.builder()
+                                .id(1L)
+                                .fileName("test.pdf")
+                                .fileContentType("application/pdf")
+                                .build()
+                ))
                 .build();
 
         given(detailContractService.getDetailContract(detailContractId)).willReturn(response);
@@ -100,7 +124,10 @@ public class DetailContractControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.detailContractId").value(detailContractId))
                 .andExpect(jsonPath("$.contractType").value("일반"))
-                .andExpect(jsonPath("$.content").value("웹 개발"));
+                .andExpect(jsonPath("$.content").value("웹 개발"))
+                .andExpect(jsonPath("$.attachmentFiles").isArray())
+                .andExpect(jsonPath("$.attachmentFiles[0].fileName").value("test.pdf"))
+                .andExpect(jsonPath("$.attachmentFiles[0].fileContentType").value("application/pdf"));
     }
 
     @Test
@@ -121,13 +148,33 @@ public class DetailContractControllerTest {
                 .lastModifyUser("admin")
                 .build();
 
+        // 새로운 파일 Mock 생성
+        MockMultipartFile newFile = new MockMultipartFile(
+                "files",
+                "updated.pdf",
+                "application/pdf",
+                "updated file content".getBytes()
+        );
+
+        // JSON request를 MultipartFile로 변환
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                "application/json",
+                objectMapper.writeValueAsString(request).getBytes()
+        );
+
         given(detailContractService.updateDetailContract(eq(detailContractId), any(UpdateDetailContractRequest.class)))
                 .willReturn(UpdateDetailContractResponse.success());
 
         // when & then
-        mockMvc.perform(put("/api/detail-contract/{detailContractId}", detailContractId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(multipart("/api/detail-contract/{detailContractId}", detailContractId)
+                        .file(newFile)
+                        .file(requestPart)
+                        .with(req -> {
+                            req.setMethod("PUT");
+                            return req;
+                        }))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("수정이 완료되었습니다"));
     }
@@ -143,12 +190,26 @@ public class DetailContractControllerTest {
                         .contractId(parentContractId)
                         .contractType("일반")
                         .content("웹 개발 A")
+                        .attachmentFiles(List.of(
+                                GetDetailContractResponse.FileResponse.builder()
+                                        .id(1L)
+                                        .fileName("testA.pdf")
+                                        .fileContentType("application/pdf")
+                                        .build()
+                        ))
                         .build(),
                 GetDetailContractResponse.builder()
                         .detailContractId(2L)
                         .contractId(parentContractId)
                         .contractType("외주")
                         .content("웹 개발 B")
+                        .attachmentFiles(List.of(
+                                GetDetailContractResponse.FileResponse.builder()
+                                        .id(2L)
+                                        .fileName("testB.pdf")
+                                        .fileContentType("application/pdf")
+                                        .build()
+                        ))
                         .build()
         );
 
@@ -162,8 +223,10 @@ public class DetailContractControllerTest {
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].contractId").value(parentContractId))
                 .andExpect(jsonPath("$[0].content").value("웹 개발 A"))
+                .andExpect(jsonPath("$[0].attachmentFiles[0].fileName").value("testA.pdf"))
                 .andExpect(jsonPath("$[1].contractId").value(parentContractId))
-                .andExpect(jsonPath("$[1].content").value("웹 개발 B"));
+                .andExpect(jsonPath("$[1].content").value("웹 개발 B"))
+                .andExpect(jsonPath("$[1].attachmentFiles[0].fileName").value("testB.pdf"));
     }
 
     @Test
