@@ -1,16 +1,16 @@
 package com.flash21.accounting.file.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 import com.flash21.accounting.category.domain.APINumber;
 import com.flash21.accounting.file.domain.AttachmentFile;
+import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse;
+import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse.AttachmentFileResponse;
 import com.flash21.accounting.file.repository.AttachmentFileRepository;
 import com.flash21.accounting.fixture.file.AttachmentFileFixture;
 import jakarta.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,13 +49,13 @@ class AttachmentFileServiceTest {
     @DisplayName("로컬 스토리지에서 파일 가져오기 테스트, 파일명: demo.png")
     @Test
     void getAttachmentFile() throws IOException {
-        List<MultipartFile> files = attachmentFileService.getFiles(attachmentFile.getReferenceId(),
+        AttachmentFilesResponse files = attachmentFileService.getFiles(attachmentFile.getReferenceId(),
             attachmentFile.getApinumber());
-        MultipartFile multipartFile = files.get(0);
+        AttachmentFileResponse multipartFile = files.files().getFirst();
 
-        assertThat(multipartFile.getOriginalFilename()).isEqualTo("demo");
-        assertThat(multipartFile.getContentType()).isEqualTo("image/png");
-        assertThat(multipartFile.getSize()).isEqualTo(812106L);
+        assertThat(multipartFile.fileName()).isEqualTo("demo");
+        assertThat(multipartFile.contentType()).isEqualTo("image/png");
+        assertThat(multipartFile.fileSize()).isEqualTo(812106L);
     }
 
     @DisplayName("로컬 스토리지에 파일 저장하기 테스트, 저장할 파일명: newFile.txt")
@@ -73,13 +73,13 @@ class AttachmentFileServiceTest {
         AttachmentFile createdAttachmentFile = attachmentFileService.saveFile(2L, null, file,
             APINumber.CONTRACT);;
         try {
-            List<MultipartFile> files = attachmentFileService.getFiles(
+            AttachmentFilesResponse files = attachmentFileService.getFiles(
                 createdAttachmentFile.getReferenceId(), createdAttachmentFile.getApinumber());
-            assertThat(files.size()).isEqualTo(1);
+            assertThat(files.files().size()).isEqualTo(1);
 
-            MultipartFile multipartFile = files.get(0);
-            assertThat(multipartFile.getOriginalFilename()).isEqualTo("newFile");
-            assertThat(multipartFile.getContentType()).isEqualTo("text/plain");
+            AttachmentFileResponse multipartFile = files.files().getFirst();
+            assertThat(multipartFile.fileName()).isEqualTo("newFile");
+            assertThat(multipartFile.contentType()).isEqualTo("text/plain");
         } finally {
             boolean deleteFile = new File(createdAttachmentFile.getFileSource()).delete();
             assertThat(deleteFile).isTrue();
