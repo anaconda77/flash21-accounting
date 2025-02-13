@@ -1,5 +1,6 @@
 package com.flash21.accounting.contract.dto;
 
+import com.flash21.accounting.contract.entity.Status;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import java.time.LocalDate;
 public class ContractResponseDto {
     private Long contractId;
     private String category;
-    private String status;
+    private Status status;
     private String name;
     private LocalDate contractStartDate;
     private LocalDate contractEndDate;

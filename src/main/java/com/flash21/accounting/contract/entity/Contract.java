@@ -27,8 +27,11 @@ public class Contract {
     @Column(nullable = false, length = 20)
     private String category;
 
-    @Column(nullable = false, length = 6)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    @Builder.Default
+    private Status status = Status.TEMPORARY; // 기본값 설정
+
 
     @Column(nullable = false, length = 20)
     private String name;
@@ -50,7 +53,7 @@ public class Contract {
     private Sign headSign;
 
     @ManyToOne
-    @JoinColumn(name = "director_sign_id")  // 🔹 @Column 제거하고 @JoinColumn 사용
+    @JoinColumn(name = "director_sign_id")
     private Sign directorSign;
 
     @Column(nullable = false)
@@ -63,22 +66,4 @@ public class Contract {
 
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
     private List<DetailContract> detailContracts = new ArrayList<>();
-
-    // 빌더 패턴을 위한 생성자 추가
-    @Builder
-    public Contract(User admin, Sign headSign, Sign directorSign, String category, String status,
-                    String name, LocalDate contractStartDate, LocalDate contractEndDate, LocalDate workEndDate,
-                    Integer categoryId, Correspondent correspondent) {
-        this.admin = admin;
-        this.headSign = headSign; // 🔹 Integer → Sign 변경
-        this.directorSign = directorSign; // 🔹 Integer → Sign 변경
-        this.category = category;
-        this.status = status;
-        this.name = name;
-        this.contractStartDate = contractStartDate;
-        this.contractEndDate = contractEndDate;
-        this.workEndDate = workEndDate;
-        this.categoryId = categoryId;
-        this.correspondent = correspondent;
-    }
 }

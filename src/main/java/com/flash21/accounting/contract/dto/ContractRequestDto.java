@@ -1,5 +1,6 @@
 package com.flash21.accounting.contract.dto;
 
+import com.flash21.accounting.contract.entity.Status;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -10,7 +11,7 @@ public class ContractRequestDto {
     private Integer headSignId;
     private Integer directorSignId;
     private String category;
-    private String status;
+    private Status status;
     private String name;
     private LocalDate contractStartDate;
     private LocalDate contractEndDate;
