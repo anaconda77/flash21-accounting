@@ -1,11 +1,13 @@
 package com.flash21.accounting.detailcontract.domain.entity;
 
 import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.file.domain.AttachmentFile;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -71,6 +73,10 @@ public class DetailContract {
 
     @OneToMany(mappedBy = "detailContract", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Payment> payments = new ArrayList<>();
+
+//    @OneToMany(mappedBy = "detailContract", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<AttachmentFile> attachmentFiles = new ArrayList<>();
+
 
     @Builder
     public DetailContract(Contract contract, String contractType, String contractStatus,

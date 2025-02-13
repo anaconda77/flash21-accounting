@@ -3,10 +3,12 @@ package com.flash21.accounting.detailcontract.dto.response;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
 import com.flash21.accounting.detailcontract.domain.entity.Outsourcing;
 import com.flash21.accounting.detailcontract.domain.entity.Payment;
+import com.flash21.accounting.file.domain.AttachmentFile;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +38,55 @@ public class GetDetailContractResponse {
 
     // 지출 정보 목록
     private List<PaymentResponse> payments;
+
+    // 첨부파일
+    private List<FileResponse> attachmentFiles;
+
+    @Getter
+    @Builder
+    public static class FileResponse {
+        private Long id;
+        private String fileName;
+        private String fileContentType;
+
+        public static FileResponse from(AttachmentFile file) {
+            return FileResponse.builder()
+                    .id(file.getId())
+                    .fileName(file.getFileName())
+                    .fileContentType(file.getFileContentType())
+                    .build();
+        }
+    }
+
+    public static GetDetailContractResponse of (DetailContract detailContract,  List<AttachmentFile> attachmentFiles) {
+        return GetDetailContractResponse.builder()
+                .detailContractId(detailContract.getDetailContractId())
+                .contractId(detailContract.getContract().getContractId())
+                .contractType(detailContract.getContractType())
+                .contractStatus(detailContract.getContractStatus())
+                .largeCategory(detailContract.getLargeCategory())
+                .smallCategory(detailContract.getSmallCategory())
+                .content(detailContract.getContent())
+                .quantity(detailContract.getQuantity())
+                .unitPrice(detailContract.getUnitPrice())
+                .supplyPrice(detailContract.getSupplyPrice())
+                .totalPrice(detailContract.getTotalPrice())
+                .mainContractContent(detailContract.getMainContractContent())
+                .outsourcingContent(detailContract.getOutsourcingContent())
+                .registerDate(detailContract.getRegisterDate())
+                .lastModifyUser(detailContract.getLastModifyUser())
+                .history(detailContract.getHistory())
+                .outsourcings(detailContract.getOutsourcings().stream()
+                        .map(OutsourcingResponse::from)
+                        .collect(Collectors.toList()))
+                .payments(detailContract.getPayments().stream()
+                        .map(PaymentResponse::from)
+                        .collect(Collectors.toList()))
+                .attachmentFiles(attachmentFiles.stream()
+                        .map(FileResponse::from)
+                        .collect(Collectors.toList()))
+                .build();
+    }
 
     @Getter
     @Builder
@@ -77,30 +128,4 @@ public class GetDetailContractResponse {
         }
     }
 
-    public static GetDetailContractResponse from(DetailContract detailContract) {
-        return GetDetailContractResponse.builder()
-                .detailContractId(detailContract.getDetailContractId())
-                .contractId(detailContract.getContract().getContractId())
-                .contractType(detailContract.getContractType())
-                .contractStatus(detailContract.getContractStatus())
-                .largeCategory(detailContract.getLargeCategory())
-                .smallCategory(detailContract.getSmallCategory())
-                .content(detailContract.getContent())
-                .quantity(detailContract.getQuantity())
-                .unitPrice(detailContract.getUnitPrice())
-                .supplyPrice(detailContract.getSupplyPrice())
-                .totalPrice(detailContract.getTotalPrice())
-                .mainContractContent(detailContract.getMainContractContent())
-                .outsourcingContent(detailContract.getOutsourcingContent())
-                .registerDate(detailContract.getRegisterDate())
-                .lastModifyUser(detailContract.getLastModifyUser())
-                .history(detailContract.getHistory())
-                .outsourcings(detailContract.getOutsourcings().stream()
-                        .map(OutsourcingResponse::from)
-                        .collect(Collectors.toList()))
-                .payments(detailContract.getPayments().stream()
-                        .map(PaymentResponse::from)
-                        .collect(Collectors.toList()))
-                .build();
-    }
 }
