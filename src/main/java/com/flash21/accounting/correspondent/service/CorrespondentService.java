@@ -31,6 +31,13 @@ public class CorrespondentService {
         return convertToDto(correspondent);
     }
 
+    public CorrespondentResponse getCorrespondent(Long correspondentId) {
+        Correspondent correspondent = correspondentRepository.findById(correspondentId)
+            .orElseThrow(
+                () -> AccountingException.of(CorrespondentErrorCode.NOT_FOUND_CORRESPONDENT));
+        return convertToDto(correspondent);
+    }
+
     @ReflectionOperation
     public List<CorrespondentResponse> getCorrespondents(String searchCondition,
         String searchValue) {
