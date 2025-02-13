@@ -17,16 +17,12 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class Contract {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long contractId;
-
-    @Column(nullable = false, length = 20)
-    private String category;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
@@ -65,7 +61,7 @@ public class Contract {
 
     @ManyToOne
     @JoinColumn(name = "category_id")
-    private Category categoryId;
+    private Category category;
 
     @ManyToOne
     @JoinColumn(name = "correspondent_id", nullable = false)
@@ -73,4 +69,25 @@ public class Contract {
 
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
     private List<DetailContract> detailContracts = new ArrayList<>();
+
+    @Builder
+    public Contract(Long contractId, Status status, ProcessStatus processStatus,
+                    String name, LocalDate contractStartDate, LocalDate contractEndDate, LocalDate workEndDate,
+                    User admin, Sign writerSign, Sign headSign, Sign directorSign,
+                    Category category, Correspondent correspondent, List<DetailContract> detailContracts) {
+        this.contractId = contractId;
+        this.category = category;
+        this.status = status != null ? status : Status.TEMPORARY;
+        this.processStatus = processStatus != null ? processStatus : ProcessStatus.AWAITING_PAYMENT;
+        this.name = name;
+        this.contractStartDate = contractStartDate;
+        this.contractEndDate = contractEndDate;
+        this.workEndDate = workEndDate;
+        this.admin = admin;
+        this.writerSign = writerSign;
+        this.headSign = headSign;
+        this.directorSign = directorSign;
+        this.correspondent = correspondent;
+        this.detailContracts = detailContracts != null ? detailContracts : new ArrayList<>();
+    }
 }

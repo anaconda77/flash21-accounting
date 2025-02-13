@@ -77,7 +77,7 @@ public class ContractServiceImpl implements ContractService {
                         .writerSign(writerSign)
                         .headSign(headSign)
                         .directorSign(directorSign)
-                        .category(category.getName())
+                        .category(category)
                         .status(status)
                         .processStatus(processStatus)
                         .name(requestDto.getName())
@@ -119,7 +119,7 @@ public class ContractServiceImpl implements ContractService {
         if (requestDto.getCategoryId() != null) {
             Category category = categoryRepository.findById(requestDto.getCategoryId().longValue())
                     .orElseThrow(() -> new AccountingException(CategoryErrorCode.NOT_FOUND_CATEGORY));
-            contract.setCategory(category.getName());
+            contract.setCategory(category);
         }
 
 
@@ -155,7 +155,7 @@ public class ContractServiceImpl implements ContractService {
         if (requestDto.getCategoryId() != null) {
             Category category = categoryRepository.findById(requestDto.getCategoryId().longValue())
                     .orElseThrow(() -> new AccountingException(CategoryErrorCode.NOT_FOUND_CATEGORY));
-            contract.setCategory(category.getName());
+            contract.setCategory(category);
         }
     }
 
@@ -164,6 +164,7 @@ public class ContractServiceImpl implements ContractService {
     // ContractResponseDto로 변환할 때 Correspondent의 ID 포함
     private ContractResponseDto toResponseDto(Contract contract) {
         return new ContractResponseDto(
+                contract.getAdmin(),
                 contract.getContractId(),
                 contract.getCategory(),
                 contract.getStatus(),
@@ -172,7 +173,7 @@ public class ContractServiceImpl implements ContractService {
                 contract.getContractStartDate(),
                 contract.getContractEndDate(),
                 contract.getWorkEndDate(),
-                contract.getCorrespondent() != null ? contract.getCorrespondent().getId() : null // Correspondent ID 포함
+                contract.getCorrespondent()
         );
     }
 
