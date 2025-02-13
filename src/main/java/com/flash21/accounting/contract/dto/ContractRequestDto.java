@@ -1,5 +1,7 @@
 package com.flash21.accounting.contract.dto;
 
+import com.flash21.accounting.contract.entity.ProcessStatus;
+import com.flash21.accounting.contract.entity.Status;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -7,10 +9,12 @@ import java.time.LocalDate;
 @Data
 public class ContractRequestDto {
     private Long adminId;  // Integer → Long 변경 (User ID와 일치)
+    private Integer writerSignId;
     private Integer headSignId;
     private Integer directorSignId;
     private String category;
-    private String status;
+    private Status status;
+    private ProcessStatus processStatus;
     private String name;
     private LocalDate contractStartDate;
     private LocalDate contractEndDate;

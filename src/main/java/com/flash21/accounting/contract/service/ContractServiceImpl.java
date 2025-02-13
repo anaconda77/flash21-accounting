@@ -1,10 +1,13 @@
 package com.flash21.accounting.contract.service;
 
+import com.flash21.accounting.category.repository.CategoryRepository;
 import com.flash21.accounting.common.exception.AccountingException;
-import com.flash21.accounting.common.exception.errorcode.ContractErrorCode;
+import com.flash21.accounting.common.exception.errorcode.*;
 import com.flash21.accounting.contract.dto.ContractRequestDto;
 import com.flash21.accounting.contract.dto.ContractResponseDto;
 import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.contract.entity.ProcessStatus;
+import com.flash21.accounting.contract.entity.Status;
 import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
@@ -13,6 +16,7 @@ import com.flash21.accounting.sign.repository.SignRepository;
 import com.flash21.accounting.user.User;
 import com.flash21.accounting.user.UserRepository;
 import jakarta.transaction.Transactional;
+import com.flash21.accounting.category.domain.Category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +31,7 @@ public class ContractServiceImpl implements ContractService {
     private final UserRepository userRepository;
     private final CorrespondentRepository correspondentRepository;
     private final SignRepository signRepository;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public ContractResponseDto createContract(ContractRequestDto requestDto) {
@@ -34,36 +39,51 @@ public class ContractServiceImpl implements ContractService {
 
         // adminId를 User 객체로 변환
         User admin = userRepository.findById(requestDto.getAdminId())
-                .orElseThrow(() -> new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND));
+                .orElseThrow(() -> new AccountingException(UserErrorCode.USER_NOT_FOUND));
 
         // correspondentId를 Correspondent 객체로 변환
         Correspondent correspondent = correspondentRepository.findById(Long.valueOf(requestDto.getCorrespondentId()))
-                .orElseThrow(() -> new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND));
+                .orElseThrow(() -> new AccountingException(CorrespondentErrorCode.NOT_FOUND_CORRESPONDENT));
+
+        // writerSignId를 Sign 객체로 변환
+        Sign writerSign = requestDto.getWriterSignId() != null ?
+                signRepository.findById(requestDto.getWriterSignId())
+                        .orElseThrow(() -> new AccountingException(SignErrorCode.SIGN_NOT_FOUND))
+                : null;
 
         // headSignId를 Sign 객체로 변환
         Sign headSign = requestDto.getHeadSignId() != null ?
                 signRepository.findById(requestDto.getHeadSignId())
-                        .orElseThrow(() -> new AccountingException(ContractErrorCode.INVALID_SIGN))
+                        .orElseThrow(() -> new AccountingException(SignErrorCode.SIGN_NOT_FOUND))
                 : null;
 
-        // directorSignId를 Sign 객체로 변환 (선택 사항)
+        // directorSignId를 Sign 객체로 변환
         Sign directorSign = requestDto.getDirectorSignId() != null ?
                 signRepository.findById(requestDto.getDirectorSignId())
-                        .orElseThrow(() -> new AccountingException(ContractErrorCode.INVALID_SIGN))
+                        .orElseThrow(() -> new AccountingException(SignErrorCode.SIGN_NOT_FOUND))
                 : null;
+
+        Category category = categoryRepository.findById(requestDto.getCategoryId().longValue())
+                .orElseThrow(() -> new AccountingException(CategoryErrorCode.NOT_FOUND_CATEGORY));
+
+        // Status 및 ProcessStatus 검증 후 변환
+        Status status = parseStatus(requestDto.getStatus().toString());
+        ProcessStatus processStatus = parseProcessStatus(requestDto.getProcessStatus().toString());
+
 
         Contract contract = contractRepository.save(
                 Contract.builder()
                         .admin(admin)
+                        .writerSign(writerSign)
                         .headSign(headSign)
                         .directorSign(directorSign)
-                        .category(requestDto.getCategory())
-                        .status(requestDto.getStatus())
+                        .category(category.getName())
+                        .status(status)
+                        .processStatus(processStatus)
                         .name(requestDto.getName())
                         .contractStartDate(requestDto.getContractStartDate())
                         .contractEndDate(requestDto.getContractEndDate())
                         .workEndDate(requestDto.getWorkEndDate())
-                        .categoryId(requestDto.getCategoryId())
                         .correspondent(correspondent)
                         .build()
         );
@@ -96,6 +116,14 @@ public class ContractServiceImpl implements ContractService {
             contract.setCorrespondent(correspondent);
         }
 
+        if (requestDto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(requestDto.getCategoryId().longValue())
+                    .orElseThrow(() -> new AccountingException(CategoryErrorCode.NOT_FOUND_CATEGORY));
+            contract.setCategory(category.getName());
+        }
+
+
+
         updateFields(contract, requestDto);
 
         return toResponseDto(contract);
@@ -118,14 +146,20 @@ public class ContractServiceImpl implements ContractService {
     }
 
     private void updateFields(Contract contract, ContractRequestDto requestDto) {
-        if (requestDto.getCategory() != null) contract.setCategory(requestDto.getCategory());
-        if (requestDto.getStatus() != null) contract.setStatus(requestDto.getStatus());
+        if (requestDto.getStatus() != null) contract.setStatus(parseStatus(requestDto.getStatus().toString()));
+        if (requestDto.getProcessStatus() != null) contract.setProcessStatus(parseProcessStatus(requestDto.getProcessStatus().toString()));
         if (requestDto.getName() != null) contract.setName(requestDto.getName());
         if (requestDto.getContractStartDate() != null) contract.setContractStartDate(requestDto.getContractStartDate());
         if (requestDto.getContractEndDate() != null) contract.setContractEndDate(requestDto.getContractEndDate());
         if (requestDto.getWorkEndDate() != null) contract.setWorkEndDate(requestDto.getWorkEndDate());
-        if (requestDto.getCategoryId() != null) contract.setCategoryId(requestDto.getCategoryId());
+        if (requestDto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(requestDto.getCategoryId().longValue())
+                    .orElseThrow(() -> new AccountingException(CategoryErrorCode.NOT_FOUND_CATEGORY));
+            contract.setCategory(category.getName());
+        }
     }
+
+
 
     // ContractResponseDto로 변환할 때 Correspondent의 ID 포함
     private ContractResponseDto toResponseDto(Contract contract) {
@@ -133,6 +167,7 @@ public class ContractServiceImpl implements ContractService {
                 contract.getContractId(),
                 contract.getCategory(),
                 contract.getStatus(),
+                contract.getProcessStatus(),
                 contract.getName(),
                 contract.getContractStartDate(),
                 contract.getContractEndDate(),
@@ -146,4 +181,21 @@ public class ContractServiceImpl implements ContractService {
             throw new AccountingException(ContractErrorCode.REQUIRED_FIELD_MISSING);
         }
     }
+
+    private Status parseStatus(String status) {
+        try {
+            return Status.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new AccountingException(ContractErrorCode.INVALID_STATUS);
+        }
+    }
+
+    private ProcessStatus parseProcessStatus(String processStatus) {
+        try {
+            return ProcessStatus.valueOf(processStatus.toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new AccountingException(ContractErrorCode.INVALID_PROCESS_STATUS);
+        }
+    }
+
 }
