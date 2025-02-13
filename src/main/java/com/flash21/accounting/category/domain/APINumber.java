@@ -1,5 +1,6 @@
 package com.flash21.accounting.category.domain;
 
+import java.util.Objects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -14,4 +15,23 @@ public enum APINumber {
 
     private final Integer apiNumber;
 
+    public static boolean isNecessaryTypeId(APINumber apinumber) {
+        if (apinumber.equals(CORRESPONDENT)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static APINumber getAPINumber(Integer apiNumber) {
+        if (apiNumber == null) {
+            return null;
+        }
+
+        for (APINumber apinumber : APINumber.values()) {
+            if (Objects.equals(apinumber.apiNumber, apiNumber)) {
+                return apinumber;
+            }
+        }
+        return null;
+    }
 }
