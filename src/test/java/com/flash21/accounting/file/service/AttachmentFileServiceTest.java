@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.flash21.accounting.category.domain.APINumber;
 import com.flash21.accounting.file.domain.AttachmentFile;
+import com.flash21.accounting.file.dto.respone.AttachmentFileResponse;
 import com.flash21.accounting.file.repository.AttachmentFileRepository;
 import com.flash21.accounting.fixture.file.AttachmentFileFixture;
 import jakarta.transaction.Transactional;
@@ -49,9 +50,9 @@ class AttachmentFileServiceTest {
     @DisplayName("로컬 스토리지에서 파일 가져오기 테스트, 파일명: demo.png")
     @Test
     void getAttachmentFile() throws IOException {
-        List<MultipartFile> files = attachmentFileService.getFiles(attachmentFile.getReferenceId(),
+        AttachmentFileResponse files = attachmentFileService.getFiles(attachmentFile.getReferenceId(),
             attachmentFile.getApinumber());
-        MultipartFile multipartFile = files.get(0);
+        MultipartFile multipartFile = files.files().getFirst();
 
         assertThat(multipartFile.getOriginalFilename()).isEqualTo("demo");
         assertThat(multipartFile.getContentType()).isEqualTo("image/png");
@@ -73,11 +74,11 @@ class AttachmentFileServiceTest {
         AttachmentFile createdAttachmentFile = attachmentFileService.saveFile(2L, null, file,
             APINumber.CONTRACT);;
         try {
-            List<MultipartFile> files = attachmentFileService.getFiles(
+            AttachmentFileResponse files = attachmentFileService.getFiles(
                 createdAttachmentFile.getReferenceId(), createdAttachmentFile.getApinumber());
-            assertThat(files.size()).isEqualTo(1);
+            assertThat(files.files().size()).isEqualTo(1);
 
-            MultipartFile multipartFile = files.get(0);
+            MultipartFile multipartFile = files.files().getFirst();
             assertThat(multipartFile.getOriginalFilename()).isEqualTo("newFile");
             assertThat(multipartFile.getContentType()).isEqualTo("text/plain");
         } finally {

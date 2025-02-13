@@ -5,6 +5,7 @@ import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.aop.FileOperation;
 import com.flash21.accounting.common.exception.errorcode.FileErrorCode;
 import com.flash21.accounting.file.domain.AttachmentFile;
+import com.flash21.accounting.file.dto.respone.AttachmentFileResponse;
 import com.flash21.accounting.file.repository.AttachmentFileRepository;
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,6 +21,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -64,10 +66,36 @@ public class AttachmentFileService {
     }
 
     @FileOperation
-    public List<MultipartFile> getFiles(Long referenceId, APINumber apiNumber) throws IOException {
+    public AttachmentFileResponse getFiles(Long referenceId, APINumber apiNumber, Integer typeId) {
+        if (apiNumber == null) {
+            throw AccountingException.of(FileErrorCode.MISSING_ID);
+        }
+
+        // TypeId로 구분이 필요없는 API의 첨부파일인지?
+        if (!APINumber.isNecessaryTypeId(apiNumber)) {
+            return getFiles(referenceId, apiNumber);
+        }
+
         List<AttachmentFile> candidates = attachmentFileRepository.findByReferenceId(referenceId);
-        return candidates.stream()
-            .filter(attachmentFile -> attachmentFile.getApinumber().equals(apiNumber))
+        MultipartFile multipartFile = candidates.stream()
+            .filter(attachmentFile -> checkApiIdAndTypeId(attachmentFile, apiNumber, typeId))
+            .map(attachmentFile -> {
+                try {
+                    return systemFileService.findFileInSystem(attachmentFile);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).findFirst()
+            .orElseThrow(() -> AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR));
+
+        return new AttachmentFileResponse(List.of((multipartFile)));
+    }
+
+    @FileOperation
+    public AttachmentFileResponse getFiles(Long referenceId, APINumber apiNumber) {
+        List<AttachmentFile> candidates = attachmentFileRepository.findByReferenceId(referenceId);
+        List<MultipartFile> files = candidates.stream()
+            .filter(attachmentFile -> checkApiId(attachmentFile, apiNumber))
             .map(attachmentFile -> {
                 try {
                     return systemFileService.findFileInSystem(attachmentFile);
@@ -76,6 +104,21 @@ public class AttachmentFileService {
                 }
             })
             .toList();
+        return new AttachmentFileResponse(files);
+    }
+
+
+    private boolean checkApiId(AttachmentFile attachmentFile, APINumber apiNumber) {
+        return attachmentFile.getApinumber().equals(apiNumber);
+    }
+
+    private boolean checkApiIdAndTypeId(AttachmentFile attachmentFile, APINumber apiNumber,
+        Integer typeId) {
+        if (typeId == null) {
+            throw AccountingException.of(FileErrorCode.MISSING_ID);
+        }
+        return attachmentFile.getApinumber().equals(apiNumber) && attachmentFile.getTypeId()
+            .equals(typeId);
     }
 
 
