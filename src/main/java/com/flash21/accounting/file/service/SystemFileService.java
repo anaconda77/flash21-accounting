@@ -55,7 +55,7 @@ public class SystemFileService {
         String randomString = UUID.randomUUID().toString().substring(0, 8);
         String extension = getExtensionFromContentType(contentType);
 
-        return String.format("%s_%s%s", timestamp, randomString, extension);
+        return String.format("%s_%s.%s", timestamp, randomString, extension);
     }
 
     private String getExtensionFromContentType(String contentType) {
