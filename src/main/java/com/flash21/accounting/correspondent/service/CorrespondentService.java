@@ -82,11 +82,20 @@ public class CorrespondentService {
 
     @Transactional
     public void updateCorrespondent(Long correspondentId, CorrespondentRequest correspondentRequest,
-        MultipartFile businessRegNumberImage) {
+        MultipartFile businessRegNumberImage, MultipartFile bankBookImage) {
         Correspondent correspondent = correspondentRepository.findById(correspondentId)
             .orElseThrow(
                 () -> AccountingException.of(CorrespondentErrorCode.NOT_FOUND_CORRESPONDENT));
 
+        // 각 첨부파일 수정 요청이 있으면, 해당 첨부파일을 대체(기존 것을 삭제 후 새로운 것을 생성)
+        if (businessRegNumberImage != null) {
+            attachmentFileService.deleteFileHavingTypeId(correspondent.getId(), 1, APINumber.CORRESPONDENT);
+            attachmentFileService.saveFile(correspondent.getId(), 1, businessRegNumberImage, APINumber.CORRESPONDENT);
+        }
+        if (bankBookImage != null) {
+            attachmentFileService.deleteFileHavingTypeId(correspondent.getId(), 2, APINumber.CORRESPONDENT);
+            attachmentFileService.saveFile(correspondent.getId(), 2, bankBookImage, APINumber.CORRESPONDENT);
+        }
         correspondent.updateCorrespondent(correspondentRequest);
     }
 

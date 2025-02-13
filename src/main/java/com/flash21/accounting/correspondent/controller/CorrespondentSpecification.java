@@ -70,11 +70,26 @@ public interface CorrespondentSpecification {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "거래처 수정 성공")
     })
-    @PutMapping("/{id}")
+    @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<Void> updateCorrespondent(
         @Parameter(description = "거래처 id") @PathVariable(name = "id") Long correspondentId,
         @RequestPart("json") @Valid CorrespondentRequest correspondentRequest,
-        @Parameter(description = "사업자등록증") @RequestPart(name = "file", required = false) MultipartFile file);
+        @Parameter(
+            description = "사업자등록증",
+            content = @Content(
+                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                schema = @Schema(type = "string", format = "binary")
+            )
+        )
+        @RequestPart(name = "businessRegNumberImage", required = false) MultipartFile businessRegNumberImage,
+        @Parameter(
+            description = "통장사본",
+            content = @Content(
+                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                schema = @Schema(type = "string", format = "binary")
+            )
+        )
+        @RequestPart(name = "bankBookImage", required = false) MultipartFile bankBookImage);
 
     @Operation(summary = "거래처 삭제", description = "거래처를 삭제합니다.")
     @ApiResponses(value = {
