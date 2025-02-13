@@ -6,6 +6,7 @@ import com.flash21.accounting.common.exception.errorcode.*;
 import com.flash21.accounting.contract.dto.ContractRequestDto;
 import com.flash21.accounting.contract.dto.ContractResponseDto;
 import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.contract.entity.Method;
 import com.flash21.accounting.contract.entity.ProcessStatus;
 import com.flash21.accounting.contract.entity.Status;
 import com.flash21.accounting.contract.repository.ContractRepository;
@@ -69,6 +70,7 @@ public class ContractServiceImpl implements ContractService {
         // Status 및 ProcessStatus 검증 후 변환
         Status status = parseStatus(requestDto.getStatus().toString());
         ProcessStatus processStatus = parseProcessStatus(requestDto.getProcessStatus().toString());
+        Method method = parseMethod(requestDto.getMethod().toString());
 
 
         Contract contract = contractRepository.save(
@@ -77,9 +79,10 @@ public class ContractServiceImpl implements ContractService {
                         .writerSign(writerSign)
                         .headSign(headSign)
                         .directorSign(directorSign)
-                        .category(category.getName())
+                        .category(category)
                         .status(status)
                         .processStatus(processStatus)
+                        .method(method)
                         .name(requestDto.getName())
                         .contractStartDate(requestDto.getContractStartDate())
                         .contractEndDate(requestDto.getContractEndDate())
@@ -119,7 +122,7 @@ public class ContractServiceImpl implements ContractService {
         if (requestDto.getCategoryId() != null) {
             Category category = categoryRepository.findById(requestDto.getCategoryId().longValue())
                     .orElseThrow(() -> new AccountingException(CategoryErrorCode.NOT_FOUND_CATEGORY));
-            contract.setCategory(category.getName());
+            contract.setCategory(category);
         }
 
 
@@ -148,6 +151,7 @@ public class ContractServiceImpl implements ContractService {
     private void updateFields(Contract contract, ContractRequestDto requestDto) {
         if (requestDto.getStatus() != null) contract.setStatus(parseStatus(requestDto.getStatus().toString()));
         if (requestDto.getProcessStatus() != null) contract.setProcessStatus(parseProcessStatus(requestDto.getProcessStatus().toString()));
+        if (requestDto.getMethod() != null) contract.setMethod(parseMethod(requestDto.getMethod().toString()));
         if (requestDto.getName() != null) contract.setName(requestDto.getName());
         if (requestDto.getContractStartDate() != null) contract.setContractStartDate(requestDto.getContractStartDate());
         if (requestDto.getContractEndDate() != null) contract.setContractEndDate(requestDto.getContractEndDate());
@@ -155,7 +159,7 @@ public class ContractServiceImpl implements ContractService {
         if (requestDto.getCategoryId() != null) {
             Category category = categoryRepository.findById(requestDto.getCategoryId().longValue())
                     .orElseThrow(() -> new AccountingException(CategoryErrorCode.NOT_FOUND_CATEGORY));
-            contract.setCategory(category.getName());
+            contract.setCategory(category);
         }
     }
 
@@ -165,14 +169,16 @@ public class ContractServiceImpl implements ContractService {
     private ContractResponseDto toResponseDto(Contract contract) {
         return new ContractResponseDto(
                 contract.getContractId(),
+                contract.getAdmin(),
                 contract.getCategory(),
                 contract.getStatus(),
                 contract.getProcessStatus(),
+                contract.getMethod(),
                 contract.getName(),
                 contract.getContractStartDate(),
                 contract.getContractEndDate(),
                 contract.getWorkEndDate(),
-                contract.getCorrespondent() != null ? contract.getCorrespondent().getId() : null // Correspondent ID 포함
+                contract.getCorrespondent()
         );
     }
 
@@ -197,5 +203,16 @@ public class ContractServiceImpl implements ContractService {
             throw new AccountingException(ContractErrorCode.INVALID_PROCESS_STATUS);
         }
     }
+
+    private Method parseMethod(String method) {
+        try {
+            return Method.valueOf(method.toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new AccountingException(ContractErrorCode.INVALID_METHOD);
+        }
+    }
+
+
+
 
 }

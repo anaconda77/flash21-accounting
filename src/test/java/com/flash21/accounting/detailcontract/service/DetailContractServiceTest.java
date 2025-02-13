@@ -1,8 +1,13 @@
 package com.flash21.accounting.detailcontract.service;
 
+import com.flash21.accounting.category.domain.Category;
+import com.flash21.accounting.category.repository.CategoryRepository;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.errorcode.DetailContractErrorCode;
 import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.contract.entity.Method;
+import com.flash21.accounting.contract.entity.ProcessStatus;
+import com.flash21.accounting.contract.entity.Status;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.user.User;
 import com.flash21.accounting.user.Role;
@@ -55,6 +60,10 @@ public class DetailContractServiceTest {
     @InjectMocks
     private DetailContractService detailContractService;
 
+    @Mock
+    private CategoryRepository categoryRepository;
+
+
     private CreateDetailContractRequest createRequest;
     private UpdateDetailContractRequest updateRequest;
     private DetailContract detailContract;
@@ -62,14 +71,19 @@ public class DetailContractServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Contract 객체 생성
+        Category category = Category.builder()
+                .id(1L)
+                .name("테스트 카테고리")
+                .build();
+
         contract = Contract.builder()
-                .category("IT")
-                .status("진행중")
+                .category(category)
+                .status(Status.ONGOING) // 변경된 ENUM 사용
+                .processStatus(ProcessStatus.CONTRACTED) // 변경된 ENUM 사용
+                .method(Method.GENERAL) // 변경된 ENUM 사용
                 .name("테스트 계약")
                 .contractStartDate(LocalDate.now())
                 .admin(createUser())
-                .categoryId(1)
                 .correspondent(createCorrespondent())
                 .build();
 
@@ -144,14 +158,15 @@ public class DetailContractServiceTest {
     @DisplayName("세부계약서 생성 성공")
     void createDetailContractSuccess() {
         // given
+        Category category = new Category(1L, "테스트 카테고리");
         Contract savedContract = Contract.builder()
-                .contractId(1L)  // ID 설정
-                .category("IT")
-                .status("진행중")
+                .category(category)
+                .status(Status.ONGOING) // 변경된 ENUM 사용
+                .processStatus(ProcessStatus.CONTRACTED) // 변경된 ENUM 사용
+                .method(Method.GENERAL) // 변경된 ENUM 사용
                 .name("테스트 계약")
                 .contractStartDate(LocalDate.now())
                 .admin(createUser())
-                .categoryId(1)
                 .correspondent(createCorrespondent())
                 .build();
 
@@ -213,16 +228,17 @@ public class DetailContractServiceTest {
     @Test
     @DisplayName("상위계약서 ID로 세부계약서들 조회 성공")
     void getDetailContractsByParentContractIdSuccess() {
+        Category category = new Category(1L, "테스트 카테고리");
         // given
         Long parentContractId = 1L;
         Contract parentContract = Contract.builder()
-                .contractId(parentContractId)
-                .category("IT")
-                .status("진행중")
+                .category(category)
+                .status(Status.ONGOING) // 변경된 ENUM 사용
+                .processStatus(ProcessStatus.CONTRACTED) // 변경된 ENUM 사용
+                .method(Method.GENERAL) // 변경된 ENUM 사용
                 .name("테스트 계약")
                 .contractStartDate(LocalDate.now())
                 .admin(createUser())
-                .categoryId(1)
                 .correspondent(createCorrespondent())
                 .build();
 
