@@ -5,6 +5,7 @@ import com.flash21.accounting.common.exception.errorcode.ContractErrorCode;
 import com.flash21.accounting.contract.dto.ContractRequestDto;
 import com.flash21.accounting.contract.dto.ContractResponseDto;
 import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.contract.entity.ProcessStatus;
 import com.flash21.accounting.contract.entity.Status;
 import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.correspondent.domain.Correspondent;
@@ -62,6 +63,9 @@ public class ContractServiceImpl implements ContractService {
         // Status Enum 변환
         Status status = Status.valueOf(requestDto.getStatus().toString());
 
+        // ProcessStatus Enum 변환
+        ProcessStatus processStatus = ProcessStatus.valueOf(requestDto.getProcessStatus().toString());
+
 
         Contract contract = contractRepository.save(
                 Contract.builder()
@@ -71,6 +75,7 @@ public class ContractServiceImpl implements ContractService {
                         .directorSign(directorSign)
                         .category(requestDto.getCategory())
                         .status(status)
+                        .processStatus(processStatus)
                         .name(requestDto.getName())
                         .contractStartDate(requestDto.getContractStartDate())
                         .contractEndDate(requestDto.getContractEndDate())
@@ -131,7 +136,8 @@ public class ContractServiceImpl implements ContractService {
 
     private void updateFields(Contract contract, ContractRequestDto requestDto) {
         if (requestDto.getCategory() != null) contract.setCategory(requestDto.getCategory());
-        if (requestDto.getStatus() != null) contract.setStatus(Status.valueOf(requestDto.getStatus().toString())); // Enum 변환 적용
+        if (requestDto.getStatus() != null) contract.setStatus(Status.valueOf(requestDto.getStatus().toString()));
+        if (requestDto.getProcessStatus()!= null) contract.setProcessStatus(ProcessStatus.valueOf(requestDto.getProcessStatus().toString()));
         if (requestDto.getName() != null) contract.setName(requestDto.getName());
         if (requestDto.getContractStartDate() != null) contract.setContractStartDate(requestDto.getContractStartDate());
         if (requestDto.getContractEndDate() != null) contract.setContractEndDate(requestDto.getContractEndDate());
@@ -144,7 +150,8 @@ public class ContractServiceImpl implements ContractService {
         return new ContractResponseDto(
                 contract.getContractId(),
                 contract.getCategory(),
-                contract.getStatus(), // Enum을 String으로 변환
+                contract.getStatus(),
+                contract.getProcessStatus(),
                 contract.getName(),
                 contract.getContractStartDate(),
                 contract.getContractEndDate(),

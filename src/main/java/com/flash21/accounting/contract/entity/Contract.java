@@ -30,8 +30,12 @@ public class Contract {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     @Builder.Default
-    private Status status = Status.TEMPORARY; // 기본값 설정
+    private Status status = Status.TEMPORARY; // '임시'로 기본값 설정
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    @Builder.Default
+    private ProcessStatus processStatus = ProcessStatus.AWAITING_PAYMENT; // '결재진행'으로 기본값 설정
 
     @Column(nullable = false, length = 20)
     private String name;
@@ -45,7 +49,7 @@ public class Contract {
     @ManyToOne
     @JoinColumn(name = "admin_id", nullable = false)
     private User admin;
-    
+
     @ManyToOne
     @JoinColumn(name = "writer_sign_id")
     private Sign writerSign;
