@@ -9,7 +9,16 @@ public enum DetailContractErrorCode implements ErrorCode {
     DETAIL_CONTRACT_NOT_FOUND(HttpStatus.NOT_FOUND, "DC001", "존재하지 않는 세부계약서입니다."),
     ALREADY_EXIST_DETAIL_CONTRACT(HttpStatus.BAD_REQUEST, "DC002", "이미 등록된 세부계약서입니다."),
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "DC003", "필수 입력값이 누락되었습니다."),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DC004", "서버 내부 오류가 발생했습니다.");
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DC004", "서버 내부 오류가 발생했습니다."),
+    CONTRACT_NOT_FOUND(HttpStatus.NOT_FOUND, "DC005", "존재하지 않는 상위계약서입니다."),
+
+    //상태변경
+    CANNOT_UPDATE_CANCELED_CONTRACT(HttpStatus.BAD_REQUEST, "DC006", "취소된 계약서는 수정할 수 없습니다."),
+    CANNOT_UPDATE_DONE_CONTRACT(HttpStatus.BAD_REQUEST, "DC007", "완료된 계약서는 수정할 수 없습니다."),
+    INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "DC008", "잘못된 상태 변경입니다."),
+
+    // 카테고리
+    INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "DC009", "존재하지 않은 카테고리입니다.");
 
     private final HttpStatus status;
     private final String code;

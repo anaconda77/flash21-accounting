@@ -211,8 +211,4 @@ public class ContractServiceImpl implements ContractService {
             throw new AccountingException(ContractErrorCode.INVALID_METHOD);
         }
     }
-
-
-
-
 }
