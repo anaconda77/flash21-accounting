@@ -1,15 +1,13 @@
 package com.flash21.accounting.contract.service;
 
-import com.flash21.accounting.category.domain.Category;
-import com.flash21.accounting.category.repository.CategoryRepository;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.errorcode.ContractErrorCode;
-import com.flash21.accounting.contract.dto.ContractRequestDto;
-import com.flash21.accounting.contract.dto.ContractResponseDto;
+import com.flash21.accounting.contract.dto.request.ContractRequestDto;
+import com.flash21.accounting.contract.dto.response.ContractResponseDto;
 import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.contract.entity.ContractCategory;
 import com.flash21.accounting.contract.entity.Method;
 import com.flash21.accounting.contract.entity.ProcessStatus;
-import com.flash21.accounting.contract.entity.Status;
 import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
@@ -49,26 +47,17 @@ class ContractServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private CategoryRepository categoryRepository;
-
-    @Mock
     private CorrespondentRepository correspondentRepository;
 
     @Mock
     private SignRepository signRepository;
 
     private User admin;
-    private Category category;
     private Correspondent correspondent;
     private Contract contract;
 
     @BeforeEach
     void setUp() {
-        category = Category.builder()
-                .id(1L)
-                .name("IT 서비스")
-                .build();
-
         correspondent = Correspondent.builder()
                 .id(1L)
                 .correspondentName("테스트 업체")
@@ -93,15 +82,17 @@ class ContractServiceTest {
 
         contract = Contract.builder()
                 .admin(admin)
-                .category(category)
+                .lastModifyUser(admin)
+                .contractCategory(ContractCategory.NONE)
                 .correspondent(correspondent)
-                .status(Status.ONGOING)
                 .processStatus(ProcessStatus.CONTRACTED)
                 .method(Method.GENERAL)
                 .name("테스트 계약")
+                .registerDate(LocalDate.now())
                 .contractStartDate(LocalDate.now())
                 .contractEndDate(LocalDate.now().plusDays(30))
                 .workEndDate(LocalDate.now().plusDays(60))
+                .mainContractContent("테스트")
                 .build();
     }
 
@@ -114,14 +105,14 @@ class ContractServiceTest {
                 .writerSignId(1)
                 .headSignId(2)
                 .directorSignId(3)
-                .categoryId(1L)
-                .status(Status.ONGOING)
+                .contractCategory(ContractCategory.NONE)
                 .processStatus(ProcessStatus.CONTRACTED)
                 .method(Method.GENERAL)
                 .name("테스트 계약")
                 .contractStartDate(LocalDate.now())
                 .contractEndDate(LocalDate.now().plusDays(30))
                 .workEndDate(LocalDate.now().plusDays(60))
+                .mainContractContent("테스트")
                 .correspondentId(1)
                 .build();
 
@@ -132,7 +123,6 @@ class ContractServiceTest {
 
         // 필요한 데이터 Mock 설정 추가
         given(userRepository.findById(1L)).willReturn(Optional.of(admin));
-        given(categoryRepository.findById(1L)).willReturn(Optional.of(category));
         given(correspondentRepository.findById(1L)).willReturn(Optional.of(correspondent));
 
         // 서명(Sign) 객체를 Mock으로 설정
@@ -195,29 +185,29 @@ class ContractServiceTest {
     @Test
     @DisplayName("계약서를 성공적으로 수정한다")
     void updateContractSuccess() {
+        given(userRepository.findById(admin.getId())).willReturn(Optional.of(admin)); // 🔥 adminId 검증 추가!
+        given(contractRepository.findById(1L)).willReturn(Optional.of(contract));
+        given(correspondentRepository.findById(1L)).willReturn(Optional.of(correspondent));
+
         // Given
         ContractRequestDto request = ContractRequestDto.builder()
-                .status(Status.DONE)
+                .adminId(admin.getId())
                 .processStatus(ProcessStatus.BILLING)
                 .method(Method.BID)
                 .name("수정된 계약")
                 .contractStartDate(LocalDate.now())
                 .contractEndDate(LocalDate.now().plusDays(45))
                 .workEndDate(LocalDate.now().plusDays(75))
-                .categoryId(1L)
+                .contractCategory(ContractCategory.NONE)
                 .correspondentId(1)
+                .mainContractContent("테스트")
                 .build();
-
-        given(contractRepository.findById(1L)).willReturn(Optional.of(contract));
-        given(categoryRepository.findById(1L)).willReturn(Optional.of(category));
-        given(correspondentRepository.findById(1L)).willReturn(Optional.of(correspondent));
 
         // When
         ContractResponseDto response = contractService.updateContract(1L, request);
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getStatus()).isEqualTo(Status.DONE);
         assertThat(response.getProcessStatus()).isEqualTo(ProcessStatus.BILLING);
         verify(contractRepository).findById(1L);
     }

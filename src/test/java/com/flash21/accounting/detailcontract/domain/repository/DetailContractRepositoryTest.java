@@ -4,19 +4,15 @@ import com.flash21.accounting.category.domain.APINumber;
 import com.flash21.accounting.category.domain.Category;
 import com.flash21.accounting.category.repository.CategoryRepository;
 import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.contract.entity.ContractCategory;
 import com.flash21.accounting.contract.entity.Method;
 import com.flash21.accounting.contract.entity.ProcessStatus;
-import com.flash21.accounting.contract.entity.Status;
 import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
 import com.flash21.accounting.detailcontract.domain.entity.Outsourcing;
 import com.flash21.accounting.detailcontract.domain.entity.Payment;
-import com.flash21.accounting.contract.repository.ContractRepository;
-import com.flash21.accounting.detailcontract.domain.repository.DetailContractRepository;
-import com.flash21.accounting.detailcontract.domain.repository.OutsourcingRepository;
-import com.flash21.accounting.detailcontract.domain.repository.PaymentRepository;
 import com.flash21.accounting.file.domain.AttachmentFile;
 import com.flash21.accounting.file.repository.AttachmentFileRepository;
 import com.flash21.accounting.user.User;
@@ -132,13 +128,14 @@ class DetailContractRepositoryTest {
     private Contract createAndSaveContract() {
         User savedUser = userRepository.save(createUser());
         Correspondent savedCorrespondent = correspondentRepository.save(createCorrespondent());
-        Category category = categoryRepository.save(new Category(null, "테스트 카테고리"));
 
         Contract contract = Contract.builder()
-                .category(category)
+                .contractCategory(ContractCategory.NONE)
                 .name("테스트 계약")
+                .mainContractContent("테스트")
+                .lastModifyUser(savedUser)
+                .registerDate(LocalDate.now())
                 .contractStartDate(LocalDate.now())
-                .status(Status.ONGOING) // 변경된 ENUM 사용
                 .processStatus(ProcessStatus.CONTRACTED) // 변경된 ENUM 사용
                 .method(Method.GENERAL) // 변경된 ENUM 사용
                 .admin(savedUser)

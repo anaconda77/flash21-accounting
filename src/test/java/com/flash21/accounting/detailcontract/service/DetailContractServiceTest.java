@@ -5,11 +5,10 @@ import com.flash21.accounting.category.domain.Category;
 import com.flash21.accounting.category.repository.CategoryRepository;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.errorcode.DetailContractErrorCode;
-import com.flash21.accounting.common.exception.errorcode.FileErrorCode;
 import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.contract.entity.ContractCategory;
 import com.flash21.accounting.contract.entity.Method;
 import com.flash21.accounting.contract.entity.ProcessStatus;
-import com.flash21.accounting.contract.entity.Status;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.file.domain.AttachmentFile;
 import com.flash21.accounting.file.repository.AttachmentFileRepository;
@@ -26,7 +25,6 @@ import com.flash21.accounting.detailcontract.dto.request.UpdateDetailContractReq
 import com.flash21.accounting.detailcontract.dto.response.CreateDetailContractResponse;
 import com.flash21.accounting.detailcontract.dto.response.GetDetailContractResponse;
 import com.flash21.accounting.detailcontract.dto.response.UpdateDetailContractResponse;
-import io.swagger.v3.oas.models.info.Contact;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,7 +32,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -84,18 +81,15 @@ public class DetailContractServiceTest {
 
     @BeforeEach
     void setUp() {
-        Category category = Category.builder()
-                .id(1L)
-                .name("테스트 카테고리")
-                .build();
-
         contract = Contract.builder()
-                .category(category)
-                .status(Status.ONGOING) // 변경된 ENUM 사용
+                .contractCategory(ContractCategory.NONE)
+                .name("테스트 계약")
+                .mainContractContent("테스트")
+                .lastModifyUser(createUser())
+                .registerDate(LocalDate.now())
+                .contractStartDate(LocalDate.now())
                 .processStatus(ProcessStatus.CONTRACTED) // 변경된 ENUM 사용
                 .method(Method.GENERAL) // 변경된 ENUM 사용
-                .name("테스트 계약")
-                .contractStartDate(LocalDate.now())
                 .admin(createUser())
                 .correspondent(createCorrespondent())
                 .build();
@@ -173,12 +167,14 @@ public class DetailContractServiceTest {
         // given
         Category category = new Category(1L, "테스트 카테고리");
         Contract savedContract = Contract.builder()
-                .category(category)
-                .status(Status.ONGOING) // 변경된 ENUM 사용
+                .contractCategory(ContractCategory.NONE)
+                .name("테스트 계약")
+                .mainContractContent("테스트")
+                .lastModifyUser(createUser())
+                .registerDate(LocalDate.now())
+                .contractStartDate(LocalDate.now())
                 .processStatus(ProcessStatus.CONTRACTED) // 변경된 ENUM 사용
                 .method(Method.GENERAL) // 변경된 ENUM 사용
-                .name("테스트 계약")
-                .contractStartDate(LocalDate.now())
                 .admin(createUser())
                 .correspondent(createCorrespondent())
                 .build();
@@ -285,13 +281,15 @@ public class DetailContractServiceTest {
         Category category = new Category(1L, "테스트 카테고리");
         // given
         Long parentContractId = 1L;
-        Contract parentContract = Contract.builder()
-                .category(category)
-                .status(Status.ONGOING) // 변경된 ENUM 사용
+        Contract parentContract =  Contract.builder()
+                .contractCategory(ContractCategory.NONE)
+                .name("테스트 계약")
+                .mainContractContent("테스트")
+                .lastModifyUser(createUser())
+                .registerDate(LocalDate.now())
+                .contractStartDate(LocalDate.now())
                 .processStatus(ProcessStatus.CONTRACTED) // 변경된 ENUM 사용
                 .method(Method.GENERAL) // 변경된 ENUM 사용
-                .name("테스트 계약")
-                .contractStartDate(LocalDate.now())
                 .admin(createUser())
                 .correspondent(createCorrespondent())
                 .build();

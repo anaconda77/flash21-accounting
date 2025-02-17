@@ -23,7 +23,8 @@ public enum ContractErrorCode implements ErrorCode {
     INVALID_ENUM(HttpStatus.BAD_REQUEST, "CE007", "유효하지 않은 Enum 값입니다."),
     INVALID_METHOD(HttpStatus.BAD_REQUEST, "CE08", "유효하지 않은 계약방식(Method) 값입니다."),
     INVALID_STATUS(HttpStatus.BAD_REQUEST, "CE09", "유효하지 않은 계약 상태(Status) 값입니다."),
-    INVALID_PROCESS_STATUS(HttpStatus.BAD_REQUEST, "CE010", "유효하지 않은 진행 상태(ProcessStatus) 값입니다.");
+    INVALID_PROCESS_STATUS(HttpStatus.BAD_REQUEST, "CE010", "유효하지 않은 진행 상태(ProcessStatus) 값입니다."),
+    INVALID_CONTRACT_CATEGORY(HttpStatus.BAD_REQUEST, "CE011", "유효하지 않은 카테고리(ContractCategory) 값입니다.");
 
     private final HttpStatus status;
 

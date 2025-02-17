@@ -1,6 +1,5 @@
 package com.flash21.accounting.contract.entity;
 
-import com.flash21.accounting.category.domain.Category;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
 import com.flash21.accounting.sign.entity.Sign;
@@ -24,25 +23,6 @@ public class Contract {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long contractId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
-    @Builder.Default
-    private Status status = Status.TEMPORARY; // '임시'로 기본값 설정
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
-    @Builder.Default
-    private ProcessStatus processStatus = ProcessStatus.AWAITING_PAYMENT; // '결재진행'으로 기본값 설정
-
-    @Column(nullable = false, length = 20)
-    private String name;
-
-    @Column(nullable = false)
-    private LocalDate contractStartDate;
-
-    private LocalDate contractEndDate;
-    private LocalDate workEndDate;
-
     @ManyToOne
     @JoinColumn(name = "admin_id", nullable = false)
     private User admin;
@@ -64,15 +44,45 @@ public class Contract {
     @Builder.Default
     private Method method = Method.GENERAL;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    @Builder.Default
+    private ProcessStatus processStatus = ProcessStatus.AWAITING_PAYMENT;
+
+    @Column(nullable = false, length = 20)
+    private String name;
+
+    @Column(nullable = false)
+    private LocalDate contractStartDate;
+
+    private LocalDate contractEndDate;
+    private LocalDate workEndDate;
+
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
+    private List<DetailContract> detailContracts = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "correspondent_id", nullable = false)
     private Correspondent correspondent;
 
-    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
-    private List<DetailContract> detailContracts = new ArrayList<>();
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private ContractCategory contractCategory = ContractCategory.NONE;
+
+    @Column(columnDefinition = "TEXT")
+    private String mainContractContent;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDate registerDate;
+    @PrePersist
+    protected void onCreate() {
+        this.registerDate = LocalDate.now(); // 자동으로 오늘 날짜 설정
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "last_modify_user", nullable = false)
+    private User lastModifyUser;
+
 
 }

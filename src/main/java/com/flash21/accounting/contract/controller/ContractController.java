@@ -1,7 +1,7 @@
 package com.flash21.accounting.contract.controller;
 
-import com.flash21.accounting.contract.dto.ContractRequestDto;
-import com.flash21.accounting.contract.dto.ContractResponseDto;
+import com.flash21.accounting.contract.dto.request.ContractRequestDto;
+import com.flash21.accounting.contract.dto.response.ContractResponseDto;
 import com.flash21.accounting.contract.service.ContractService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
