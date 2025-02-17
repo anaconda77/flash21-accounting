@@ -3,9 +3,9 @@ package com.flash21.accounting.contract.repository;
 import com.flash21.accounting.category.domain.Category;
 import com.flash21.accounting.category.repository.CategoryRepository;
 import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.contract.entity.ContractCategory;
 import com.flash21.accounting.contract.entity.Method;
 import com.flash21.accounting.contract.entity.ProcessStatus;
-import com.flash21.accounting.contract.entity.Status;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
 import com.flash21.accounting.user.Role;
@@ -46,20 +46,21 @@ class ContractRepositoryTest {
     void saveContract() {
         // Given
         User admin = createAndSaveUser();
-        Category category = createAndSaveCategory();
         Correspondent correspondent = createAndSaveCorrespondent();
 
         Contract contract = Contract.builder()
                 .admin(admin)
-                .category(category)
+                .lastModifyUser(admin)
+                .registerDate(LocalDate.now())
+                .contractCategory(ContractCategory.NONE)
                 .correspondent(correspondent)
-                .status(Status.ONGOING)
                 .processStatus(ProcessStatus.CONTRACTED)
                 .method(Method.GENERAL)
                 .name("테스트 계약")
                 .contractStartDate(LocalDate.now())
                 .contractEndDate(LocalDate.now().plusDays(30))
                 .workEndDate(LocalDate.now().plusDays(60))
+                .mainContractContent("테스트")
                 .build();
 
         // When
@@ -75,20 +76,21 @@ class ContractRepositoryTest {
     void findById() {
         // Given
         User admin = createAndSaveUser();
-        Category category = createAndSaveCategory();
         Correspondent correspondent = createAndSaveCorrespondent();
 
         Contract contract = contractRepository.save(Contract.builder()
                 .admin(admin)
-                .category(category)
+                .lastModifyUser(admin)
+                .registerDate(LocalDate.now())
+                .contractCategory(ContractCategory.NONE)
                 .correspondent(correspondent)
-                .status(Status.ONGOING)
                 .processStatus(ProcessStatus.CONTRACTED)
                 .method(Method.GENERAL)
                 .name("테스트 계약")
                 .contractStartDate(LocalDate.now())
                 .contractEndDate(LocalDate.now().plusDays(30))
                 .workEndDate(LocalDate.now().plusDays(60))
+                .mainContractContent("테스트")
                 .build());
 
         // When
@@ -109,15 +111,17 @@ class ContractRepositoryTest {
 
         contractRepository.save(Contract.builder()
                 .admin(admin)
-                .category(category)
+                .lastModifyUser(admin)
+                .registerDate(LocalDate.now())
+                .contractCategory(ContractCategory.NONE)
                 .correspondent(correspondent)
-                .status(Status.ONGOING)
                 .processStatus(ProcessStatus.CONTRACTED)
                 .method(Method.GENERAL)
                 .name("진행 중 계약")
                 .contractStartDate(LocalDate.now())
                 .contractEndDate(LocalDate.now().plusDays(30))
                 .workEndDate(LocalDate.now().plusDays(60))
+                .mainContractContent("테스트")
                 .build());
 
         // When
@@ -125,7 +129,6 @@ class ContractRepositoryTest {
 
         // Then
         assertThat(contracts).isNotEmpty();
-        assertThat(contracts.get(0).getStatus()).isEqualTo(Status.ONGOING);
     }
 
     @Test
@@ -138,15 +141,17 @@ class ContractRepositoryTest {
 
         Contract contract = contractRepository.save(Contract.builder()
                 .admin(admin)
-                .category(category)
+                .lastModifyUser(admin)
+                .registerDate(LocalDate.now())
+                .contractCategory(ContractCategory.NONE)
                 .correspondent(correspondent)
-                .status(Status.ONGOING)
                 .processStatus(ProcessStatus.CONTRACTED)
                 .method(Method.GENERAL)
                 .name("삭제할 계약")
                 .contractStartDate(LocalDate.now())
                 .contractEndDate(LocalDate.now().plusDays(30))
                 .workEndDate(LocalDate.now().plusDays(60))
+                .mainContractContent("테스트")
                 .build());
 
         // When

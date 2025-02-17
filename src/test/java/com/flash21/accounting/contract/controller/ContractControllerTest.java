@@ -2,11 +2,11 @@ package com.flash21.accounting.contract.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.flash21.accounting.contract.dto.ContractRequestDto;
-import com.flash21.accounting.contract.dto.ContractResponseDto;
-import com.flash21.accounting.contract.service.ContractService;
-import com.flash21.accounting.contract.entity.Status;
+import com.flash21.accounting.contract.dto.request.ContractRequestDto;
+import com.flash21.accounting.contract.dto.response.ContractResponseDto;
+import com.flash21.accounting.contract.entity.ContractCategory;
 import com.flash21.accounting.contract.entity.ProcessStatus;
+import com.flash21.accounting.contract.service.ContractService;
 import com.flash21.accounting.contract.entity.Method;
 import com.flash21.accounting.category.domain.Category;
 import com.flash21.accounting.correspondent.domain.Correspondent;
@@ -102,28 +102,30 @@ class ContractControllerTest {
                 .writerSignId(1)
                 .headSignId(1)
                 .directorSignId(1)
-                .categoryId(category.getId())
-                .status(Status.ONGOING)
+                .contractCategory(ContractCategory.NONE)
                 .processStatus(ProcessStatus.CONTRACTED)
                 .method(Method.GENERAL)
                 .name("테스트 계약")
                 .contractStartDate(LocalDate.now())
                 .contractEndDate(LocalDate.now().plusDays(30))
                 .workEndDate(LocalDate.now().plusDays(60))
+                .mainContractContent("메인콘텐트")
                 .correspondentId(1)
                 .build();
 
         ContractResponseDto response = ContractResponseDto.builder()
                 .contractId(1L)
                 .admin(admin)
-                .category(category)
-                .status(Status.ONGOING)
+                .lastModifyUser(admin)
+                .registerDate(LocalDate.now())
+                .contractCategory(ContractCategory.NONE)
                 .processStatus(ProcessStatus.CONTRACTED)
                 .method(Method.GENERAL)
                 .name("테스트 계약")
                 .contractStartDate(LocalDate.now())
                 .contractEndDate(LocalDate.now().plusDays(30))
                 .workEndDate(LocalDate.now().plusDays(60))
+                .mainContractContent("메인콘텐트")
                 .correspondent(correspondent)
                 .build();
 
@@ -146,14 +148,16 @@ class ContractControllerTest {
         ContractResponseDto response = ContractResponseDto.builder()
                 .contractId(contractId)
                 .admin(admin)
-                .category(category)
-                .status(Status.ONGOING)
+                .lastModifyUser(admin)
+                .registerDate(LocalDate.now())
+                .contractCategory(ContractCategory.NONE)
                 .processStatus(ProcessStatus.CONTRACTED)
                 .method(Method.GENERAL)
                 .name("테스트 계약")
                 .contractStartDate(LocalDate.now())
                 .contractEndDate(LocalDate.now().plusDays(30))
                 .workEndDate(LocalDate.now().plusDays(60))
+                .mainContractContent("메인콘텐트")
                 .correspondent(correspondent)
                 .build();
 
@@ -176,8 +180,7 @@ class ContractControllerTest {
                 .writerSignId(1)
                 .headSignId(1)
                 .directorSignId(1)
-                .categoryId(category.getId())
-                .status(Status.DONE)
+                .contractCategory(ContractCategory.NONE)
                 .processStatus(ProcessStatus.DONE)
                 .method(Method.BID)
                 .name("수정된 계약")
@@ -185,13 +188,15 @@ class ContractControllerTest {
                 .contractEndDate(LocalDate.now().plusDays(15))
                 .workEndDate(LocalDate.now().plusDays(45))
                 .correspondentId(1)
+                .mainContractContent("메인콘텐트")
                 .build();
 
         ContractResponseDto response = ContractResponseDto.builder()
                 .contractId(contractId)
                 .admin(admin)
-                .category(category)
-                .status(Status.DONE)
+                .lastModifyUser(admin)
+                .registerDate(LocalDate.now())
+                .contractCategory(ContractCategory.NONE)
                 .processStatus(ProcessStatus.DONE)
                 .method(Method.BID)
                 .name("수정된 계약")
@@ -210,7 +215,6 @@ class ContractControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contractId").value(contractId))
                 .andExpect(jsonPath("$.name").value("수정된 계약"))
-                .andExpect(jsonPath("$.status").value(Status.DONE.name()))
                 .andExpect(jsonPath("$.processStatus").value(ProcessStatus.DONE.name()));
     }
 
@@ -233,8 +237,7 @@ class ContractControllerTest {
                 ContractResponseDto.builder()
                         .contractId(1L)
                         .admin(admin)
-                        .category(category)
-                        .status(Status.ONGOING)
+                        .contractCategory(ContractCategory.NONE)
                         .processStatus(ProcessStatus.CONTRACTED)
                         .method(Method.GENERAL)
                         .name("테스트 계약")
@@ -242,6 +245,7 @@ class ContractControllerTest {
                         .contractEndDate(LocalDate.now().plusDays(30))
                         .workEndDate(LocalDate.now().plusDays(60))
                         .correspondent(correspondent)
+                        .mainContractContent("메인콘텐트")
                         .build()
         );
 
