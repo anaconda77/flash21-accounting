@@ -1,7 +1,5 @@
 package com.flash21.accounting.contract.repository;
 
-import com.flash21.accounting.category.domain.Category;
-import com.flash21.accounting.category.repository.CategoryRepository;
 import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.contract.entity.ContractCategory;
 import com.flash21.accounting.contract.entity.Method;
@@ -34,9 +32,6 @@ class ContractRepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private CategoryRepository categoryRepository;
 
     @Autowired
     private CorrespondentRepository correspondentRepository;
@@ -106,7 +101,6 @@ class ContractRepositoryTest {
     void findByStatus() {
         // Given
         User admin = createAndSaveUser();
-        Category category = createAndSaveCategory();
         Correspondent correspondent = createAndSaveCorrespondent();
 
         contractRepository.save(Contract.builder()
@@ -136,7 +130,6 @@ class ContractRepositoryTest {
     void deleteContract() {
         // Given
         User admin = createAndSaveUser();
-        Category category = createAndSaveCategory();
         Correspondent correspondent = createAndSaveCorrespondent();
 
         Contract contract = contractRepository.save(Contract.builder()
@@ -177,13 +170,6 @@ class ContractRepositoryTest {
                 .companyFaxNumber("02-1234-5679")
                 .build();
         return userRepository.save(user);
-    }
-
-    private Category createAndSaveCategory() {
-        Category category = Category.builder()
-                .name("IT 서비스")
-                .build();
-        return categoryRepository.save(category);
     }
 
     private Correspondent createAndSaveCorrespondent() {

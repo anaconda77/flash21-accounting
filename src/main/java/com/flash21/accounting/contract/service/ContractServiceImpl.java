@@ -1,6 +1,5 @@
 package com.flash21.accounting.contract.service;
 
-import com.flash21.accounting.category.repository.CategoryRepository;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.errorcode.*;
 import com.flash21.accounting.contract.dto.request.ContractRequestDto;

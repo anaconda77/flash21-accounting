@@ -8,7 +8,6 @@ import com.flash21.accounting.contract.entity.ContractCategory;
 import com.flash21.accounting.contract.entity.ProcessStatus;
 import com.flash21.accounting.contract.service.ContractService;
 import com.flash21.accounting.contract.entity.Method;
-import com.flash21.accounting.category.domain.Category;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.user.User;
 import com.flash21.accounting.user.Role;
@@ -47,7 +46,6 @@ class ContractControllerTest {
     private ObjectMapper objectMapper;
 
     private User admin;
-    private Category category;
     private Correspondent correspondent;
     private Sign writerSign, headSign, directorSign;
 
@@ -60,10 +58,6 @@ class ContractControllerTest {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule()); // LocalDate 직렬화 지원
 
-        category = Category.builder()
-                .id(1L)
-                .name("IT 서비스")
-                .build();
 
         correspondent = Correspondent.builder()
                 .id(1L)
