@@ -68,7 +68,7 @@ public class Contract {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
-    private ContractCategory contractCategory = ContractCategory.NONE;
+    private ContractCategory contractCategory = ContractCategory.ETC;
 
     @Column(columnDefinition = "TEXT")
     private String mainContractContent;
