@@ -15,7 +15,7 @@ public class DetailContractRequest {
     @NotNull(message = "계약서 ID는 필수입니다.")
     private Long contractId;
 
-    @NotBlank(message = "세부계약 상태는 필수입니다.")
+    @NotNull(message = "세부계약 상태는 필수입니다.")
     private DetailContractStatus status;
 
     // 한글명으로 받음

@@ -63,6 +63,11 @@ public class DetailContract {
     }
 
     public void updateDetailContract(DetailContractUpdateRequest updateDto) {
+        // CANCELED 상태일 경우 모든 수정 불가
+        if (this.status == DetailContractStatus.CANCELED) {
+            throw new AccountingException(DetailContractErrorCode.CANNOT_UPDATE_CANCELED_CONTRACT);
+        }
+
         // 상태 변경 시 검증
         if(updateDto.getStatus() != null){
             validateStatusTransition(this.status, updateDto.getStatus());
