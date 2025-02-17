@@ -1,22 +1,17 @@
 package com.flash21.accounting.detailcontract.controller;
 
-import com.flash21.accounting.detailcontract.domain.entity.DetailContractStatus;
 import com.flash21.accounting.detailcontract.dto.request.DetailContractRequest;
 import com.flash21.accounting.detailcontract.dto.request.DetailContractUpdateRequest;
-import com.flash21.accounting.detailcontract.dto.request.StatusUpdateRequest;
 import com.flash21.accounting.detailcontract.dto.response.DetailContractResponse;
 import com.flash21.accounting.detailcontract.service.DetailContractService;
-import com.flash21.accounting.detailcontract.service.DetailContractServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 

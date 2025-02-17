@@ -2,8 +2,10 @@ package com.flash21.accounting.detailcontract.domain.entity;
 
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.errorcode.DetailContractErrorCode;
+import lombok.Getter;
 
 import java.util.Arrays;
+
 
 public enum DetailContractCategory {
     // 계약서카테고리 추가
