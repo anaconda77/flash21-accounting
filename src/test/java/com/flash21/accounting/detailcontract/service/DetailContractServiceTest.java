@@ -82,7 +82,7 @@ public class DetailContractServiceTest {
     @BeforeEach
     void setUp() {
         contract = Contract.builder()
-                .contractCategory(ContractCategory.NONE)
+                .contractCategory(ContractCategory.ETC)
                 .name("테스트 계약")
                 .mainContractContent("테스트")
                 .lastModifyUser(createUser())
@@ -167,7 +167,7 @@ public class DetailContractServiceTest {
         // given
         Category category = new Category(1L, "테스트 카테고리");
         Contract savedContract = Contract.builder()
-                .contractCategory(ContractCategory.NONE)
+                .contractCategory(ContractCategory.ETC)
                 .name("테스트 계약")
                 .mainContractContent("테스트")
                 .lastModifyUser(createUser())
@@ -282,7 +282,7 @@ public class DetailContractServiceTest {
         // given
         Long parentContractId = 1L;
         Contract parentContract =  Contract.builder()
-                .contractCategory(ContractCategory.NONE)
+                .contractCategory(ContractCategory.ETC)
                 .name("테스트 계약")
                 .mainContractContent("테스트")
                 .lastModifyUser(createUser())

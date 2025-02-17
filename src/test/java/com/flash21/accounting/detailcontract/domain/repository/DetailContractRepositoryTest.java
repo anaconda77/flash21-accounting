@@ -130,7 +130,7 @@ class DetailContractRepositoryTest {
         Correspondent savedCorrespondent = correspondentRepository.save(createCorrespondent());
 
         Contract contract = Contract.builder()
-                .contractCategory(ContractCategory.NONE)
+                .contractCategory(ContractCategory.ETC)
                 .name("테스트 계약")
                 .mainContractContent("테스트")
                 .lastModifyUser(savedUser)
