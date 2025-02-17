@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum APINumber {
-
     USER(1),
     CONTRACT(2),
     CORRESPONDENT(3),
