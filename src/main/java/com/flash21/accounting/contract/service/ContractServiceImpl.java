@@ -1,5 +1,6 @@
 package com.flash21.accounting.contract.service;
 
+import com.flash21.accounting.category.repository.CategoryRepository;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.errorcode.*;
 import com.flash21.accounting.contract.dto.request.ContractRequestDto;
@@ -16,6 +17,7 @@ import com.flash21.accounting.sign.repository.SignRepository;
 import com.flash21.accounting.user.User;
 import com.flash21.accounting.user.UserRepository;
 import jakarta.transaction.Transactional;
+import com.flash21.accounting.category.domain.Category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +32,7 @@ public class ContractServiceImpl implements ContractService {
     private final UserRepository userRepository;
     private final CorrespondentRepository correspondentRepository;
     private final SignRepository signRepository;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public ContractResponseDto createContract(ContractRequestDto requestDto) {

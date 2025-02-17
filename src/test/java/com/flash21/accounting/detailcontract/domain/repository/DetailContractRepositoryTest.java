@@ -1,29 +1,22 @@
 package com.flash21.accounting.detailcontract.domain.repository;
 
-import com.flash21.accounting.category.domain.APINumber;
-import com.flash21.accounting.category.domain.Category;
-import com.flash21.accounting.category.repository.CategoryRepository;
 import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.contract.entity.ContractCategory;
 import com.flash21.accounting.contract.entity.Method;
 import com.flash21.accounting.contract.entity.ProcessStatus;
-import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.correspondent.domain.Correspondent;
-import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
-import com.flash21.accounting.detailcontract.domain.entity.Outsourcing;
+import com.flash21.accounting.detailcontract.domain.entity.DetailContractCategory;
+import com.flash21.accounting.detailcontract.domain.entity.DetailContractStatus;
 import com.flash21.accounting.detailcontract.domain.entity.Payment;
-import com.flash21.accounting.file.domain.AttachmentFile;
-import com.flash21.accounting.file.repository.AttachmentFileRepository;
-import com.flash21.accounting.user.User;
 import com.flash21.accounting.user.Role;
-import com.flash21.accounting.user.UserRepository;
+import com.flash21.accounting.user.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -31,197 +24,186 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("test")
 class DetailContractRepositoryTest {
+
+    @Autowired
+    private TestEntityManager entityManager;
 
     @Autowired
     private DetailContractRepository detailContractRepository;
 
     @Autowired
-    private OutsourcingRepository outsourcingRepository;
-
-    @Autowired
     private PaymentRepository paymentRepository;
 
-    @Autowired
-    private ContractRepository contractRepository;
+    private User testAdmin;
+    private Correspondent testCorrespondent;
+    private Contract testContract;
+    private DetailContract testDetailContract;
+    private Payment testPayment;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private CorrespondentRepository correspondentRepository;
-
-    @Autowired
-    private CategoryRepository categoryRepository; // 추가: CategoryRepository
-    @Autowired
-    private AttachmentFileRepository attachmentFileRepository;
-
-    @Test
-    @DisplayName("세부계약서 저장 시 외주/지불정보도 함께 저장되어야 한다")
-    void saveDetailContractWithOutsourcingAndPayment() {
-        // given
-        Contract contract = createAndSaveContract();
-        DetailContract detailContract = createDetailContract(contract);
-        Outsourcing outsourcing = createOutsourcing(detailContract);
-        Payment payment = createPayment(detailContract);
-
-        detailContract.getOutsourcings().add(outsourcing);
-        detailContract.getPayments().add(payment);
-
-        // when
-        DetailContract savedContract = detailContractRepository.save(detailContract);
-
-        // then
-        assertThat(savedContract.getDetailContractId()).isNotNull();
-        assertThat(savedContract.getOutsourcings()).hasSize(1);
-        assertThat(savedContract.getPayments()).hasSize(1);
-    }
-
-    @Test
-    @DisplayName("상위계약서 ID로 여러 세부계약서 조회 테스트")
-    void findMultipleDetailContractsByContractId() {
-        // given
-        Contract contract = createAndSaveContract();
-        DetailContract detailContract1 = createDetailContract(contract, "일반", "웹 개발 A");
-        DetailContract detailContract2 = createDetailContract(contract, "외주", "웹 개발 B");
-        detailContractRepository.saveAll(List.of(detailContract1, detailContract2));
-
-        // when
-        List<DetailContract> foundContracts = detailContractRepository.findByContract_ContractId(contract.getContractId());
-
-        // then
-        assertThat(foundContracts).hasSize(2);
-        assertThat(foundContracts).extracting("content")
-                .containsExactlyInAnyOrder("웹 개발 A", "웹 개발 B");
-    }
-
-    @Test
-    @DisplayName("세부계약서 저장 시 첨부파일 연관관계 테스트")
-    void saveDetailContractWithAttachmentFiles() {
-        // given
-        Contract contract = createAndSaveContract();
-        DetailContract detailContract = createDetailContract(contract);
-        DetailContract savedContract = detailContractRepository.save(detailContract);
-
-        AttachmentFile attachmentFile = new AttachmentFile(
-                detailContract.getDetailContractId(),
-                "test.pdf",
-                "/path/to/file",
-                "application/pdf",
-                APINumber.OUTSOURCING,
-                null
-        );
-
-        // when
-        AttachmentFile savedFile = attachmentFileRepository.save(attachmentFile);
-
-        // then
-        assertThat(savedContract.getDetailContractId()).isNotNull();
-        List<AttachmentFile> foundFiles = attachmentFileRepository
-                .findByReferenceId(savedContract.getDetailContractId());
-        assertThat(foundFiles).hasSize(1);
-        assertThat(foundFiles.get(0).getFileName()).isEqualTo("test.pdf");
-    }
-
-    private Contract createAndSaveContract() {
-        User savedUser = userRepository.save(createUser());
-        Correspondent savedCorrespondent = correspondentRepository.save(createCorrespondent());
-
-        Contract contract = Contract.builder()
-                .contractCategory(ContractCategory.ETC)
-                .name("테스트 계약")
-                .mainContractContent("테스트")
-                .lastModifyUser(savedUser)
-                .registerDate(LocalDate.now())
-                .contractStartDate(LocalDate.now())
-                .processStatus(ProcessStatus.CONTRACTED) // 변경된 ENUM 사용
-                .method(Method.GENERAL) // 변경된 ENUM 사용
-                .admin(savedUser)
-                .correspondent(savedCorrespondent)
-                .build();
-        return contractRepository.save(contract);
-    }
-
-    private User createUser() {
-        return User.builder()
-                .username("testuser")
+    @BeforeEach
+    void setUp() {
+        // 테스트 어드민 생성 및 저장
+        testAdmin = User.builder()
+                .username("testAdmin")
                 .password("password")
-                .name("Test User")
+                .name("Test Admin")
                 .phoneNumber("010-1234-5678")
                 .email("test@example.com")
-                .address("Test Address")
-                .addressDetail("Test Detail")
+                .address("서울시 강남구")
+                .addressDetail("테스트빌딩 3층")
                 .role(Role.ROLE_ADMIN)
-                .grade("A")
+                .grade("HIGH")
                 .companyPhoneNumber("02-1234-5678")
                 .companyFaxNumber("02-1234-5679")
                 .build();
-    }
+        entityManager.persist(testAdmin);
 
-    private Correspondent createCorrespondent() {
-        return Correspondent.builder()
-                .correspondentName("Test Company")
+        // 테스트 거래처 생성 및 저장
+        testCorrespondent = Correspondent.builder()
+                .correspondentName("테스트 거래처")
                 .businessRegNumber("123-45-67890")
-                .address("Test Address")
-                .detailedAddress("Test Detailed Address")
+                .presidentName("김사장")
                 .build();
-    }
+        entityManager.persist(testCorrespondent);
 
-    private DetailContract createDetailContract(Contract contract) {
-        return DetailContract.builder()
-                .contract(contract)
-                .contractType("일반계약")
-                .contractStatus("진행중")
-                .largeCategory("IT")
-                .smallCategory("개발")
-                .content("테스트")
-                .quantity(1)
-                .unitPrice(1000)
-                .supplyPrice(1000)
-                .totalPrice(1100)
-                .lastModifyUser("tester")
+        // 테스트 계약서 생성 및 저장
+        testContract = Contract.builder()
+                .admin(testAdmin)
+                .correspondent(testCorrespondent)
+                .name("테스트 계약서")
+                .contractStartDate(LocalDate.now())
+                .contractEndDate(LocalDate.now().plusMonths(1))
+                .method(Method.GENERAL)
+                .processStatus(ProcessStatus.AWAITING_PAYMENT)
+                .contractCategory(ContractCategory.ETC)
+                .lastModifyUser(testAdmin)
                 .build();
-    }
+        entityManager.persist(testContract);
 
-    private DetailContract createDetailContract(Contract contract, String type, String content) {
-        return DetailContract.builder()
-                .contract(contract)
-                .contractType(type)
-                .contractStatus("진행중")
-                .largeCategory("IT")
-                .smallCategory("개발")
-                .content(content)
+        // 테스트 세부계약서 생성 및 저장
+        testDetailContract = DetailContract.builder()
+                .contract(testContract)
+                .detailContractCategory(DetailContractCategory.WEBSITE_CONSTRUCTION)
+                .status(DetailContractStatus.TEMPORARY)
+                .content("테스트 세부계약 내용")
                 .quantity(1)
                 .unitPrice(1000000)
                 .supplyPrice(1000000)
                 .totalPrice(1100000)
-                .lastModifyUser("tester")
                 .build();
+
+        // 테스트 결제정보 생성 및 저장
+        testPayment = Payment.builder()
+                .detailContract(testDetailContract)
+                .method("계좌이체")
+                .condition("선금 50%, 잔금 50%")
+                .build();
+
+        testDetailContract.setPayment(testPayment);
+        entityManager.persist(testDetailContract);
+
+        entityManager.flush();
     }
 
-    private Outsourcing createOutsourcing(DetailContract detailContract) {
-        return Outsourcing.builder()
-                .detailContract(detailContract)
-                .outsourcingName("외주1")
-                .content("외주내용")
+    @Test
+    @DisplayName("계약서 ID로 세부계약서 목록 조회")
+    void findByContractContractId() {
+        // when
+        List<DetailContract> detailContracts = detailContractRepository.findByContractContractId(testContract.getContractId());
+
+        // then
+        assertThat(detailContracts).hasSize(1);
+        DetailContract foundDetailContract = detailContracts.get(0);
+        assertThat(foundDetailContract.getContract().getContractId()).isEqualTo(testContract.getContractId());
+        assertThat(foundDetailContract.getDetailContractCategory()).isEqualTo(DetailContractCategory.WEBSITE_CONSTRUCTION);
+        assertThat(foundDetailContract.getStatus()).isEqualTo(DetailContractStatus.TEMPORARY);
+    }
+
+    @Test
+    @DisplayName("계약서로 세부계약서 목록 조회")
+    void findByContract() {
+        // when
+        List<DetailContract> detailContracts = detailContractRepository.findByContract(testContract);
+
+        // then
+        assertThat(detailContracts).hasSize(1);
+        DetailContract foundDetailContract = detailContracts.get(0);
+        assertThat(foundDetailContract.getContract()).isEqualTo(testContract);
+        assertThat(foundDetailContract.getDetailContractCategory()).isEqualTo(DetailContractCategory.WEBSITE_CONSTRUCTION);
+    }
+
+    @Test
+    @DisplayName("세부계약서 저장 시 Payment도 함께 저장")
+    void saveDetailContractWithPayment() {
+        // given
+        DetailContract newDetailContract = DetailContract.builder()
+                .contract(testContract)
+                .detailContractCategory(DetailContractCategory.WEBSITE_DESIGN)
+                .status(DetailContractStatus.TEMPORARY)
+                .content("새로운 세부계약 내용")
                 .quantity(1)
-                .unitPrice(1000)
-                .supplyPrice(1000)
-                .totalAmount(1100)
+                .unitPrice(2000000)
+                .supplyPrice(2000000)
+                .totalPrice(2200000)
                 .build();
+
+        Payment newPayment = Payment.builder()
+                .detailContract(newDetailContract)
+                .method("신용카드")
+                .condition("계약금 30%, 잔금 70%")
+                .build();
+
+        newDetailContract.setPayment(newPayment);
+
+        // when
+        DetailContract savedDetailContract = detailContractRepository.save(newDetailContract);
+
+        // then
+        assertThat(savedDetailContract.getDetailContractId()).isNotNull();
+        assertThat(savedDetailContract.getPayment().getPaymentId()).isNotNull();
+        assertThat(savedDetailContract.getPayment().getMethod()).isEqualTo("신용카드");
+        assertThat(savedDetailContract.getPayment().getCondition()).isEqualTo("계약금 30%, 잔금 70%");
     }
 
-    private Payment createPayment(DetailContract detailContract) {
-        return Payment.builder()
-                .detailContract(detailContract)
-                .method("카드")
-                .condition("선결제")
+    @Test
+    @DisplayName("세부계약서 삭제 시 Payment도 함께 삭제")
+    void deleteDetailContractCascadePayment() {
+        // given
+        Long detailContractId = testDetailContract.getDetailContractId();
+        Long paymentId = testDetailContract.getPayment().getPaymentId();
+
+        // when
+        detailContractRepository.deleteById(detailContractId);
+        entityManager.flush();
+        entityManager.clear();
+
+        // then
+        assertThat(detailContractRepository.findById(detailContractId)).isEmpty();
+        assertThat(paymentRepository.findById(paymentId)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("특정 계약서의 모든 세부계약서가 존재하지 않는 경우")
+    void findByContractWhenEmpty() {
+        // given
+        Contract emptyContract = Contract.builder()
+                .admin(testAdmin)
+                .correspondent(testCorrespondent)
+                .name("빈 계약서")
+                .contractStartDate(LocalDate.now())
+                .contractEndDate(LocalDate.now().plusMonths(1))
+                .method(Method.GENERAL)
+                .processStatus(ProcessStatus.AWAITING_PAYMENT)
+                .contractCategory(ContractCategory.ETC)
+                .lastModifyUser(testAdmin)
                 .build();
+        entityManager.persist(emptyContract);
+
+        // when
+        List<DetailContract> detailContracts = detailContractRepository.findByContract(emptyContract);
+
+        // then
+        assertThat(detailContracts).isEmpty();
     }
 }
-
-
-
-
