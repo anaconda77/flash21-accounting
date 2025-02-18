@@ -3,7 +3,7 @@ package com.flash21.accounting.file.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import com.flash21.accounting.category.domain.APINumber;
+import com.flash21.accounting.file.domain.APINumber;
 import com.flash21.accounting.file.domain.AttachmentFile;
 import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse;
 import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse.AttachmentFileResponse;

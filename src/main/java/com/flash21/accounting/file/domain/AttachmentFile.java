@@ -1,6 +1,5 @@
 package com.flash21.accounting.file.domain;
 
-import com.flash21.accounting.category.domain.APINumber;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

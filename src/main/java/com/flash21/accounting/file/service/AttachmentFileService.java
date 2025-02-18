@@ -1,6 +1,6 @@
 package com.flash21.accounting.file.service;
 
-import com.flash21.accounting.category.domain.APINumber;
+import com.flash21.accounting.file.domain.APINumber;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.errorcode.FileErrorCode;
 import com.flash21.accounting.file.domain.AttachmentFile;
@@ -8,7 +8,6 @@ import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse;
 import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse.AttachmentFileResponse;
 import com.flash21.accounting.file.repository.AttachmentFileRepository;
 import java.io.BufferedInputStream;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
