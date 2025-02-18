@@ -83,7 +83,7 @@ public class DetailContractServiceTest {
         // 테스트 요청 데이터 생성
         testRequest = DetailContractRequest.builder()
                 .contractId(1L)
-                .detailContractCategory("웹사이트 구축")
+                .detailContractCategory(DetailContractCategory.WEBSITE_CONSTRUCTION)
                 .content("테스트 세부계약 내용")
                 .quantity(1)
                 .unitPrice(1000000)
@@ -141,7 +141,7 @@ public class DetailContractServiceTest {
         // given
         testRequest = DetailContractRequest.builder()
                 .contractId(1L)
-                .detailContractCategory("존재하지 않는 카테고리")
+                .detailContractCategory(null)
                 .content("테스트 내용")
                 .quantity(1)
                 .unitPrice(1000000)
@@ -151,8 +151,7 @@ public class DetailContractServiceTest {
                 .paymentCondition("선금 50%, 잔금 50%")
                 .build();
 
-        given(contractRepository.findById(any(Long.class)))
-                .willReturn(Optional.of(testContract));
+
 
         // when & then
         assertThatThrownBy(() -> detailContractService.createDetailContract(testRequest))

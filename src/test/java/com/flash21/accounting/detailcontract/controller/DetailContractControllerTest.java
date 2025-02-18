@@ -54,7 +54,7 @@ class DetailContractControllerTest {
         testRequest = DetailContractRequest.builder()
                 .contractId(1L)
                 .status(DetailContractStatus.TEMPORARY)
-                .detailContractCategory("웹사이트 구축")
+                .detailContractCategory(DetailContractCategory.WEBSITE_CONSTRUCTION)
                 .content("테스트 세부계약 내용")
                 .quantity(1)
                 .unitPrice(1000000)
@@ -172,7 +172,7 @@ class DetailContractControllerTest {
     void createDetailContract_ValidationFail() throws Exception {
         DetailContractRequest invalidRequest = DetailContractRequest.builder()
                 .contractId(null)
-                .detailContractCategory("웹사이트 구축")
+                .detailContractCategory(null)
                 .content("테스트 내용")
                 .quantity(1)
                 .unitPrice(1000000)
