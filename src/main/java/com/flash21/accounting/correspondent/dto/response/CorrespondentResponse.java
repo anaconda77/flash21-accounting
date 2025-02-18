@@ -3,15 +3,19 @@ package com.flash21.accounting.correspondent.dto.response;
 public record CorrespondentResponse(
     Long correspondentId,
     String correspondentName,
-    String presidentName,
-    String ownerName,
-    String ownerPosition,
-    String ownerEmail,
+    owner owner,
+    String managerName,
+    String managerPosition,
+    String managerEmail,
     String taxEmail,
     String businessRegNumber,
     String address,
     String detailedAddress,
-    String memo
+    String memo,
+    String categoryName
 ) {
-
+    public record owner (
+        Long ownerId,
+        String ownerName
+    ) { }
 }
