@@ -4,11 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 @RequiredArgsConstructor
-public enum UserErrorCode implements ErrorCode {
+public enum AuthErrorCode implements ErrorCode {
 
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "존재하지 않는 회원입니다."),
-    USERNAME_OR_PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "U002", "아이디 혹은 비밀번호가 일치하지 않습니다."),
-    DUPLICATE_USERNAME(HttpStatus.CONFLICT, "U003", "중복된 아이디의 회원이 존재합니다.");
+    NOT_EXISTING_TOKEN(HttpStatus.UNAUTHORIZED, "A001", "토큰이 존재하지 않습니다."),
+    INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "A002", "유효하지 않은 액세스 토큰입니다.");
 
     private final HttpStatus status;
     private final String code;

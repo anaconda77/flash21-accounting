@@ -1,5 +1,6 @@
 package com.flash21.accounting.common.util.jwt;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -27,8 +28,22 @@ public class JWTUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role",String.class);
     }
 
-    public Boolean isExpired(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
+
+    public boolean isValidToken(String token) {
+        if(token == null || token.isEmpty()){
+            return false;
+        }
+
+        try {
+            return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload().getExpiration()
+                .after(new Date());
+        } catch (JwtException ignored) {
+        }
+        return false;
     }
 
     public String createJwt(String username, String role, Long expireMs){
