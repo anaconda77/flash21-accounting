@@ -67,7 +67,7 @@ class DetailContractDtoTest {
         DetailContractRequest request = DetailContractRequest.builder()
                 .contractId(1L)
                 .status(DetailContractStatus.TEMPORARY)
-                .detailContractCategory("웹사이트 구축")
+                .detailContractCategory(DetailContractCategory.WEBSITE_CONSTRUCTION)
                 .content("테스트 내용")
                 .quantity(1)
                 .unitPrice(1000000)
@@ -91,7 +91,7 @@ class DetailContractDtoTest {
         DetailContractRequest request = DetailContractRequest.builder()
                 .contractId(null)  // 필수 필드 누락
                 .status(null)      // 필수 필드 누락
-                .detailContractCategory("")  // 빈 문자열
+                .detailContractCategory(null)
                 .content("")  // 빈 문자열
                 .quantity(-1)  // 음수
                 .unitPrice(0)  // 0

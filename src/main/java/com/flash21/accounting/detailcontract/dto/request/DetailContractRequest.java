@@ -18,9 +18,8 @@ public class DetailContractRequest {
     @NotNull(message = "세부계약 상태는 필수입니다.")
     private DetailContractStatus status;
 
-    // 한글명으로 받음
-    @NotBlank(message = "세부계약서 카테고리는 필수입니다.")
-    private String detailContractCategory;
+    @NotNull(message = "세부계약서 카테고리는 필수입니다.")
+    private DetailContractCategory detailContractCategory;
 
     @NotBlank(message = "내용은 필수입니다.")
     private String content;

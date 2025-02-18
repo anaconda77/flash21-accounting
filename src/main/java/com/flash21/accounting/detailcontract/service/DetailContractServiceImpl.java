@@ -34,7 +34,7 @@ public class DetailContractServiceImpl implements DetailContractService {
 
         DetailContract detailContract = DetailContract.builder()
                 .contract(contract)
-                .detailContractCategory(DetailContractCategory.fromDisplayName(request.getDetailContractCategory())) // 한글명 -> enum 변환
+                .detailContractCategory(request.getDetailContractCategory()) // 한글명 -> enum 변환
                 .status(DetailContractStatus.TEMPORARY)  // 초기 상태는 TEMPORARY
                 .content(request.getContent())
                 .quantity(request.getQuantity())
