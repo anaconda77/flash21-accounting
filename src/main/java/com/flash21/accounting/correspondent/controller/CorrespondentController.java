@@ -39,7 +39,7 @@ public class CorrespondentController implements CorrespondentSpecification {
 
     @GetMapping
     public ResponseEntity<List<CorrespondentResponse>> getCorrespondents(
-        @RequestParam(required = false, name = "condition") String condition,     // 검색 조건명 (correspondentName, businessRegNumber, ownerName)
+        @RequestParam(required = false, name = "condition") String condition,     // 검색 조건명 (correspondentName, businessRegNumber, managerName)
         @RequestParam(required = false, name = "value") String value
     ) {
         return ResponseEntity.ok(correspondentService.getCorrespondents(condition, value));

@@ -11,6 +11,7 @@ import com.flash21.accounting.detailcontract.domain.entity.Payment;
 import com.flash21.accounting.detailcontract.domain.repository.DetailContractRepository;
 import com.flash21.accounting.detailcontract.dto.request.DetailContractRequest;
 import com.flash21.accounting.detailcontract.dto.request.DetailContractUpdateRequest;
+import com.flash21.accounting.fixture.OwnerFixture;
 import com.flash21.accounting.user.User;
 import com.flash21.accounting.user.Role;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,7 +68,7 @@ public class DetailContractServiceTest {
         testCorrespondent = Correspondent.builder()
                 .correspondentName("테스트 거래처")
                 .businessRegNumber("123-45-67890")
-                .presidentName("김사장")
+                .owner(OwnerFixture.createDefault())
                 .build();
 
         // 테스트 계약서 생성
