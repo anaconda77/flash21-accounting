@@ -1,6 +1,6 @@
 package com.flash21.accounting.correspondent.service;
 
-import com.flash21.accounting.category.domain.APINumber;
+import com.flash21.accounting.file.domain.APINumber;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.aop.ReflectionOperation;
 import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;

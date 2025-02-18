@@ -1,4 +1,4 @@
-package com.flash21.accounting.category.domain;
+package com.flash21.accounting.file.domain;
 
 import java.util.Objects;
 import lombok.Getter;
