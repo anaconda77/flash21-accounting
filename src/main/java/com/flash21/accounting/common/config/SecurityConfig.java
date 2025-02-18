@@ -60,7 +60,11 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/application/register",
+                            "/login",
+                            "/swagger-ui/**",
+                            "/v3/api-docs/**",
+                            "/h2-console/**").permitAll()
                         .anyRequest().authenticated()
                 );
 
