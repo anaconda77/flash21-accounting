@@ -75,8 +75,8 @@ class DetailContractControllerTest {
 
         testRequest = DetailContractRequest.builder()
                 .contractId(1L)
-                .status(DetailContractStatus.TEMPORARY)
-                .detailContractCategory(DetailContractCategory.WEBSITE_CONSTRUCTION)
+                .status("임시")
+                .detailContractCategory("웹사이트 구축")
                 .content("테스트 세부계약 내용")
                 .quantity(1)
                 .unitPrice(1000000)
@@ -101,7 +101,8 @@ class DetailContractControllerTest {
                 .build();
 
         testUpdateRequest = DetailContractUpdateRequest.builder()
-                .status(DetailContractStatus.ONGOING)
+                .status("진행")
+                .detailContractCategory("웹사이트 구축")
                 .content("수정된 내용")
                 .build();
     }
@@ -194,6 +195,7 @@ class DetailContractControllerTest {
                 .detailContractId(1L)
                 .contractId(1L)
                 .status(DetailContractStatus.ONGOING)
+                .detailContractCategory(DetailContractCategory.WEBSITE_CONSTRUCTION)
                 .content("수정된 내용")
                 .build();
 
@@ -225,8 +227,8 @@ class DetailContractControllerTest {
     void createDetailContract_ValidationFail() throws Exception {
         DetailContractRequest invalidRequest = DetailContractRequest.builder()
                 .contractId(null)
-                .status(null)
-                .detailContractCategory(null)
+                .status("")
+                .detailContractCategory("")
                 .content("")
                 .quantity(-1)
                 .unitPrice(0)

@@ -12,8 +12,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class DetailContractUpdateRequest {
-    private DetailContractStatus status;
-    private DetailContractCategory detailContractCategory;
+    private String status;
+    private String detailContractCategory;
     private String content;
     private Integer quantity;
     private Integer unitPrice;

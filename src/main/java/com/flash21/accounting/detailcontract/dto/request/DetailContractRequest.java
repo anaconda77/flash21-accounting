@@ -15,11 +15,11 @@ public class DetailContractRequest {
     @NotNull(message = "계약서 ID는 필수입니다.")
     private Long contractId;
 
-    @NotNull(message = "세부계약 상태는 필수입니다.")
-    private DetailContractStatus status;
+    @NotBlank(message = "세부계약 상태는 필수입니다.")
+    private String status;
 
-    @NotNull(message = "세부계약서 카테고리는 필수입니다.")
-    private DetailContractCategory detailContractCategory;
+    @NotBlank(message = "세부계약서 카테고리는 필수입니다.")
+    private String detailContractCategory;
 
     @NotBlank(message = "내용은 필수입니다.")
     private String content;
