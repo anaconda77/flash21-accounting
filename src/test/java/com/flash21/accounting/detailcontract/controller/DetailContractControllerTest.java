@@ -7,6 +7,8 @@ import com.flash21.accounting.detailcontract.dto.request.DetailContractRequest;
 import com.flash21.accounting.detailcontract.dto.request.DetailContractUpdateRequest;
 import com.flash21.accounting.detailcontract.dto.response.DetailContractResponse;
 import com.flash21.accounting.detailcontract.service.DetailContractService;
+import com.flash21.accounting.fixture.OwnerFixture;
+import com.flash21.accounting.owner.domain.Owner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -141,6 +143,8 @@ class DetailContractControllerTest {
     @Test
     @DisplayName("세부계약서 생성 - 성공")
     void createDetailContract_Success() throws Exception {
+        Owner owner = OwnerFixture.createDefault(); // OwnerFixture 사용
+
         given(detailContractService.createDetailContract(any(DetailContractRequest.class)))
                 .willReturn(testResponse);
 

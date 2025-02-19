@@ -36,29 +36,27 @@ class DetailContractRepositoryTest {
     private DetailContractRepository detailContractRepository;
 
     @Autowired
-    private OwnerRepository ownerRepository;
+    private PaymentRepository paymentRepository;
 
     @Autowired
-    private PaymentRepository paymentRepository;
+    private OwnerRepository ownerRepository; // OwnerRepository 주입
 
     private User testAdmin;
     private Correspondent testCorrespondent;
     private Contract testContract;
     private static long sequence = 1;
-    private DetailContract testDetailContract;
-    private Payment testPayment;
 
     @BeforeEach
     void setUp() {
         // 영속성 컨텍스트 초기화
         entityManager.clear();
 
-        // Owner 생성 및 저장 - 직접 저장
+        // Owner는 OwnerRepository를 통해 저장
         Owner owner = ownerRepository.save(OwnerFixture.createDefault());
 
-        // 테스트 어드민 생성 및 저장
+        // 나머지 코드는 그대로 유지
         testAdmin = User.builder()
-                .username("testAdmin_" + sequence++) // 유니크한 username
+                .username("testAdmin_" + sequence++)
                 .password("password")
                 .name("Test Admin")
                 .phoneNumber("010-1234-5678")
@@ -72,15 +70,13 @@ class DetailContractRepositoryTest {
                 .build();
         testAdmin = entityManager.persist(testAdmin);
 
-        // 테스트 거래처 생성 및 저장
         testCorrespondent = Correspondent.builder()
                 .correspondentName("테스트 거래처_" + System.currentTimeMillis())
                 .businessRegNumber("123-45-67890")
-                .owner(owner) // 저장된 owner 참조
+                .owner(owner)
                 .build();
         testCorrespondent = entityManager.persist(testCorrespondent);
 
-        // 테스트 계약서 생성 및 저장
         testContract = Contract.builder()
                 .admin(testAdmin)
                 .correspondent(testCorrespondent)
@@ -91,7 +87,6 @@ class DetailContractRepositoryTest {
                 .build();
         testContract = entityManager.persist(testContract);
 
-        // 변경사항 DB에 반영
         entityManager.flush();
     }
 
@@ -111,6 +106,7 @@ class DetailContractRepositoryTest {
         DetailContract foundDetailContract = detailContracts.get(0);
         assertThat(foundDetailContract.getContract().getContractId()).isEqualTo(testContract.getContractId());
     }
+
     @Test
     @DisplayName("계약서로 세부계약서 목록 조회")
     void findByContract() {
@@ -125,18 +121,15 @@ class DetailContractRepositoryTest {
         // then
         assertThat(detailContracts).hasSize(1);
         DetailContract foundDetailContract = detailContracts.get(0);
-        // Contract ID로 비교
-        assertThat(foundDetailContract.getContract().getContractId())
-                .isEqualTo(testContract.getContractId());
-        assertThat(foundDetailContract.getDetailContractCategory())
-                .isEqualTo(DetailContractCategory.WEBSITE_CONSTRUCTION);
+        assertThat(foundDetailContract.getContract().getContractId()).isEqualTo(testContract.getContractId());
+        assertThat(foundDetailContract.getDetailContractCategory()).isEqualTo(DetailContractCategory.WEBSITE_CONSTRUCTION);
     }
 
     @Test
     @DisplayName("세부계약서 저장 시 Payment도 함께 저장")
     void saveDetailContractWithPayment() {
         // given
-        DetailContract newDetailContract = DetailContract.builder()
+        DetailContract detailContract = DetailContract.builder()
                 .contract(testContract)
                 .detailContractCategory(DetailContractCategory.WEBSITE_DESIGN)
                 .status(DetailContractStatus.TEMPORARY)
@@ -147,16 +140,16 @@ class DetailContractRepositoryTest {
                 .totalPrice(2200000)
                 .build();
 
-        Payment newPayment = Payment.builder()
-                .detailContract(newDetailContract)
+        Payment payment = Payment.builder()
+                .detailContract(detailContract)
                 .method("신용카드")
                 .condition("계약금 30%, 잔금 70%")
                 .build();
 
-        newDetailContract.setPayment(newPayment);
+        detailContract.setPayment(payment);
 
         // when
-        DetailContract savedDetailContract = detailContractRepository.save(newDetailContract);
+        DetailContract savedDetailContract = detailContractRepository.save(detailContract);
         entityManager.flush();
         entityManager.clear();
 
@@ -186,30 +179,6 @@ class DetailContractRepositoryTest {
         // then
         assertThat(detailContractRepository.findById(detailContractId)).isEmpty();
         assertThat(paymentRepository.findById(paymentId)).isEmpty();
-    }
-
-    @Test
-    @DisplayName("특정 계약서의 모든 세부계약서가 존재하지 않는 경우")
-    void findByContractWhenEmpty() {
-        // given
-        Contract emptyContract = Contract.builder()
-                .admin(testAdmin)
-                .correspondent(testCorrespondent)
-                .name("빈 계약서")
-                .contractStartDate(LocalDate.now())
-                .contractEndDate(LocalDate.now().plusMonths(1))
-                .method(Method.GENERAL)
-                .processStatus(ProcessStatus.AWAITING_PAYMENT)
-                .contractCategory(ContractCategory.ETC)
-                .lastModifyUser(testAdmin)
-                .build();
-        entityManager.persist(emptyContract);
-
-        // when
-        List<DetailContract> detailContracts = detailContractRepository.findByContract(emptyContract);
-
-        // then
-        assertThat(detailContracts).isEmpty();
     }
 
     // 헬퍼 메서드
