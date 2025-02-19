@@ -393,6 +393,8 @@ public class DetailContractServiceTest {
     void updateDetailContract_PaymentConditionOnly() {
         // given
         var created = detailContractService.createDetailContract(testRequest);
+        assertThat(created.getPaymentMethod()).isEqualTo("계좌이체");
+        assertThat(created.getPaymentCondition()).isEqualTo("선금 50%, 잔금 50%");
 
         var updateRequest = DetailContractUpdateRequest.builder()
                 .paymentCondition("계약금 30%, 잔금 70%")
@@ -402,8 +404,8 @@ public class DetailContractServiceTest {
         var response = detailContractService.updateDetailContract(created.getDetailContractId(), updateRequest);
 
         // then
-        assertThat(response.getPaymentCondition()).isEqualTo("계약금 30%, 잔금 70%");
-        assertThat(response.getPaymentMethod()).isEqualTo(created.getPaymentMethod());  // 다른 필드는 변경되지 않음
+        assertThat(response.getPaymentMethod()).isEqualTo("계좌이체");  // 기존 값 유지
+        assertThat(response.getPaymentCondition()).isEqualTo("계약금 30%, 잔금 70%");  // 새로운 값으로 변경
         assertThat(response.getStatus()).isEqualTo(created.getStatus());
         assertThat(response.getContent()).isEqualTo(created.getContent());
     }
