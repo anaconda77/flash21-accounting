@@ -47,7 +47,7 @@ public class SystemFileService {
         }
     }
 
-    public void createFileInSystemStorage(BufferedInputStream inputStream, Path fileSource) {
+    public void createFileInSystemStorage(InputStream inputStream, Path fileSource) {
         try {
             Files.copy(
                 inputStream,
