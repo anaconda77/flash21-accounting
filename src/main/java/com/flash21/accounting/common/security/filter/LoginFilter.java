@@ -58,9 +58,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(username,role, 60 * 60 * 24 * 3 * 1000L);
+        String token = jwtUtil.createJwt(username, role, 60 * 60 * 24 * 3 * 1000L);
 
-        response.addHeader("Authorization", "Bearer " + token);
     }
 
     //로그인 실패시 실행하는 메소드
