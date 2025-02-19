@@ -9,10 +9,5 @@ public class OwnerFixture {
                 .ownerId(1L)
                 .name("name")
                 .build();
-//                .name("테스트 소유자_" + System.currentTimeMillis())  // 유니크한 이름 보장
-//                .phoneNumber("010-1234-5678")
-//                .email("owner@test.com")
-//                .faxNumber("02-1234-5678")
-//                .build();
     }
 }
