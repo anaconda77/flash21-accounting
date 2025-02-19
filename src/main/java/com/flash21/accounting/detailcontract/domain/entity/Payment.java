@@ -30,7 +30,11 @@ public class Payment {
     }
 
     public void update(String method, String condition) {
-        this.method = method;
-        this.condition = condition;
+        if (method != null) {
+            this.method = method;
+        }
+        if (condition != null) {
+            this.condition = condition;
+        }
     }
 }

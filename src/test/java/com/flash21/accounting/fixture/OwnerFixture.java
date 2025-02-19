@@ -6,8 +6,8 @@ public class OwnerFixture {
 
     public static Owner createDefault() {
         return Owner.builder()
-            .ownerId(1L)
-            .name("name")
-            .build();
+                .ownerId(1L)
+                .name("name")
+                .build();
     }
 }

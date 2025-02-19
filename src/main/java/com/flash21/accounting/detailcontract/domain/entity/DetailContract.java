@@ -22,7 +22,7 @@ public class DetailContract {
     private Contract contract;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = true)
+    @Column(nullable = false)
     private DetailContractCategory detailContractCategory;
 
     @Enumerated(EnumType.STRING)
