@@ -49,15 +49,12 @@ public class OwnerService {
     }
 
     @Transactional
-    public OwnerResponse update(Long id, OwnerRequest ownerRequest){
-        Optional<Owner> owner = ownerRepository.findById(id);
-        if(!owner.isPresent()){
-            throw AccountingException.of(OwnerErrorCode.OWNER_NOT_FOUND);
-        }
+    public OwnerResponse update(Long id, OwnerRequest ownerRequest) {
+        Owner owner = ownerRepository.findById(id)
+                .orElseThrow(() -> AccountingException.of(OwnerErrorCode.OWNER_NOT_FOUND));
 
-        owner.get().update(ownerRequest);
-
-        return OwnerResponse.fromEntity(owner.get());
+        owner.update(ownerRequest);
+        return OwnerResponse.fromEntity(owner);
     }
 
     @Transactional
