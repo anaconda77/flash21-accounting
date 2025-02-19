@@ -1,5 +1,6 @@
 package com.flash21.accounting.correspondent.service;
 
+import com.flash21.accounting.correspondent.domain.CorrespondentCategory;
 import com.flash21.accounting.file.domain.APINumber;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.aop.ReflectionOperation;
@@ -74,11 +75,8 @@ public class CorrespondentService {
         String capitalizedCondition = searchCondition.substring(0, 1).toUpperCase()
             + searchCondition.substring(1);
 
-        Method method = ReflectionUtils.findMethod(CorrespondentRepository.class,
-            "findBy" + capitalizedCondition + "StartsWith", String.class);
-
-        Object result = ReflectionUtils.invokeMethod(method, correspondentRepository, searchValue);
-        List<Correspondent> correspondents = (List<Correspondent>) result;
+        List<Correspondent> correspondents = (List<Correspondent>) getObject(capitalizedCondition,
+            searchValue);
 
         return correspondents.stream()
             .map(this::convertToDto)
@@ -118,6 +116,29 @@ public class CorrespondentService {
         correspondentRepository.delete(correspondent);
     }
 
+
+    private Object getObject(String capitalizedCondition, String searchValue) {
+        if (capitalizedCondition.equals("CorrespondentCategory")) {
+            return callCorrespondentCategoryQuery(capitalizedCondition,
+                CorrespondentCategory.of(searchValue));
+        }
+        return callStringQuery(capitalizedCondition, searchValue);
+    }
+
+    private Object callCorrespondentCategoryQuery(String capitalizedCondition,
+        CorrespondentCategory searchValue) {
+        Method method = ReflectionUtils.findMethod(CorrespondentRepository.class,
+            "findBy" + capitalizedCondition, CorrespondentCategory.class);
+        return ReflectionUtils.invokeMethod(method, correspondentRepository,
+            searchValue);
+    }
+
+    private Object callStringQuery(String capitalizedCondition, String searchValue) {
+        Method method = ReflectionUtils.findMethod(CorrespondentRepository.class,
+            "findBy" + capitalizedCondition + "StartsWith", String.class);
+        return ReflectionUtils.invokeMethod(method, correspondentRepository,
+            searchValue);
+    }
 
     public CorrespondentResponse convertToDto(Correspondent correspondent) {
         return EntityToDtoMapper.INSTANCE.correspondentToDto(correspondent);
