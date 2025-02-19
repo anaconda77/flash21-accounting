@@ -1,11 +1,9 @@
 package com.flash21.accounting.contract.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
-@Getter
 public enum Method {
     GENERAL("일반계약"),
     BID("입찰계약"),
@@ -13,10 +11,20 @@ public enum Method {
 
     private final String name;
 
-    public static Method of(String name) {
+    Method(String name) {
+        this.name = name;
+    }
+
+    @JsonValue
+    public String getName() {
+        return name;
+    }
+
+    @JsonCreator
+    public static Method fromString(String value) {
         return Arrays.stream(Method.values())
-                .filter(m -> m.getName().equals(name))
+                .filter(m -> m.getName().equals(value))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("지원되지 않는 계약 방식: " + value));
     }
 }

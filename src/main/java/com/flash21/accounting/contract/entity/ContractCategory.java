@@ -1,11 +1,9 @@
 package com.flash21.accounting.contract.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
-@Getter
 public enum ContractCategory {
     DEVELOP("개발"),
     MAINTENANCE("유지관리"),
@@ -16,10 +14,20 @@ public enum ContractCategory {
 
     private final String name;
 
-    public static ContractCategory of(String name) {
+    ContractCategory(String name) {
+        this.name = name;
+    }
+
+    @JsonValue
+    public String getName() {
+        return name;
+    }
+
+    @JsonCreator
+    public static ContractCategory fromString(String value) {
         return Arrays.stream(ContractCategory.values())
-                .filter(c -> c.getName().equals(name))
+                .filter(c -> c.getName().equals(value))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("지원되지 않는 계약 카테고리: " + value));
     }
 }

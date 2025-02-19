@@ -1,11 +1,9 @@
 package com.flash21.accounting.contract.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
-@Getter
 public enum ProcessStatus {
     PENDING_APPROVAL("결재진행"),
     CONTRACTED("계약진행"),
@@ -16,10 +14,20 @@ public enum ProcessStatus {
 
     private final String name;
 
-    public static ProcessStatus of(String name) {
+    ProcessStatus(String name) {
+        this.name = name;
+    }
+
+    @JsonValue
+    public String getName() {
+        return name;
+    }
+
+    @JsonCreator
+    public static ProcessStatus fromString(String value) {
         return Arrays.stream(ProcessStatus.values())
-                .filter(p -> p.getName().equals(name))
+                .filter(p -> p.getName().equals(value))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("지원되지 않는 진행 상태: " + value));
     }
 }
