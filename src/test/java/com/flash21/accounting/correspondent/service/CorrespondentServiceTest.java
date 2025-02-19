@@ -49,7 +49,7 @@ class CorrespondentServiceTest {
     @CsvSource({
         ",",
         "correspondentName, name",
-        "businessRegNumber, 123456789",
+        "correspondentCategory, 헬스장",
         "ownerName, owner",
     })
     void legalSearchInputs(String condition, String value) {
@@ -68,17 +68,19 @@ class CorrespondentServiceTest {
             ReflectionErrorCode.REFLECTION_UNFOUND_METHOD,() -> correspondentService.getCorrespondents(condition, value));
     }
 
-    @DisplayName("잘못된 검색 값에 대한 조회 실패 테스트")
+    @DisplayName("빈 검색 값에 대한 조회 실패 테스트")
     @ParameterizedTest
     @CsvSource({
         "correspondentName,   ",
         "businessRegNumber,  ",
-        "managerName, "
+        "managerName, ",
     })
     void illegalSearchValueInputs(String condition, String value) {
         assertErrorCode(
             CorrespondentErrorCode.NOT_ALLOWING_EMPTY_SEARCH_VALUES,() -> correspondentService.getCorrespondents(condition, value));
     }
+
+
 
 
 }
