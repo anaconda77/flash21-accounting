@@ -48,21 +48,22 @@ class CorrespondentRequestTest {
     }
 
     @Test
-    @DisplayName("validation 동작 테스트")
+    @DisplayName("validation 동작 테스트, validation 위반")
     void correspondentRequestTest() throws Exception {
         String json = """
             {
-                "correspondentName": "String",
-                "presidentName": "String",
-                "ownerName": "String",
-                "ownerPosition": "String",
-                "ownerPhoneNumber": "String",
-                "ownerEmail": "String",
-                "taxEmail": "String",
-                "businessRegNumber": "",
-                "address": "String",
-                "detailedAddress": "String",
-                "memo": "String"
+            	"correspondentName" : "String",
+            	"ownerId": 1,
+            	"managerName":"String",
+            	"managerPosition":"String",
+                "managerPhoneNumber":"String",
+            	"managerEmail":"String",
+            	"taxEmail":"String",
+            	"businessRegNumber":"",
+            	"address":"String",
+            	"detailedAddress":"String",
+            	"memo":"String",
+            	"categoryName" : "헬스장"
             }
             """;
 

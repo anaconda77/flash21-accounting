@@ -1,13 +1,13 @@
 package com.flash21.accounting.file.service;
 
-import com.flash21.accounting.category.domain.APINumber;
+import com.flash21.accounting.file.domain.APINumber;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.errorcode.FileErrorCode;
 import com.flash21.accounting.file.domain.AttachmentFile;
 import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse;
 import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse.AttachmentFileResponse;
 import com.flash21.accounting.file.repository.AttachmentFileRepository;
-import java.io.InputStream;
+import java.io.BufferedInputStream;
 import java.nio.file.Path;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -27,15 +27,19 @@ public class AttachmentFileService {
     public AttachmentFile saveFile(Long referenceId, Integer typeId, MultipartFile file,
         APINumber apiNumber) {
         String originalFileName = file.getOriginalFilename();
-        InputStream inputStream = systemFileService.getInputStream(file);
-        // 파일을 분석하여 확장자 추출
+        // 파일 내용물 추출
+        BufferedInputStream inputStream = systemFileService.getInputStream(file);
+        // 파일을 분석하여 확장자 추출 및 인풋스트림 초기화(재사용)
         String contentType = systemFileService.detectFileType(inputStream);
+        // 파일 시스템에 저장할 이름 생성
         String systemFileName = systemFileService.generateUniqueFileName(contentType);
+        // 저장할 경로
         Path targetPath = systemFileService.getPath(systemFileName);
 
         // 지정된 경로에 파일 복사(저장)
         systemFileService.createFileInSystemStorage(inputStream, targetPath);
 
+        // 저장한 파일에 권한 허가 작업
         if (systemFileService.isPosixCompliant()) {
             systemFileService.setFilePermissions(targetPath);
         }

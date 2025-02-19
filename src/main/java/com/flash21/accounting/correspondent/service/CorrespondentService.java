@@ -1,15 +1,18 @@
 package com.flash21.accounting.correspondent.service;
 
-import com.flash21.accounting.category.domain.APINumber;
+import com.flash21.accounting.file.domain.APINumber;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.aop.ReflectionOperation;
 import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;
+import com.flash21.accounting.common.exception.errorcode.OwnerErrorCode;
 import com.flash21.accounting.common.util.EntityToDtoMapper;
 import com.flash21.accounting.correspondent.dto.request.CorrespondentRequest;
 import com.flash21.accounting.correspondent.dto.response.CorrespondentResponse;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
 import com.flash21.accounting.file.service.AttachmentFileService;
+import com.flash21.accounting.owner.domain.Owner;
+import com.flash21.accounting.owner.repository.OwnerRepository;
 import java.lang.reflect.Method;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +28,15 @@ public class CorrespondentService {
 
     private final CorrespondentRepository correspondentRepository;
     private final AttachmentFileService attachmentFileService;
+    private final OwnerRepository ownerRepository;
 
     @Transactional
     public CorrespondentResponse createCorrespondent(CorrespondentRequest correspondentRequest,
         MultipartFile businessRegNumberImage, MultipartFile bankBookImage) {
+        Owner owner = ownerRepository.findById(correspondentRequest.ownerId())
+            .orElseThrow(() -> AccountingException.of(OwnerErrorCode.OWNER_NOT_FOUND));
         Correspondent correspondent = correspondentRepository.save(
-            convertToEntity(correspondentRequest));
-
+            new Correspondent(correspondentRequest, owner));
         // 2개의 첨부 파일 저장
         if (businessRegNumberImage != null) {
             attachmentFileService.saveFile(correspondent.getId(), 1, businessRegNumberImage,
@@ -89,12 +94,16 @@ public class CorrespondentService {
 
         // 각 첨부파일 수정 요청이 있으면, 해당 첨부파일을 대체(기존 것을 삭제 후 새로운 것을 생성)
         if (businessRegNumberImage != null) {
-            attachmentFileService.deleteFileHavingTypeId(correspondent.getId(), 1, APINumber.CORRESPONDENT);
-            attachmentFileService.saveFile(correspondent.getId(), 1, businessRegNumberImage, APINumber.CORRESPONDENT);
+            attachmentFileService.deleteFileHavingTypeId(correspondent.getId(), 1,
+                APINumber.CORRESPONDENT);
+            attachmentFileService.saveFile(correspondent.getId(), 1, businessRegNumberImage,
+                APINumber.CORRESPONDENT);
         }
         if (bankBookImage != null) {
-            attachmentFileService.deleteFileHavingTypeId(correspondent.getId(), 2, APINumber.CORRESPONDENT);
-            attachmentFileService.saveFile(correspondent.getId(), 2, bankBookImage, APINumber.CORRESPONDENT);
+            attachmentFileService.deleteFileHavingTypeId(correspondent.getId(), 2,
+                APINumber.CORRESPONDENT);
+            attachmentFileService.saveFile(correspondent.getId(), 2, bankBookImage,
+                APINumber.CORRESPONDENT);
         }
         correspondent.updateCorrespondent(correspondentRequest);
     }
@@ -109,9 +118,6 @@ public class CorrespondentService {
         correspondentRepository.delete(correspondent);
     }
 
-    public Correspondent convertToEntity(CorrespondentRequest correspondentRequest) {
-        return EntityToDtoMapper.INSTANCE.dtoToCorrespondent(correspondentRequest);
-    }
 
     public CorrespondentResponse convertToDto(Correspondent correspondent) {
         return EntityToDtoMapper.INSTANCE.correspondentToDto(correspondent);

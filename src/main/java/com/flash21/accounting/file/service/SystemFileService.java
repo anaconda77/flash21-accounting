@@ -3,6 +3,7 @@ package com.flash21.accounting.file.service;
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.common.exception.errorcode.FileErrorCode;
 import com.flash21.accounting.file.domain.AttachmentFile;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -38,15 +39,15 @@ public class SystemFileService {
         return Paths.get(baseDirectory, fileName);
     }
 
-    public InputStream getInputStream(MultipartFile file) {
+    public BufferedInputStream getInputStream(MultipartFile file) {
         try {
-            return file.getInputStream();
+            return new BufferedInputStream(file.getInputStream());
         } catch (IOException e) {
             throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR, e);
         }
     }
 
-    public void createFileInSystemStorage(InputStream inputStream, Path fileSource) {
+    public void createFileInSystemStorage(BufferedInputStream inputStream, Path fileSource) {
         try {
             Files.copy(
                 inputStream,
@@ -102,11 +103,14 @@ public class SystemFileService {
         };
     }
 
-    public String detectFileType(InputStream inputStream) {
+    public String detectFileType(BufferedInputStream inputStream) {
         // Apache Tika 등을 사용하여 실제 파일 내용 기반으로 타입 탐지
         try {
             Tika tika = new Tika();
-            return tika.detect(inputStream);
+            String result = tika.detect(inputStream);
+            inputStream.reset();
+
+            return result;
         } catch (IOException e) {
             throw AccountingException.of(FileErrorCode.FILE_PROCESSING_ERROR, e);
         }

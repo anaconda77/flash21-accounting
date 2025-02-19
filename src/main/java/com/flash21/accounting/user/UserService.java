@@ -87,7 +87,7 @@ public class UserService {
         }
 
         if(!bCryptPasswordEncoder.matches(password, user.getPassword())){
-            throw AccountingException.of(UserErrorCode.PASSWORD_MISMATCH);
+            throw AccountingException.of(UserErrorCode.USERNAME_OR_PASSWORD_MISMATCH);
         }
 
         userRepository.delete(user);

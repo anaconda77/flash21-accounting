@@ -1,8 +1,11 @@
 package com.flash21.accounting.common.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flash21.accounting.common.util.jwt.JWTUtil;
 import com.flash21.accounting.common.security.filter.JWTFilter;
 import com.flash21.accounting.common.security.filter.LoginFilter;
+import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +30,8 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
+    private final List<String> skipPaths;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -34,7 +39,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
+        throws Exception {
         return configuration.getAuthenticationManager();
     }
 
@@ -42,42 +48,43 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .csrf((auth)-> auth.disable());
-
-
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())); // CORS 설정
+            .csrf((auth) -> auth.disable());
 
         http
-                .formLogin((auth)-> auth.disable());
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())); // CORS 설정
 
         http
-                .httpBasic((auth)-> auth.disable());
+            .formLogin((auth) -> auth.disable());
 
         http
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            .httpBasic((auth) -> auth.disable());
 
         http
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll()
-                        .anyRequest().authenticated()
-                );
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(skipPaths.toArray(new String[0])).permitAll()
+                .anyRequest().authenticated()
+            );
 
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration),jwtUtil), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(new JWTFilter(jwtUtil, skipPaths, objectMapper), LoginFilter.class);
 
         http
-                .sessionManagement((session) -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            .addFilterAt(
+                new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, objectMapper),
+                UsernamePasswordAuthenticationFilter.class);
 
         http
-                .headers(headers -> headers
-                        .frameOptions(frameOptions -> frameOptions.disable()) // h2 console
-                );
+            .sessionManagement((session) -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        http
+            .headers(headers -> headers
+                .frameOptions(frameOptions -> frameOptions.disable()) // h2 console
+            );
 
         return http.build();
     }

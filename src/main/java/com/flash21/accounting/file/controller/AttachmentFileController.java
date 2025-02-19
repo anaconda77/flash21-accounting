@@ -1,6 +1,6 @@
 package com.flash21.accounting.file.controller;
 
-import com.flash21.accounting.category.domain.APINumber;
+import com.flash21.accounting.file.domain.APINumber;
 import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse;
 import com.flash21.accounting.file.service.AttachmentFileService;
 import lombok.RequiredArgsConstructor;

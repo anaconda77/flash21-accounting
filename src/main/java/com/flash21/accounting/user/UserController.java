@@ -1,5 +1,7 @@
 package com.flash21.accounting.user;
 
+import com.flash21.accounting.common.exception.AccountingException;
+import com.flash21.accounting.common.exception.errorcode.UserErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "계정", description = "회원가입 및 로그인 API")
 public class UserController {
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
     @Operation(summary = "회원가입", description = "사용자는 회원가입을 할 수 있습니다.")
@@ -31,6 +34,17 @@ public class UserController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(responseBody);
+    }
+
+    @GetMapping("/user/check-duplicate")
+    public ResponseEntity<Void> checkDuplicate(@RequestParam String username) {
+
+        User user = userRepository.findByUsername(username);
+        if (user != null) {
+            throw AccountingException.of(UserErrorCode.DUPLICATE_USERNAME);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     /**

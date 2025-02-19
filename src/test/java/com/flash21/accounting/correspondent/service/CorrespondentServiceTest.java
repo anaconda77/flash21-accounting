@@ -6,7 +6,10 @@ import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;
 import com.flash21.accounting.common.exception.errorcode.ReflectionErrorCode;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
+import com.flash21.accounting.fixture.OwnerFixture;
 import com.flash21.accounting.fixture.correspondent.CorrespondentFixture;
+import com.flash21.accounting.owner.domain.Owner;
+import com.flash21.accounting.owner.repository.OwnerRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,11 +33,15 @@ class CorrespondentServiceTest {
     private CorrespondentService correspondentService;
     @Autowired
     private CorrespondentRepository correspondentRepository;
+    @Autowired
+    private OwnerRepository ownerRepository;
     private Correspondent correspondent;
+    private Owner owner;
 
     @BeforeEach
     void setUp() {
-        correspondent = correspondentRepository.save(CorrespondentFixture.createWithAllSearchConditions());
+        owner = ownerRepository.save(OwnerFixture.createDefault());
+        correspondent = correspondentRepository.save(CorrespondentFixture.createWithAllSearchConditions(owner));
     }
 
     @DisplayName("올바른 검색 조건에 대한 조회 성공 테스트")
@@ -66,7 +73,7 @@ class CorrespondentServiceTest {
     @CsvSource({
         "correspondentName,   ",
         "businessRegNumber,  ",
-        "ownerName, "
+        "managerName, "
     })
     void illegalSearchValueInputs(String condition, String value) {
         assertErrorCode(
