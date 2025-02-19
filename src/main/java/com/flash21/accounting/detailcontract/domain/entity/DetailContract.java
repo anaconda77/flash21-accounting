@@ -70,12 +70,13 @@ public class DetailContract {
 
         // 상태 변경 시 검증
         if(updateDto.getStatus() != null){
-            validateStatusTransition(this.status, updateDto.getStatus());
-            this.status = updateDto.getStatus();
+            DetailContractStatus newStatus = DetailContractStatus.fromDisplayName(updateDto.getStatus());
+            validateStatusTransition(this.status, newStatus);
+            this.status = newStatus;
         }
 
         if(updateDto.getDetailContractCategory() != null){
-            this.detailContractCategory = updateDto.getDetailContractCategory();
+            this.detailContractCategory = DetailContractCategory.fromDisplayName(updateDto.getDetailContractCategory());
         }
         if(updateDto.getContent() != null){
             this.content = updateDto.getContent();

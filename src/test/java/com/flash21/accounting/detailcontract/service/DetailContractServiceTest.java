@@ -129,8 +129,8 @@ public class DetailContractServiceTest {
         // 테스트 요청 데이터 생성
         testRequest = DetailContractRequest.builder()
                 .contractId(testContract.getContractId())
-                .detailContractCategory(DetailContractCategory.WEBSITE_CONSTRUCTION)
-                .status(DetailContractStatus.TEMPORARY)
+                .detailContractCategory("웹사이트 구축")
+                .status("임시")
                 .content("테스트 세부계약 내용")
                 .quantity(1)
                 .unitPrice(1000000)
@@ -169,7 +169,8 @@ public class DetailContractServiceTest {
         // given
         testRequest = DetailContractRequest.builder()
                 .contractId(testContract.getContractId())
-                .detailContractCategory(null)
+                .detailContractCategory("존재하지 않는 카테고리")
+                .status("존재하지 않는 상태")
                 .content("테스트 내용")
                 .quantity(1)
                 .unitPrice(1000000)
@@ -232,8 +233,8 @@ public class DetailContractServiceTest {
         // 두 번째 세부계약서 생성
         DetailContractRequest secondRequest = DetailContractRequest.builder()
                 .contractId(testContract.getContractId())
-                .detailContractCategory(DetailContractCategory.WEBSITE_DESIGN)
-                .status(DetailContractStatus.TEMPORARY)
+                .detailContractCategory("디자인")
+                .status("임시")
                 .content("두 번째 세부계약 내용")
                 .quantity(1)
                 .unitPrice(2000000)
@@ -295,7 +296,8 @@ public class DetailContractServiceTest {
         var created = detailContractService.createDetailContract(testRequest);
 
         var updateRequest = DetailContractUpdateRequest.builder()
-                .status(DetailContractStatus.ONGOING)
+                .status("진행")
+                .detailContractCategory("웹사이트 구축")
                 .build();
 
         //when
@@ -307,6 +309,8 @@ public class DetailContractServiceTest {
         //db검증
         var updatedDetailContract = detailContractRepository.findById(created.getDetailContractId()).orElseThrow();
         assertThat(updatedDetailContract.getStatus()).isEqualTo(DetailContractStatus.ONGOING);
+        assertThat(response.getDetailContractCategory()).isEqualTo(DetailContractCategory.WEBSITE_CONSTRUCTION);
+
     }
 
     @Test
@@ -316,7 +320,7 @@ public class DetailContractServiceTest {
         var created = detailContractService.createDetailContract(testRequest);
 
         var updateRequest = DetailContractUpdateRequest.builder()
-                .status(DetailContractStatus.DONE) // TEMPORARY에서 바로 DONE으로 변경 시도
+                .status("완료") // TEMPORARY에서 바로 DONE으로 변경 시도
                 .build();
 
         // when & then
@@ -332,7 +336,7 @@ public class DetailContractServiceTest {
 
         // CANCELED 상태로 변경
         var cancelRequest = DetailContractUpdateRequest.builder()
-                .status(DetailContractStatus.CANCELED)
+                .status("취소")
                 .build();
         detailContractService.updateDetailContract(created.getDetailContractId(), cancelRequest);
 

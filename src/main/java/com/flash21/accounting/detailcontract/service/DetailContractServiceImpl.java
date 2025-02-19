@@ -30,17 +30,16 @@ public class DetailContractServiceImpl implements DetailContractService {
     @Transactional
     public DetailContractResponse createDetailContract(DetailContractRequest request) {
         // 카테고리 유효성 검증
-        if (request.getDetailContractCategory() == null) {
-            throw new AccountingException(DetailContractErrorCode.INVALID_CATEGORY);
-        }
+        DetailContractCategory category = DetailContractCategory.fromDisplayName(request.getDetailContractCategory());
+        DetailContractStatus status = DetailContractStatus.fromDisplayName(request.getStatus());
 
         Contract contract = contractRepository.findById(request.getContractId())
                 .orElseThrow(() -> new AccountingException(DetailContractErrorCode.CONTRACT_NOT_FOUND));
 
         DetailContract detailContract = DetailContract.builder()
                 .contract(contract)
-                .detailContractCategory(request.getDetailContractCategory()) // 한글명 -> enum 변환
-                .status(DetailContractStatus.TEMPORARY)  // 초기 상태는 TEMPORARY
+                .detailContractCategory(category)
+                .status(status)
                 .content(request.getContent())
                 .quantity(request.getQuantity())
                 .unitPrice(request.getUnitPrice())

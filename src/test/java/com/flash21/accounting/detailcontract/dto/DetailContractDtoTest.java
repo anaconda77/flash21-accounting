@@ -66,8 +66,8 @@ class DetailContractDtoTest {
         // given
         DetailContractRequest request = DetailContractRequest.builder()
                 .contractId(1L)
-                .status(DetailContractStatus.TEMPORARY)
-                .detailContractCategory(DetailContractCategory.WEBSITE_CONSTRUCTION)
+                .status("임시")
+                .detailContractCategory("웹사이트 구축")
                 .content("테스트 내용")
                 .quantity(1)
                 .unitPrice(1000000)
@@ -90,8 +90,8 @@ class DetailContractDtoTest {
         // given
         DetailContractRequest request = DetailContractRequest.builder()
                 .contractId(null)  // 필수 필드 누락
-                .status(null)      // 필수 필드 누락
-                .detailContractCategory(null)
+                .status("")      // 필수 필드 누락
+                .detailContractCategory("")
                 .content("")  // 빈 문자열
                 .quantity(-1)  // 음수
                 .unitPrice(0)  // 0
@@ -128,13 +128,15 @@ class DetailContractDtoTest {
     void validateDetailContractUpdateRequest_PartialUpdate() {
         // given
         DetailContractUpdateRequest request = DetailContractUpdateRequest.builder()
-                .status(DetailContractStatus.ONGOING)
+                .status("진행")
+                .detailContractCategory("웹사이트 구축")
                 .content("수정된 내용")
                 .build();
 
         // when & then
         // UpdateRequest는 모든 필드가 nullable이므로 유효성 검증이 필요 없음
-        assertThat(request.getStatus()).isEqualTo(DetailContractStatus.ONGOING);
+        assertThat(request.getStatus()).isEqualTo("진행");
+        assertThat(request.getDetailContractCategory()).isEqualTo("웹사이트 구축");
         assertThat(request.getContent()).isEqualTo("수정된 내용");
         assertThat(request.getQuantity()).isNull();
         assertThat(request.getUnitPrice()).isNull();
