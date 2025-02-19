@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
                 e.getBindingResult().getAllErrors().getFirst().getDefaultMessage()));
     }
 
-    // Contract 내 Enum 값 받는 과정 HttpMessageNotReadableException 잡기위함
+    // HttpMessageNotReadableException
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
         log.error("JSON 변환 오류 발생 - Message: {}", e.getMessage());

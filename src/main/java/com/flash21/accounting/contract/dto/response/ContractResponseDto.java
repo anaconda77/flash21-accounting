@@ -1,5 +1,6 @@
 package com.flash21.accounting.contract.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.flash21.accounting.contract.entity.ContractCategory;
 import com.flash21.accounting.contract.entity.Method;
 import com.flash21.accounting.contract.entity.ProcessStatus;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true) // JSON 응답에 예상치 못한 필드가 있어도 무시
 public class ContractResponseDto {
     private Long contractId;
     private User admin;

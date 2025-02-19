@@ -58,6 +58,7 @@ public class Contract {
     private LocalDate contractEndDate;
     private LocalDate workEndDate;
 
+    @Builder.Default
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
     private List<DetailContract> detailContracts = new ArrayList<>();
 
