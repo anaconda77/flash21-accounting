@@ -35,7 +35,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
+        String path = request.getRequestURI();
         return skipPaths.stream()
             .anyMatch(pattern -> antPathMatcher.match(pattern, path));
     }
