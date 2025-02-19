@@ -59,11 +59,9 @@ public class UserService {
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public UserReadDto updateUser(UserUpdateDto userUpdateDto) {
 
-        User user = userRepository.findById(userUpdateDto.id()).get();
+        User user = userRepository.findById(userUpdateDto.id())
+                .orElseThrow(() -> AccountingException.of(UserErrorCode.USER_NOT_FOUND));
 
-        if(user == null){
-            throw AccountingException.of(UserErrorCode.USER_NOT_FOUND);
-        }
 
         String hashedPassword = bCryptPasswordEncoder.encode(userUpdateDto.password());
         user.updateUser(userUpdateDto, hashedPassword);
