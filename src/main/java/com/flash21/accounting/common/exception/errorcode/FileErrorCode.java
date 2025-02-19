@@ -14,7 +14,8 @@ public enum FileErrorCode implements ErrorCode {
     NOT_FOUND_FILE(HttpStatus.NOT_FOUND, "F007", "해당 파일이 시스템에 존재하지 않습니다."),
     CANNOT_DELETE_DIRECTORY(HttpStatus.BAD_REQUEST, "F008", "삭제하려는 대상이 파일이 아닌 디렉토리입니다."),
     ACCESS_REFUSED(HttpStatus.FORBIDDEN, "F009", "파일에 접근할 권한이 없습니다."),
-    WRONG_METHOD_CALL(HttpStatus.BAD_REQUEST, "F010", "잘못된 메소드 호출입니다. 해당 API Id에 맞는 형식인지 확인해주세요.")
+    WRONG_METHOD_CALL(HttpStatus.BAD_REQUEST, "F010", "잘못된 메소드 호출입니다. 해당 API Id에 맞는 형식인지 확인해주세요."),
+    UNSUPPORTED_FILE_FILED_NAME(HttpStatus.BAD_REQUEST, "F011", "지원하지 않는 파일 필드명입니다. 필드명을 확인해주세요.")
     ;
     private final HttpStatus status;
     private final String code;

@@ -29,11 +29,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @TestPropertySource(properties = {
-    "jwt.secret=aabsfsdbd"
+    "jwt.secret=sgsdgsgsdgadsfewrewrewfsdvsdvgewrwerrwerwasdv"
 })
 @Transactional
 @AutoConfigureTestDatabase
-@AutoConfigureMockMvc
 class AttachmentFileServiceTest {
 
     @Autowired
@@ -43,8 +42,6 @@ class AttachmentFileServiceTest {
     AttachmentFile attachmentFile;
     @Autowired
     AttachmentFileRepository attachmentFileRepository;
-    @Autowired
-    private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
