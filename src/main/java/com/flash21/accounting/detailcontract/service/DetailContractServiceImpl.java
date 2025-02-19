@@ -29,6 +29,11 @@ public class DetailContractServiceImpl implements DetailContractService {
     @Override
     @Transactional
     public DetailContractResponse createDetailContract(DetailContractRequest request) {
+        // 카테고리 유효성 검증
+        if (request.getDetailContractCategory() == null) {
+            throw new AccountingException(DetailContractErrorCode.INVALID_CATEGORY);
+        }
+
         Contract contract = contractRepository.findById(request.getContractId())
                 .orElseThrow(() -> new AccountingException(DetailContractErrorCode.CONTRACT_NOT_FOUND));
 
