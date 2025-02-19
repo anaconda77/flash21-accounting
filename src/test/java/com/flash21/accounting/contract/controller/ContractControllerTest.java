@@ -112,7 +112,7 @@ class ContractControllerTest {
                 .admin(admin)
                 .lastModifyUser(admin)
                 .registerDate(LocalDate.now())
-                .contractCategory(ContractCategory.ETC)
+                .contractCategory(ContractCategory.DEVELOP)
                 .processStatus(ProcessStatus.CONTRACTED)
                 .method(Method.GENERAL)
                 .name("테스트 계약")
@@ -209,7 +209,7 @@ class ContractControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contractId").value(contractId))
                 .andExpect(jsonPath("$.name").value("수정된 계약"))
-                .andExpect(jsonPath("$.processStatus").value(ProcessStatus.DONE.name()));
+                .andExpect(jsonPath("$.processStatus").value("최종완료"));
     }
 
     @Test
