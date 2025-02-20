@@ -13,6 +13,8 @@ import com.flash21.accounting.detailcontract.domain.repository.DetailContractRep
 import com.flash21.accounting.detailcontract.dto.request.DetailContractRequest;
 import com.flash21.accounting.detailcontract.dto.request.DetailContractUpdateRequest;
 import com.flash21.accounting.detailcontract.dto.response.DetailContractResponse;
+import com.flash21.accounting.outsourcing.domain.entity.Outsourcing;
+import com.flash21.accounting.outsourcing.domain.repository.OutsourcingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 public class DetailContractServiceImpl implements DetailContractService {
     private final ContractRepository contractRepository;
     private final DetailContractRepository detailContractRepository;
+    private final OutsourcingRepository outsourcingRepository;
 
     @Override
     @Transactional
@@ -54,9 +57,10 @@ public class DetailContractServiceImpl implements DetailContractService {
                 .build();
 
         detailContract.setPayment(payment);
+
         DetailContract savedDetailContract = detailContractRepository.save(detailContract);
 
-        return DetailContractResponse.from(savedDetailContract);
+        return DetailContractResponse.from(savedDetailContract, null);
     }
 
     // detailContractId로 조회(단건조회)
@@ -65,19 +69,29 @@ public class DetailContractServiceImpl implements DetailContractService {
         DetailContract detailContract = detailContractRepository.findById(detailContractId)
                 .orElseThrow(() -> new AccountingException(DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND));
 
-        return DetailContractResponse.from(detailContract);
+        Outsourcing outsourcing = null;
+        if (detailContract.isHasOutsourcing()) {
+            outsourcing = outsourcingRepository.findByDetailContractDetailContractId(detailContractId)
+                    .orElse(null);
+        }
+
+        return DetailContractResponse.from(detailContract, outsourcing);
     }
 
     // 계약서 Id로 세부계약서 조회
     @Override
     public List<DetailContractResponse> getDetailContractsByContractId(Long contractId) {
-        Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new AccountingException(DetailContractErrorCode.CONTRACT_NOT_FOUND));
-
-        List<DetailContract> detailContracts = detailContractRepository.findByContract(contract);
+        List<DetailContract> detailContracts = detailContractRepository.findByContractContractId(contractId);
 
         return detailContracts.stream()
-                .map(DetailContractResponse::from)
+                .map(detailContract -> {
+                    Outsourcing outsourcing = null;
+                    if (detailContract.isHasOutsourcing()) {
+                        outsourcing = outsourcingRepository.findByDetailContractDetailContractId(
+                                detailContract.getDetailContractId()).orElse(null);
+                    }
+                    return DetailContractResponse.from(detailContract, outsourcing);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -89,7 +103,14 @@ public class DetailContractServiceImpl implements DetailContractService {
 
         detailContract.updateDetailContract(request);
 
-        return DetailContractResponse.from(detailContract);
+        // 수정 시에는 현재 연결된 outsourcing 정보 조회하여 전달
+        Outsourcing outsourcing = null;
+        if (detailContract.isHasOutsourcing()) {
+            outsourcing = outsourcingRepository.findByDetailContractDetailContractId(detailContractId)
+                    .orElse(null);
+        }
+
+        return DetailContractResponse.from(detailContract, outsourcing);
     }
 
     @Override

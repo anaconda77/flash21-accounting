@@ -43,4 +43,7 @@ public class DetailContractRequest {
     // 지출 정보
     private String paymentMethod;
     private String paymentCondition;
+
+    //외주계약 여부
+    private Boolean isOutsourcing;
 }

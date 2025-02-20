@@ -5,6 +5,7 @@ import com.flash21.accounting.common.exception.errorcode.DetailContractErrorCode
 import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.detailcontract.domain.repository.DetailContractRepository;
 import com.flash21.accounting.detailcontract.dto.request.DetailContractUpdateRequest;
+import com.flash21.accounting.outsourcing.domain.entity.Outsourcing;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -47,10 +48,22 @@ public class DetailContract {
     @OneToOne(mappedBy = "detailContract", cascade = CascadeType.ALL, orphanRemoval = true)
     private Payment payment;
 
+    @Column(nullable = false)
+    private boolean hasOutsourcing = false;
+
+    // Outsourcing 연관관계 편의 메서드 추가
+    public void setOutsourcing(boolean hasOutsourcing) {
+        this.hasOutsourcing = hasOutsourcing;
+    }
+
+    public boolean isHasOutsourcing() {
+        return hasOutsourcing;
+    }
+
     @Builder
     public DetailContract(Contract contract, DetailContractCategory detailContractCategory, DetailContractStatus status,
                           String content, Integer quantity, Integer unitPrice, Integer supplyPrice,
-                          Integer totalPrice, Payment payment) {
+                          Integer totalPrice, Payment payment, boolean hasOutsourcing) {
         this.contract = contract;
         this.detailContractCategory = detailContractCategory;
         this.status = status;
@@ -60,6 +73,7 @@ public class DetailContract {
         this.supplyPrice = supplyPrice;
         this.totalPrice = totalPrice;
         this.payment = payment;
+        this.hasOutsourcing = hasOutsourcing;
     }
 
     public void updateDetailContract(DetailContractUpdateRequest updateDto) {

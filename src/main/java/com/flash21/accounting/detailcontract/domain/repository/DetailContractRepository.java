@@ -3,6 +3,8 @@ package com.flash21.accounting.detailcontract.domain.repository;
 import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
