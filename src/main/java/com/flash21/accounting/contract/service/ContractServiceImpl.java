@@ -19,6 +19,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,6 +76,7 @@ public class ContractServiceImpl implements ContractService {
                         .directorSign(directorSign)
                         .contractCategory(contractCategory)
                         .processStatus(processStatus)
+                        .region(requestDto.getRegion())
                         .method(method)
                         .name(requestDto.getName())
                         .contractStartDate(requestDto.getContractStartDate())
@@ -93,6 +95,18 @@ public class ContractServiceImpl implements ContractService {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new AccountingException(ContractErrorCode.CONTRACT_NOT_FOUND));
         return toResponseDto(contract);
+    }
+
+    @Override
+    @Transactional
+    public List<ContractResponseDto> findContractWithin30Days(){
+        LocalDate today = LocalDate.now();
+        LocalDate endDate = today.plusDays(30);
+
+        return contractRepository.findContractsEndingWithinDates(today, endDate)
+                .stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -165,6 +179,7 @@ public class ContractServiceImpl implements ContractService {
                 contract.getLastModifyUser(),
                 contract.getContractCategory(),
                 contract.getProcessStatus(),
+                contract.getRegion(),
                 contract.getMethod(),
                 contract.getName(),
                 contract.getRegisterDate(),

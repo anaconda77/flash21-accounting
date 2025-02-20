@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.flash21.accounting.contract.entity.ContractCategory;
 import com.flash21.accounting.contract.entity.Method;
 import com.flash21.accounting.contract.entity.ProcessStatus;
+import com.flash21.accounting.contract.entity.Region;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class ContractRequestDto {
     private Integer directorSignId;
     private ContractCategory contractCategory;
     private ProcessStatus processStatus;
+    private Region region;
     private Method method;
     private String name;
     private String mainContractContent;

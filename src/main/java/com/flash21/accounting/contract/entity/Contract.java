@@ -40,14 +40,19 @@ public class Contract {
     private Sign directorSign;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 30)
     @Builder.Default
     private Method method = Method.GENERAL;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 30)
     @Builder.Default
     private ProcessStatus processStatus = ProcessStatus.AWAITING_PAYMENT;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "region", nullable = false, length = 30)
+    @Builder.Default
+    private Region region = Region.DAEGU;
 
     @Column(nullable = false, length = 20)
     private String name;
