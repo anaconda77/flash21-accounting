@@ -45,9 +45,6 @@ public class DetailContract {
     @Column(nullable = false)
     private Integer totalPrice;
 
-    @OneToOne(mappedBy = "detailContract", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Payment payment;
-
     @Column(nullable = false)
     private boolean hasOutsourcing = false;
 
@@ -63,7 +60,7 @@ public class DetailContract {
     @Builder
     public DetailContract(Contract contract, DetailContractCategory detailContractCategory, DetailContractStatus status,
                           String content, Integer quantity, Integer unitPrice, Integer supplyPrice,
-                          Integer totalPrice, Payment payment, boolean hasOutsourcing) {
+                          Integer totalPrice, boolean hasOutsourcing) {
         this.contract = contract;
         this.detailContractCategory = detailContractCategory;
         this.status = status;
@@ -72,7 +69,6 @@ public class DetailContract {
         this.unitPrice = unitPrice;
         this.supplyPrice = supplyPrice;
         this.totalPrice = totalPrice;
-        this.payment = payment;
         this.hasOutsourcing = hasOutsourcing;
     }
 
@@ -107,11 +103,6 @@ public class DetailContract {
         if(updateDto.getTotalPrice() != null){
             this.totalPrice = updateDto.getTotalPrice();
         }
-
-        if(updateDto.getPaymentMethod() != null || updateDto.getPaymentCondition() != null){
-            this.payment.update(updateDto.getPaymentMethod(), updateDto.getPaymentCondition());
-        }
-
     }
 
     // 상태 변경 유효성 검사 메서드
