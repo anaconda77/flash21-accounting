@@ -47,7 +47,7 @@ public class Correspondent {
     private String businessRegNumber;
     private String address;
     private String detailedAddress;
-    @Lob @Column(length = 65535)
+    @Lob @Column(length = 65535, columnDefinition = "text")
     private String memo;
     @ManyToOne
     @JoinColumn(name = "owner_id")

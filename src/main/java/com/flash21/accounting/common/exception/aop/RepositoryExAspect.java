@@ -20,13 +20,13 @@ public class RepositoryExAspect {
             return joinPoint.proceed();
         } catch (DataIntegrityViolationException e) {
             String message = e.getMessage();
-            if (message.contains("UK_CORRESPONDENT_NAME")) {
+            if (message.contains("CORRESPONDENT_NAME")) {
                 throw AccountingException.of(CorrespondentErrorCode.EXISTING_CORRESPONDENT, e);
             }
-            if (message.contains("UK_CATEGORY_NAME")) {
+            if (message.contains("CATEGORY_NAME")) {
                 throw AccountingException.of(CategoryErrorCode.EXISTING_CATEGORY);
             }
-
+            System.out.println(e.getMessage());
             throw AccountingException.of(CommonErrorCode.UNKNOWN_DATA_ERROR, e);
         }
     }

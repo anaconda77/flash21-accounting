@@ -48,7 +48,7 @@ public class CorrespondentController implements CorrespondentSpecification {
     @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> updateCorrespondent(
         @PathVariable(name = "id") Long correspondentId,
-        @RequestPart("json") @Valid CorrespondentRequest correspondentRequest,
+        @RequestPart(name = "json") @Valid CorrespondentRequest correspondentRequest,
         @RequestPart(name = "businessRegNumberImage", required = false) MultipartFile businessRegNumberImage,
         @RequestPart(name = "bankBookImage", required = false) MultipartFile bankBookImage) {
         correspondentService.updateCorrespondent(correspondentId, correspondentRequest, businessRegNumberImage, bankBookImage);

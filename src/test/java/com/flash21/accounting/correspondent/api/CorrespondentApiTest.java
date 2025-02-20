@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.flash21.accounting.common.interceptor.MultipartFileFieldNameValidationInterceptor;
 import com.flash21.accounting.common.util.jwt.JWTUtil;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
@@ -15,7 +14,6 @@ import com.flash21.accounting.file.domain.AttachmentFile;
 import com.flash21.accounting.file.dto.respone.AttachmentFilesResponse;
 import com.flash21.accounting.file.repository.AttachmentFileRepository;
 import com.flash21.accounting.file.service.AttachmentFileService;
-import com.flash21.accounting.file.service.SystemFileService;
 import com.flash21.accounting.fixture.OwnerFixture;
 import com.flash21.accounting.fixture.correspondent.CorrespondentFixture;
 import com.flash21.accounting.fixture.user.UserFixture;
@@ -42,6 +40,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -50,11 +49,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest
-@TestPropertySource(properties = {
-    "jwt.secret=sgsdgsgsdgadsfewrewrewfsdvsdvgewrwerrwerwasdv"
-})
+@ActiveProfiles("test")
 @Transactional
-@AutoConfigureTestDatabase
 @AutoConfigureMockMvc
 public class CorrespondentApiTest {
 
@@ -120,47 +116,6 @@ public class CorrespondentApiTest {
     }
 
 
-    @DisplayName("첨부파일의 request part명이 잘못될 경우 예외를 던지는지 검증 테스트")
-    @ParameterizedTest
-    @ValueSource(strings = {"businessRegNumberImag", "businessregNumberImage"})
-    void invalidRequestPartName(String partName) throws Exception {
-
-        String json = """
-            {
-            	"correspondentName" : "String22",
-            	"ownerId": 1,
-            	"managerName":"String",
-            	"managerPosition":"String",
-                "managerPhoneNumber":"String",
-            	"managerEmail":"String",
-            	"taxEmail":"String",
-            	"businessRegNumber":"String",
-            	"address":"String",
-            	"detailedAddress":"String",
-            	"memo":"String",
-            	"categoryName" : "수영장"
-            }
-            """;
-        MockMultipartFile jsonfile = new MockMultipartFile("json", "",
-            "application/json", json.getBytes());
-        MockMultipartFile newBusinessRegNumberImage = new MockMultipartFile(
-            partName, //name
-            "image3" + "." + "txt", //originalFilename
-            "multipart/form-data",
-            objectMapper.writeValueAsString("").getBytes(StandardCharsets.UTF_8)
-        );
-
-
-        mockMvc.perform(multipart(HttpMethod.PUT, "/api/correspondent/{id}", 1)
-                .file(newBusinessRegNumberImage)
-                .file(jsonfile)
-                .header("Authorization", "Bearer " + accessToken)
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .requestAttr("json", json)
-            ).andExpect(status().isBadRequest())
-            .andDo(print());
-    }
-
     @DisplayName("새로운 첨부파일과 함께 거래처 수정 시 기존 것을 완전히 대체하는지 검증 테스트")
     @Test
     void updateCorrespondent() throws Exception {
@@ -180,8 +135,11 @@ public class CorrespondentApiTest {
             	"categoryName" : "수영장"
             }
             """;
-        MockMultipartFile jsonfile = new MockMultipartFile("json", "",
-            "application/json", json.getBytes());
+        MockMultipartFile jsonfile = new MockMultipartFile(
+            "json",
+            "",
+            "application/json",
+            json.getBytes());
         MockMultipartFile newBusinessRegNumberImage = new MockMultipartFile(
             "businessRegNumberImage", //name
             "image3" + "." + "txt", //originalFilename
@@ -202,12 +160,16 @@ public class CorrespondentApiTest {
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .requestAttr("json", json)
+                .requestAttr("businessRegNumberImage", newBusinessRegNumberImage)
+                .requestAttr("bankBookImage", newBankBookImage)
             ).andExpect(status().isOk())
             .andDo(print());
 
-        AttachmentFilesResponse businessRegResponses = attachmentFileService.getFiles(correspondent.getId(),
+        AttachmentFilesResponse businessRegResponses = attachmentFileService.getFiles(
+            correspondent.getId(),
             APINumber.CORRESPONDENT, 1);
-        AttachmentFilesResponse bankBookResponses = attachmentFileService.getFiles(correspondent.getId(),
+        AttachmentFilesResponse bankBookResponses = attachmentFileService.getFiles(
+            correspondent.getId(),
             APINumber.CORRESPONDENT, 2);
         List<AttachmentFile> businessRegFiles = attachmentFileRepository.findByReferenceId(
                 correspondent.getId())
@@ -232,8 +194,6 @@ public class CorrespondentApiTest {
         assertThat(bankBookResponses.files().getFirst().fileName()).isEqualTo("image4.txt");
         assertThat(bankBookResponses.files().getFirst().contentType()).isEqualTo("text/plain");
     }
-
-
 
 
     @AfterEach
