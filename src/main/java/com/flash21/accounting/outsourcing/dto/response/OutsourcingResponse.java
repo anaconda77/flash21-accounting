@@ -11,7 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 public class OutsourcingResponse {
     Long outsourcingId;
-    Long correspondingId;
+    Long correspondentId;
     Long detailContractId;
     OutsourcingStatus status;
     String content;

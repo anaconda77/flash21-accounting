@@ -56,6 +56,10 @@ public class DetailContract {
         this.hasOutsourcing = hasOutsourcing;
     }
 
+    public boolean isHasOutsourcing() {
+        return hasOutsourcing;
+    }
+
     @Builder
     public DetailContract(Contract contract, DetailContractCategory detailContractCategory, DetailContractStatus status,
                           String content, Integer quantity, Integer unitPrice, Integer supplyPrice,

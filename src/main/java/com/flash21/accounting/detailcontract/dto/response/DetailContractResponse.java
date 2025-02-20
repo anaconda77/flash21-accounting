@@ -26,9 +26,9 @@ public class DetailContractResponse {
     //외주계약
     OutsourcingResponse outsourcing;
 
-    public static DetailContractResponse from(DetailContract detailContract) {
-        OutsourcingResponse outsourcingResponse = detailContract.getOutsourcing() != null ?
-                OutsourcingResponse.from(detailContract.getOutsourcing()) : null;
+    public static DetailContractResponse from(DetailContract detailContract, Outsourcing outsourcing) {
+        OutsourcingResponse outsourcingResponse = outsourcing != null?
+                OutsourcingResponse.from(outsourcing) : null;
 
         return DetailContractResponse.builder()
                 .detailContractId(detailContract.getDetailContractId())
