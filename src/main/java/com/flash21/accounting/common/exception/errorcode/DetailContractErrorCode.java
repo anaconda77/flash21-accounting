@@ -21,6 +21,7 @@ public enum DetailContractErrorCode implements ErrorCode {
     INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "DC009", "존재하지 않은 카테고리입니다."),
     INVALID_STATUS(HttpStatus.BAD_REQUEST, "DC0010", "존재하지 않은 상태입니다.");
 
+
     private final HttpStatus status;
     private final String code;
     private final String message;

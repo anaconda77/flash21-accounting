@@ -54,6 +54,7 @@ public class DetailContractServiceImpl implements DetailContractService {
                 .build();
 
         detailContract.setPayment(payment);
+
         DetailContract savedDetailContract = detailContractRepository.save(detailContract);
 
         return DetailContractResponse.from(savedDetailContract);
