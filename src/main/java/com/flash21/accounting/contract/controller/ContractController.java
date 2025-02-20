@@ -40,6 +40,13 @@ public class ContractController {
         return ResponseEntity.ok(contractService.getContractById(contractId));
     }
 
+    @Operation(summary = "계약 종료일이 30일 이내인 계약서 조회", description = "계약 종료일이 30일 이내인 계약서를 조회합니다.")
+    @GetMapping("/expiring-soon")
+    public ResponseEntity<List<ContractResponseDto>> getContractExpiringSoon() {
+        return ResponseEntity.ok(contractService.findContractWithin30Days());
+    }
+
+
     @Operation(summary = "계약서 수정", description = "ID를 기반으로 계약서를 수정합니다.")
     @PutMapping("/{contractId}")
     public ResponseEntity<ContractResponseDto> updateContract(
