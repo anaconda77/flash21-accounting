@@ -12,7 +12,8 @@ public record CorrespondentResponse(
     String address,
     String detailedAddress,
     String memo,
-    String categoryName
+    String categoryName,
+    String type
 ) {
     public record owner (
         Long ownerId,

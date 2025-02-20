@@ -31,7 +31,10 @@ public record CorrespondentRequest(
     String memo,
     @NotBlank(message = "거래처 카테고리명을 입력해주세요.")
     @Size(max = 50, message = "거래처 카테고리명은 최대 50자까지 입력가능합니다.")
-    String categoryName
+    String categoryName,
+    @NotBlank(message = "거래처 유형을 입력해주세요.")
+    @Size(max = 50, message = "거래처 유형은 최대 50자까지 입력가능합니다.")
+    String type
 ) {
 
 }
