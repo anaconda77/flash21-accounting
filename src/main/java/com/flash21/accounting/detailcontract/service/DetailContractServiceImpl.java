@@ -10,6 +10,7 @@ import com.flash21.accounting.detailcontract.domain.entity.DetailContractCategor
 import com.flash21.accounting.detailcontract.domain.entity.DetailContractStatus;
 import com.flash21.accounting.detailcontract.domain.entity.Payment;
 import com.flash21.accounting.detailcontract.domain.repository.DetailContractRepository;
+import com.flash21.accounting.detailcontract.domain.repository.PaymentRepository;
 import com.flash21.accounting.detailcontract.dto.request.DetailContractRequest;
 import com.flash21.accounting.detailcontract.dto.request.DetailContractUpdateRequest;
 import com.flash21.accounting.detailcontract.dto.response.DetailContractResponse;
@@ -28,6 +29,7 @@ public class DetailContractServiceImpl implements DetailContractService {
     private final ContractRepository contractRepository;
     private final DetailContractRepository detailContractRepository;
     private final OutsourcingRepository outsourcingRepository;
+    private final PaymentRepository paymentRepository;
 
     @Override
     @Transactional
@@ -50,17 +52,30 @@ public class DetailContractServiceImpl implements DetailContractService {
                 .totalPrice(request.getTotalPrice())
                 .build();
 
+        DetailContract savedDetailContract = detailContractRepository.save(detailContract);
+
         Payment payment = Payment.builder()
                 .detailContract(detailContract)
                 .method(request.getPaymentMethod())
                 .condition(request.getPaymentCondition())
                 .build();
 
-        detailContract.setPayment(payment);
+        paymentRepository.save(payment);
 
-        DetailContract savedDetailContract = detailContractRepository.save(detailContract);
+        return createDetailContractResponse(savedDetailContract);
+    }
 
-        return DetailContractResponse.from(savedDetailContract, null);
+    private DetailContractResponse createDetailContractResponse(DetailContract detailContract) {
+        Payment payment = paymentRepository.findByDetailContractId(detailContract.getDetailContractId())
+                .orElseThrow(() -> new AccountingException(DetailContractErrorCode.PAYMENT_NOT_FOUND));
+
+        Outsourcing outsourcing = null;
+        if (detailContract.isHasOutsourcing()) {
+            outsourcing = outsourcingRepository.findByDetailContractDetailContractId(
+                    detailContract.getDetailContractId()).orElse(null);
+        }
+
+        return DetailContractResponse.from(detailContract, payment, outsourcing);
     }
 
     // detailContractId로 조회(단건조회)
@@ -69,13 +84,16 @@ public class DetailContractServiceImpl implements DetailContractService {
         DetailContract detailContract = detailContractRepository.findById(detailContractId)
                 .orElseThrow(() -> new AccountingException(DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND));
 
+        Payment payment = paymentRepository.findByDetailContractId(detailContractId)
+                .orElseThrow(() -> new AccountingException(DetailContractErrorCode.PAYMENT_NOT_FOUND));
+
         Outsourcing outsourcing = null;
         if (detailContract.isHasOutsourcing()) {
             outsourcing = outsourcingRepository.findByDetailContractDetailContractId(detailContractId)
                     .orElse(null);
         }
 
-        return DetailContractResponse.from(detailContract, outsourcing);
+        return DetailContractResponse.from(detailContract, payment, outsourcing);
     }
 
     // 계약서 Id로 세부계약서 조회
@@ -85,12 +103,17 @@ public class DetailContractServiceImpl implements DetailContractService {
 
         return detailContracts.stream()
                 .map(detailContract -> {
+                    Payment payment = paymentRepository.findByDetailContractId(
+                                    detailContract.getDetailContractId())
+                            .orElseThrow(() -> new AccountingException(DetailContractErrorCode.PAYMENT_NOT_FOUND));
+
                     Outsourcing outsourcing = null;
                     if (detailContract.isHasOutsourcing()) {
                         outsourcing = outsourcingRepository.findByDetailContractDetailContractId(
                                 detailContract.getDetailContractId()).orElse(null);
                     }
-                    return DetailContractResponse.from(detailContract, outsourcing);
+
+                    return DetailContractResponse.from(detailContract, payment, outsourcing);
                 })
                 .collect(Collectors.toList());
     }
@@ -103,6 +126,16 @@ public class DetailContractServiceImpl implements DetailContractService {
 
         detailContract.updateDetailContract(request);
 
+        // Payment 업데이트
+        if(request.getPaymentMethod() != null || request.getPaymentCondition() != null) {
+            Payment payment = paymentRepository.findByDetailContractId(detailContractId)
+                    .orElseThrow(() -> new AccountingException(DetailContractErrorCode.PAYMENT_NOT_FOUND));
+            payment.update(request.getPaymentMethod(), request.getPaymentCondition());
+        }
+
+        Payment payment = paymentRepository.findByDetailContractId(detailContractId)
+                .orElseThrow(() -> new AccountingException(DetailContractErrorCode.PAYMENT_NOT_FOUND));
+
         // 수정 시에는 현재 연결된 outsourcing 정보 조회하여 전달
         Outsourcing outsourcing = null;
         if (detailContract.isHasOutsourcing()) {
@@ -110,7 +143,7 @@ public class DetailContractServiceImpl implements DetailContractService {
                     .orElse(null);
         }
 
-        return DetailContractResponse.from(detailContract, outsourcing);
+        return DetailContractResponse.from(detailContract,payment, outsourcing);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.flash21.accounting.detailcontract.dto.response;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContractCategory;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContractStatus;
+import com.flash21.accounting.detailcontract.domain.entity.Payment;
 import com.flash21.accounting.outsourcing.domain.entity.Outsourcing;
 import com.flash21.accounting.outsourcing.dto.response.OutsourcingResponse;
 import lombok.*;
@@ -26,7 +27,7 @@ public class DetailContractResponse {
     //외주계약
     OutsourcingResponse outsourcing;
 
-    public static DetailContractResponse from(DetailContract detailContract, Outsourcing outsourcing) {
+    public static DetailContractResponse from(DetailContract detailContract, Payment payment, Outsourcing outsourcing) {
         OutsourcingResponse outsourcingResponse = outsourcing != null?
                 OutsourcingResponse.from(outsourcing) : null;
 
@@ -40,8 +41,8 @@ public class DetailContractResponse {
                 .unitPrice(detailContract.getUnitPrice())
                 .supplyPrice(detailContract.getSupplyPrice())
                 .totalPrice(detailContract.getTotalPrice())
-                .paymentMethod(detailContract.getPayment().getMethod())
-                .paymentCondition(detailContract.getPayment().getCondition())
+                .paymentMethod(payment.getMethod())
+                .paymentCondition(payment.getCondition())
                 .outsourcing(outsourcingResponse)
                 .build();
     }

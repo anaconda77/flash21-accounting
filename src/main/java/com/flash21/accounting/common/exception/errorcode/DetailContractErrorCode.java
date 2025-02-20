@@ -18,8 +18,9 @@ public enum DetailContractErrorCode implements ErrorCode {
     INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "DC008", "잘못된 상태 변경입니다."),
 
     // 카테고리
-    INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "DC009", "존재하지 않은 카테고리입니다."),
-    INVALID_STATUS(HttpStatus.BAD_REQUEST, "DC0010", "존재하지 않은 상태입니다.");
+    INVALID_CATEGORY(HttpStatus.NOT_FOUND, "DC009", "존재하지 않은 카테고리입니다."),
+    INVALID_STATUS(HttpStatus.NOT_FOUND, "DC010", "존재하지 않은 상태입니다."),
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "DC011", "결제를 찾을 수 없습니다.");
 
 
     private final HttpStatus status;

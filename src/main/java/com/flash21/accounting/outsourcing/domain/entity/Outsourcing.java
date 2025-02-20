@@ -25,7 +25,9 @@ public class Outsourcing {
     private Correspondent correspondent;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "detail_contract_id", nullable = false)
+    @JoinColumn(name = "detail_contract_id", nullable = false,
+            foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT,
+                    foreignKeyDefinition = "FOREIGN KEY (detail_contract_id) REFERENCES detail_contract(detail_contract_id) ON DELETE CASCADE"))
     private DetailContract detailContract;
 
     @Enumerated(EnumType.STRING)
