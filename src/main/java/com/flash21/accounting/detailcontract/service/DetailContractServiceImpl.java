@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -152,6 +153,18 @@ public class DetailContractServiceImpl implements DetailContractService {
         DetailContract detailContract = detailContractRepository.findById(detailContractId)
                 .orElseThrow(() -> new AccountingException(DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND));
 
+        Payment payment = paymentRepository.findByDetailContractId(detailContractId)
+                .orElseThrow(() -> new AccountingException(DetailContractErrorCode.PAYMENT_NOT_FOUND));
+        paymentRepository.delete(payment);
+
+        if (detailContract.isHasOutsourcing()) {
+            Optional<Outsourcing> outsourcingOptional = outsourcingRepository.findByDetailContractDetailContractId(detailContractId);
+
+            outsourcingOptional.ifPresent(outsourcing -> {
+                outsourcing.setDetailContract(null);
+                outsourcingRepository.delete(outsourcing);
+            });
+        }
         detailContractRepository.delete(detailContract);
     }
 }

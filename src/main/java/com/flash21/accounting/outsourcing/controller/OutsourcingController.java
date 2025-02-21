@@ -4,7 +4,7 @@ import com.flash21.accounting.outsourcing.dto.request.OutsourcingRequest;
 import com.flash21.accounting.outsourcing.dto.request.OutsourcingUpdateRequest;
 import com.flash21.accounting.outsourcing.dto.response.OutsourcingResponse;
 import com.flash21.accounting.outsourcing.service.OutsourcingService;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

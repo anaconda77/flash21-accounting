@@ -18,7 +18,7 @@ import lombok.*;
 public class Outsourcing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long outSourcingId;
+    private Long outsourcingId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "correspondent_id", nullable = false)
