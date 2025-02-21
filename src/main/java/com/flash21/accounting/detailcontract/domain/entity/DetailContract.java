@@ -70,64 +70,29 @@ public class DetailContract {
         }
 
         // 상태 변경 시 검증
-        if(updateDto.getStatus() != null){
+        if(updateDto.getStatus() != null) {
             DetailContractStatus newStatus = DetailContractStatus.fromDisplayName(updateDto.getStatus());
-            validateStatusTransition(this.status, newStatus);
+            DetailContractStatus.validateStatusTransition(this.status, newStatus);
             this.status = newStatus;
         }
 
-        if(updateDto.getDetailContractCategory() != null){
+        if(updateDto.getDetailContractCategory() != null) {
             this.detailContractCategory = DetailContractCategory.fromDisplayName(updateDto.getDetailContractCategory());
         }
-        if(updateDto.getContent() != null){
+        if(updateDto.getContent() != null) {
             this.content = updateDto.getContent();
         }
-        if(updateDto.getQuantity() != null){
+        if(updateDto.getQuantity() != null) {
             this.quantity = updateDto.getQuantity();
         }
-        if(updateDto.getUnitPrice() != null){
+        if(updateDto.getUnitPrice() != null) {
             this.unitPrice = updateDto.getUnitPrice();
         }
-        if(updateDto.getSupplyPrice() != null){
+        if(updateDto.getSupplyPrice() != null) {
             this.supplyPrice = updateDto.getSupplyPrice();
         }
-        if(updateDto.getTotalPrice() != null){
+        if(updateDto.getTotalPrice() != null) {
             this.totalPrice = updateDto.getTotalPrice();
         }
     }
-
-    // 상태 변경 유효성 검사 메서드
-    // TEMPORARY → ONGOING → DONE 순서
-    // CANCELED로 변경은 언제든 가능
-    // CANCELED,DONE 상태면 변경 불가
-    private void validateStatusTransition(DetailContractStatus currentStatus, DetailContractStatus newStatus) {
-        // CANCELED 상태로의 변경은 항상 가능
-        if (newStatus == DetailContractStatus.CANCELED) {
-            return;
-        }
-
-        // 현재 상태가 CANCELED면 상태 변경 불가
-        if (currentStatus == DetailContractStatus.CANCELED) {
-            throw new AccountingException(DetailContractErrorCode.CANNOT_UPDATE_CANCELED_CONTRACT);
-        }
-
-        // 현재 상태별 가능한 다음 상태 검사
-        switch (currentStatus) {
-            case TEMPORARY:
-                if (newStatus != DetailContractStatus.ONGOING) {
-                    throw new AccountingException(DetailContractErrorCode.INVALID_STATUS_TRANSITION);
-                }
-                break;
-            case ONGOING:
-                if (newStatus != DetailContractStatus.DONE) {
-                    throw new AccountingException(DetailContractErrorCode.INVALID_STATUS_TRANSITION);
-                }
-                break;
-            case DONE:
-                throw new AccountingException(DetailContractErrorCode.CANNOT_UPDATE_DONE_CONTRACT);
-            default:
-                throw new AccountingException(DetailContractErrorCode.INVALID_STATUS_TRANSITION);
-        }
-    }
-
 }

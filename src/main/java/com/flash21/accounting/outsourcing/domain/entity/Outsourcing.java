@@ -66,7 +66,7 @@ public class Outsourcing {
 
         if(updateDto.getStatus() != null){
             OutsourcingStatus newStatus = OutsourcingStatus.fromDisplayName(updateDto.getStatus());
-            validateStatusTransition(this.status, newStatus);
+            OutsourcingStatus.validateStatusTransition(this.status, newStatus);
             this.status = newStatus;
         }
 
@@ -84,33 +84,6 @@ public class Outsourcing {
         }
         if(updateDto.getTotalPrice() != null){
             this.totalPrice = updateDto.getTotalPrice();
-        }
-    }
-
-    private void validateStatusTransition(OutsourcingStatus currentStatus, OutsourcingStatus newStatus) {
-        if (newStatus == OutsourcingStatus.CANCELED) {
-            return;
-        }
-
-        if (currentStatus == OutsourcingStatus.CANCELED) {
-            throw new AccountingException(OutsourcingErrorCode.CANNOT_UPDATE_CANCELED_CONTRACT);
-        }
-
-        switch (currentStatus) {
-            case TEMPORARY:
-                if (newStatus != OutsourcingStatus.ONGOING) {
-                    throw new AccountingException(OutsourcingErrorCode.INVALID_STATUS_TRANSITION);
-                }
-                break;
-            case ONGOING:
-                if (newStatus != OutsourcingStatus.DONE) {
-                    throw new AccountingException(OutsourcingErrorCode.INVALID_STATUS_TRANSITION);
-                }
-                break;
-            case DONE:
-                throw new AccountingException(OutsourcingErrorCode.CANNOT_UPDATE_DONE_CONTRACT);
-            default:
-                throw new AccountingException(OutsourcingErrorCode.INVALID_STATUS_TRANSITION);
         }
     }
 
