@@ -48,15 +48,6 @@ public class DetailContract {
     @Column(nullable = false)
     private boolean hasOutsourcing = false;
 
-    // Outsourcing 연관관계 편의 메서드 추가
-    public void setOutsourcing(boolean hasOutsourcing) {
-        this.hasOutsourcing = hasOutsourcing;
-    }
-
-    public boolean isHasOutsourcing() {
-        return hasOutsourcing;
-    }
-
     @Builder
     public DetailContract(Contract contract, DetailContractCategory detailContractCategory, DetailContractStatus status,
                           String content, Integer quantity, Integer unitPrice, Integer supplyPrice,

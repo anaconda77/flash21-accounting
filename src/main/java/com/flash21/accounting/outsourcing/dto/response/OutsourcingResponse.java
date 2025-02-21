@@ -22,7 +22,7 @@ public class OutsourcingResponse {
 
     public static OutsourcingResponse from(Outsourcing outsourcing) {
         return OutsourcingResponse.builder()
-                .outsourcingId(outsourcing.getOutSourcingId())
+                .outsourcingId(outsourcing.getOutsourcingId())
                 .correspondentId(outsourcing.getCorrespondent().getId())
                 .detailContractId(outsourcing.getDetailContract().getDetailContractId())
                 .status(outsourcing.getStatus())

@@ -16,8 +16,10 @@ import com.flash21.accounting.outsourcing.dto.request.OutsourcingUpdateRequest;
 import com.flash21.accounting.outsourcing.dto.response.OutsourcingResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Service
 @Setter
 @RequiredArgsConstructor
 public class OutsourcingServiceImpl implements OutsourcingService {
