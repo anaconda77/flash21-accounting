@@ -123,16 +123,15 @@ class StatsRepositoryTest {
     void createYearStats() {
 
         CorrespondentCategory requestCategory = correspondent.getCorrespondentCategory();
-        List<Contract> returns = statsRepository.getContracts(user.getId(), year);
+        List<Contract> returns = statsRepository.getContracts(user.getId(), year).stream()
+            .filter(c -> c.getCorrespondent().getCorrespondentCategory() == requestCategory).toList();
         Map<String, YearStatsContent> yearStatsContentMap = new HashMap<>();
         Arrays.stream(Region.values())
             .forEach(region -> yearStatsContentMap.put(region.toString(),
                 new YearStatsContent(region.toString(), 0, 0L)));
 
         // yearStats의 content를 각 지역(row) 별로 생성, col에 들어갈 값들을 계산하여 저장
-        returns.stream()
-            .filter(c -> c.getCorrespondent().getCorrespondentCategory() == requestCategory)
-            .forEach(c -> {
+        returns.forEach(c -> {
                 YearStatsContent yearStatsContent = yearStatsContentMap.get(
                     c.getCorrespondent().getRegion().toString());
                 yearStatsContent.updateCount();

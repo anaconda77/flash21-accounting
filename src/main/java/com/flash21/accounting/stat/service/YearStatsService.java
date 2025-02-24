@@ -1,5 +1,7 @@
 package com.flash21.accounting.stat.service;
 
+import com.flash21.accounting.common.exception.AccountingException;
+import com.flash21.accounting.common.exception.errorcode.StatsErrorCode;
 import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.correspondent.domain.CorrespondentCategory;
 import com.flash21.accounting.correspondent.domain.Region;
@@ -38,28 +40,39 @@ public class YearStatsService {
             .findFirst()
             .orElse(
                 calculateYearStatistics(userId, category, year)); // db에 해당 통계 데이터가 없으면 계산 및 생성하여 리턴
-
+        if (yearStats == null) {
+            throw AccountingException.of(StatsErrorCode.CANNOT_CALCULATE_STATS);
+        }
         return YearStatsResponseDto.of(yearStats);
     }
 
     @Transactional
     public YearStatsResponseDto createYearStatistics(Long userId, CorrespondentCategory category,
         Integer year) {
-        return YearStatsResponseDto.of(calculateYearStatistics(userId, category, year));
+        YearStats yearStats = calculateYearStatistics(userId, category, year);
+        if (yearStats == null) {
+            throw AccountingException.of(StatsErrorCode.CANNOT_CALCULATE_STATS);
+        }
+        return YearStatsResponseDto.of(yearStats);
     }
 
 
     private YearStats calculateYearStatistics(Long userId, CorrespondentCategory category,
         Integer year) {
-        List<Contract> returns = statsRepository.getContracts(userId, year);
+        List<Contract> returns = statsRepository.getContracts(userId, year).stream()
+            .filter(c -> c.getCorrespondent().getCorrespondentCategory() == category)
+            .toList();
+        if (returns.isEmpty()) { // 계산을 수행하기 위해 필요한 데이터가 존재하지 않으면 null 반환
+            return null;
+        }
+
         Map<String, YearStatsContent> yearStatsContentMap = new HashMap<>();
         Arrays.stream(Region.values())
             .forEach(region -> yearStatsContentMap.put(region.toString(),
                 new YearStatsContent(region.toString(), 0, 0L)));
 
         // yearStats의 content를 각 지역(row) 별로 생성, col에 들어갈 값들을 계산하여 저장
-        returns.stream()
-            .filter(c -> c.getCorrespondent().getCorrespondentCategory() == category)
+        returns
             .forEach(c -> {
                 YearStatsContent yearStatsContent = yearStatsContentMap.get(
                     c.getCorrespondent().getRegion().toString());
