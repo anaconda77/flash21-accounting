@@ -15,22 +15,24 @@ public class YearStatsController {
 
     private final YearStatsService yearStatsService;
 
-    @GetMapping
+    // 조회
+    @GetMapping("/users/{userId}/categories/{category}/years/{year}")
     public ResponseEntity<YearStatsResponseDto> getYearStatistics(
-            @RequestParam Long userId,
-            @RequestParam CorrespondentCategory category,
-            @RequestParam Integer year
+            @PathVariable Long userId,
+            @PathVariable CorrespondentCategory category,
+            @PathVariable Integer year
     ) {
         return ResponseEntity.ok(
                 yearStatsService.getYearStatistics(userId, category, year)
         );
     }
 
-    @PostMapping
+    // 없을 시 계산
+    @PostMapping("/users/{userId}/categories/{category}/years/{year}")
     public ResponseEntity<YearStatsResponseDto> createYearStatistics(
-            @RequestParam Long userId,
-            @RequestParam CorrespondentCategory category,
-            @RequestParam Integer year
+            @PathVariable Long userId,
+            @PathVariable CorrespondentCategory category,
+            @PathVariable Integer year
     ) {
         return ResponseEntity.ok(
                 yearStatsService.createYearStatistics(userId, category, year)
