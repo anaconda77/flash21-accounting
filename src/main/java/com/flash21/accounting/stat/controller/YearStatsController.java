@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/stat")
 @RequiredArgsConstructor
@@ -18,12 +20,8 @@ public class YearStatsController {
     public ResponseEntity<YearStatsResponseDto> getYearStatistics(
             @PathVariable Long userId,
             @PathVariable CorrespondentCategory category,
-            @PathVariable(required = false) Integer year
+            @PathVariable Integer year
     ) {
-        if (!YearStatsService.allYears.contains(year)) {
-            throw new IllegalArgumentException("일치하지 않는 연도입니다. 연도의 값은 다음과 같아야 합니다 : " + YearStatsService.allYears);
-        }
-
         return ResponseEntity.ok(
                 yearStatsService.getYearStatistics(userId, category, year)
         );
@@ -35,10 +33,6 @@ public class YearStatsController {
             @PathVariable CorrespondentCategory category,
             @PathVariable Integer year
     ) {
-        if (!YearStatsService.allYears.contains(year)) {
-            throw new IllegalArgumentException("일치하지 않는 연도입니다. 연도의 값은 다음과 같아야 합니다 : " + YearStatsService.allYears);
-        }
-
         return ResponseEntity.ok(
                 yearStatsService.createYearStatistics(userId, category, year)
         );
