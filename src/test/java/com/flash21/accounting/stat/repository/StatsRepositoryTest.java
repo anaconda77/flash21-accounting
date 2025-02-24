@@ -149,10 +149,14 @@ class StatsRepositoryTest {
         statsRepository.findByUserId(user.getId())
             .stream()
             .filter(ys -> Objects.equals(ys.getYearNumber(), year) && ys.getCategory() == requestCategory)
-            .findFirst().ifPresentOrElse(
-                ys -> ys.updateContent(contents)
-                , () -> statsRepository.save(new YearStats(null, year, requestCategory, user.getId(), contents))
-            );
+            .findFirst()
+            .map(ys -> {
+                ys.updateContent(contents);
+                return ys;  // 기존 데이터 업데이트 후 반환
+            })
+            .orElseGet(() -> statsRepository.save(
+                new YearStats(null, year, requestCategory, user.getId(), contents)
+            ));
 
         YearStats yearStats = statsRepository.findById(1L).get();
         assertThat(yearStats).isNotNull();

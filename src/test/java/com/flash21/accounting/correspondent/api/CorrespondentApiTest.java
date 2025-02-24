@@ -134,7 +134,8 @@ public class CorrespondentApiTest {
             	"detailedAddress":"String",
             	"memo":"String",
             	"categoryName" : "수영장",
-            	"type" : "수주"
+            	"type" : "수주",
+            	"region" : "대구"
             }
             """;
         MockMultipartFile jsonfile = new MockMultipartFile(
