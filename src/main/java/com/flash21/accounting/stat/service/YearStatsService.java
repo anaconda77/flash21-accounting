@@ -24,6 +24,7 @@ public class YearStatsService {
 
     private final StatsRepository statsRepository;
 
+    @Transactional
     public YearStatsResponseDto getYearStatistics(Long userId, CorrespondentCategory category,
         Integer year) {
         YearStats yearStats = statsRepository.findByUserId(userId).stream()
@@ -41,9 +42,9 @@ public class YearStatsService {
         return YearStatsResponseDto.of(calculateYearStatistics(userId, category, year));
     }
 
-
-    private YearStats calculateYearStatistics(Long userId, CorrespondentCategory category,
-        Integer year) {
+    @Transactional
+    protected YearStats calculateYearStatistics(Long userId, CorrespondentCategory category,
+                                                Integer year) {
         List<Contract> returns = statsRepository.getContracts(userId, year);
         Map<String, YearStatsContent> yearStatsContentMap = new HashMap<>();
         Arrays.stream(Region.values())
