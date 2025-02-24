@@ -2,6 +2,7 @@ package com.flash21.accounting.fixture.correspondent;
 
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.correspondent.domain.CorrespondentCategory;
+import com.flash21.accounting.correspondent.domain.Region;
 import com.flash21.accounting.fixture.OwnerFixture;
 import com.flash21.accounting.owner.domain.Owner;
 
@@ -14,12 +15,13 @@ public class CorrespondentFixture {
             .build();
     }
 
-    public static Correspondent createWithAllSearchConditions(Owner owner) {
+    public static Correspondent createWithAllSearchConditions(Owner owner, Region region) {
         return Correspondent.builder()
             .correspondentName("name")
             .businessRegNumber("123456789")
             .owner(owner)
             .correspondentCategory(CorrespondentCategory.HEALTH)
+            .region(region)
             .build();
     }
 

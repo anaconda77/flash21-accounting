@@ -59,7 +59,7 @@ public class Contract {
     private LocalDate workEndDate;
 
     @Builder.Default
-    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "contract")
     private List<DetailContract> detailContracts = new ArrayList<>();
 
     @ManyToOne
@@ -85,5 +85,13 @@ public class Contract {
     @JoinColumn(name = "last_modify_user", nullable = false)
     private User lastModifyUser;
 
+    public void addDetailContract(DetailContract detailContract) {
+        this.detailContracts.add(detailContract);
+        detailContract.setContract(this);
+    }
 
+    public void removeDetailContract(DetailContract detailContract) {
+        this.detailContracts.remove(detailContract);
+        detailContract.setContract(null);
+    }
 }
