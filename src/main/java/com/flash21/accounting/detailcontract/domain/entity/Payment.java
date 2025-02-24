@@ -6,6 +6,8 @@ import lombok.*;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Table(name = "payment")
 public class Payment {
     @Id
@@ -23,13 +25,6 @@ public class Payment {
 
     @Column(nullable = false, length = 20)
     private String condition;
-
-    @Builder
-    public Payment(DetailContract detailContract, String method, String condition) {
-        this.detailContract = detailContract;
-        this.method = method;
-        this.condition = condition;
-    }
 
     public void update(String method, String condition) {
         if (method != null) {

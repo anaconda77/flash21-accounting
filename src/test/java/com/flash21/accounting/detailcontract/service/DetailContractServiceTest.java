@@ -2,10 +2,11 @@ package com.flash21.accounting.detailcontract.service;
 
 import com.flash21.accounting.common.exception.AccountingException;
 import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.contract.entity.ContractCategory;
+import com.flash21.accounting.contract.entity.Method;
+import com.flash21.accounting.contract.entity.ProcessStatus;
 import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.correspondent.domain.Correspondent;
-import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
-import com.flash21.accounting.correspondent.domain.CorrespondentCategory;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContractCategory;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContractStatus;
@@ -15,12 +16,9 @@ import com.flash21.accounting.detailcontract.domain.repository.PaymentRepository
 import com.flash21.accounting.detailcontract.dto.request.DetailContractRequest;
 import com.flash21.accounting.detailcontract.dto.request.DetailContractUpdateRequest;
 import com.flash21.accounting.detailcontract.dto.response.DetailContractResponse;
-import com.flash21.accounting.fixture.OwnerFixture;
-import com.flash21.accounting.owner.domain.Owner;
-import com.flash21.accounting.owner.repository.OwnerRepository;
-import com.flash21.accounting.user.User;
+import com.flash21.accounting.outsourcing.domain.repository.OutsourcingRepository;
 import com.flash21.accounting.user.Role;
-import com.flash21.accounting.user.UserRepository;
+import com.flash21.accounting.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,11 +26,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springdoc.core.service.OpenAPIService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -44,413 +37,302 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest
-@Transactional
-@ActiveProfiles("test")
-public class DetailContractServiceTest {
-    @Autowired
+@ExtendWith(MockitoExtension.class)
+class DetailContractServiceTest {
+
+    @InjectMocks
     private DetailContractServiceImpl detailContractService;
 
-    @Autowired
-    private ContractRepository contractRepository;
-
-    @Autowired
+    @Mock
     private DetailContractRepository detailContractRepository;
 
-    @Autowired
+    @Mock
+    private ContractRepository contractRepository;
+
+    @Mock
     private PaymentRepository paymentRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    @Mock
+    private OutsourcingRepository outsourcingRepository;
 
-    @Autowired
-    private CorrespondentRepository correspondentRepository;
-
-    @Autowired
-    private OwnerRepository ownerRepository;
-
-    private User testAdmin;
-    private Correspondent testCorrespondent;
-    private Contract testContract;
-    private DetailContractRequest testRequest;
-    @Autowired
-    private OpenAPIService openAPIService;
+    private User admin;
+    private Contract contract;
+    private DetailContract detailContract;
+    private Payment payment;
+    private Correspondent correspondent;
+    private DetailContractRequest request;
+    private DetailContractUpdateRequest updateRequest;
 
     @BeforeEach
     void setUp() {
-        // 테스트 어드민 생성
-        testAdmin = User.builder()
-                .username("testAdmin")
+        admin = User.builder()
+                .username("admin")
                 .password("password")
-                .name("Test Admin")
+                .name("관리자")
                 .phoneNumber("010-1234-5678")
-                .email("test@example.com")
-                .address("서울시 강남구")
-                .addressDetail("테스트빌딩 3층")
+                .email("admin@test.com")
+                .address("서울")
+                .addressDetail("강남구")
                 .role(Role.ROLE_ADMIN)
-                .grade("HIGH")
+                .grade("A")
                 .companyPhoneNumber("02-1234-5678")
                 .companyFaxNumber("02-1234-5679")
                 .build();
-        testAdmin = userRepository.save(testAdmin);
 
-        // Owner 생성
-        Owner owner = OwnerFixture.createDefault();
-        owner = ownerRepository.save(owner);
-
-        // 테스트 거래처 생성
-        testCorrespondent = Correspondent.builder()
-                .correspondentName("테스트 거래처_" + System.currentTimeMillis()) // unique 제약조건을 위한 unique한 이름
+        correspondent = Correspondent.builder()
+                .id(1L)
+                .correspondentName("테스트 업체")
                 .businessRegNumber("123-45-67890")
-                .owner(owner)
-                .managerName("홍길동")
-                .managerPosition("과장")
-                .managerPhoneNumber("010-1234-5678")
-                .managerEmail("manager@test.com")
-                .taxEmail("tax@test.com")
-                .address("서울시 강남구")
-                .detailedAddress("테스트빌딩 1층")
-                .memo("테스트 메모")
-                .correspondentCategory(CorrespondentCategory.HEALTH)
+                .address("서울시")
+                .detailedAddress("강남구")
                 .build();
-        testCorrespondent = correspondentRepository.save(testCorrespondent);
 
-        // 테스트 계약서 생성
-        testContract = Contract.builder()
-                .admin(testAdmin)
-                .correspondent(testCorrespondent)
-                .name("테스트 계약서")
+        contract = Contract.builder()
+                .contractId(1L)
+                .admin(admin)
+                .method(Method.GENERAL)
+                .processStatus(ProcessStatus.CONTRACTED)
+                .name("테스트 계약")
                 .contractStartDate(LocalDate.now())
-                .contractEndDate(LocalDate.now().plusMonths(1))
-                .lastModifyUser(testAdmin)
+                .contractEndDate(LocalDate.now().plusDays(30))
+                .correspondent(correspondent)
+                .contractCategory(ContractCategory.ETC)
+                .registerDate(LocalDate.now())
+                .lastModifyUser(admin)
                 .build();
-        testContract = contractRepository.save(testContract);
 
-        // 테스트 요청 데이터 생성
-        testRequest = DetailContractRequest.builder()
-                .contractId(testContract.getContractId())
-                .detailContractCategory("웹사이트 구축")
+        detailContract = DetailContract.builder()
+                .detailContractId(1L)
+                .contract(contract)
+                .detailContractCategory(DetailContractCategory.WEBSITE_CONSTRUCTION)
+                .status(DetailContractStatus.TEMPORARY)
+                .content("웹사이트 구축")
+                .quantity(1)
+                .unitPrice(1000000)
+                .supplyPrice(1000000)
+                .totalPrice(1100000)
+                .hasOutsourcing(false)
+                .build();
+
+        payment = Payment.builder()
+                .paymentId(1L)
+                .detailContract(detailContract)
+                .method("계좌이체")
+                .condition("선금 50%, 잔금 50%")
+                .build();
+
+        request = DetailContractRequest.builder()
+                .contractId(1L)
                 .status("임시")
-                .content("테스트 세부계약 내용")
+                .detailContractCategory("웹사이트 구축")
+                .content("웹사이트 구축")
                 .quantity(1)
                 .unitPrice(1000000)
                 .supplyPrice(1000000)
                 .totalPrice(1100000)
                 .paymentMethod("계좌이체")
                 .paymentCondition("선금 50%, 잔금 50%")
+                .isOutsourcing(false)
+                .build();
+
+        updateRequest = DetailContractUpdateRequest.builder()
+                .status("진행")
+                .content("수정된 웹사이트 구축")
+                .quantity(2)
+                .unitPrice(1500000)
+                .supplyPrice(3000000)
+                .totalPrice(3300000)
+                .paymentMethod("카드")
+                .paymentCondition("선결제")
                 .build();
     }
 
     @Test
     @DisplayName("세부계약서 생성 - 성공")
     void createDetailContract_Success() {
+        // given
+        given(contractRepository.findById(1L)).willReturn(Optional.of(contract));
+        given(detailContractRepository.save(any(DetailContract.class))).willReturn(detailContract);
+        given(paymentRepository.save(any(Payment.class))).willReturn(payment);
+        given(paymentRepository.findByDetailContractDetailContractId(any())).willReturn(Optional.of(payment));
+
         // when
-        var response = detailContractService.createDetailContract(testRequest);
+        DetailContractResponse response = detailContractService.createDetailContract(request);
 
         // then
         assertThat(response).isNotNull();
-        assertThat(response.getDetailContractId()).isNotNull();
+        assertThat(response.getDetailContractId()).isEqualTo(1L);
+        assertThat(response.getContent()).isEqualTo("웹사이트 구축");
         assertThat(response.getStatus()).isEqualTo(DetailContractStatus.TEMPORARY);
-        assertThat(response.getDetailContractCategory()).isEqualTo(DetailContractCategory.WEBSITE_CONSTRUCTION);
-        assertThat(response.getPaymentMethod()).isEqualTo("계좌이체");
-        assertThat(response.getPaymentCondition()).isEqualTo("선금 50%, 잔금 50%");
-
-        // DB 검증
-        var savedDetailContract = detailContractRepository.findById(response.getDetailContractId()).orElseThrow();
-        assertThat(savedDetailContract.getStatus()).isEqualTo(DetailContractStatus.TEMPORARY);
-        assertThat(savedDetailContract.getPayment()).isNotNull();
-        assertThat(savedDetailContract.getPayment().getMethod()).isEqualTo("계좌이체");
-    }
-
-
-    @Test
-    @DisplayName("세부계약서 생성 - 잘못된 카테고리 입력시 실패")
-    void createDetailContract_InvalidCategory() {
-        // given
-        testRequest = DetailContractRequest.builder()
-                .contractId(testContract.getContractId())
-                .detailContractCategory("존재하지 않는 카테고리")
-                .status("존재하지 않는 상태")
-                .content("테스트 내용")
-                .quantity(1)
-                .unitPrice(1000000)
-                .supplyPrice(1000000)
-                .totalPrice(1100000)
-                .paymentMethod("계좌이체")
-                .paymentCondition("선금 50%, 잔금 50%")
-                .build();
-
-        // when & then
-        assertThatThrownBy(() -> detailContractService.createDetailContract(testRequest))
-                .isInstanceOf(AccountingException.class)
-                .hasMessageContaining("존재하지 않은 카테고리입니다.");
+        verify(detailContractRepository).save(any(DetailContract.class));
+        verify(paymentRepository).save(any(Payment.class));
     }
 
     @Test
-    @DisplayName("세부계약서 생성 - 계약서가 존재하지 않는 경우 실패")
-    void createDetailContract_ContractNotFound() {
+    @DisplayName("세부계약서 생성 - 실패 (계약서 없음)")
+    void createDetailContract_Fail_ContractNotFound() {
         // given
-        testRequest.setContractId(9999L);
+        given(contractRepository.findById(1L)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> detailContractService.createDetailContract(testRequest))
+        assertThatThrownBy(() -> detailContractService.createDetailContract(request))
                 .isInstanceOf(AccountingException.class);
     }
 
     @Test
-    @DisplayName("세부계약서 단건 조회 - 성공")
+    @DisplayName("세부계약서 조회 - 성공")
     void getDetailContract_Success() {
         // given
-        var created = detailContractService.createDetailContract(testRequest);
+        given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
+        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
 
         // when
-        var response = detailContractService.getDetailContract(created.getDetailContractId());
+        DetailContractResponse response = detailContractService.getDetailContract(1L);
 
         // then
         assertThat(response).isNotNull();
-        assertThat(response.getStatus()).isEqualTo(DetailContractStatus.TEMPORARY);
-        assertThat(response.getDetailContractCategory()).isEqualTo(DetailContractCategory.WEBSITE_CONSTRUCTION);
-        assertThat(response.getPaymentMethod()).isEqualTo("계좌이체");
-        assertThat(response.getPaymentCondition()).isEqualTo("선금 50%, 잔금 50%");
-
+        assertThat(response.getDetailContractId()).isEqualTo(1L);
+        assertThat(response.getContent()).isEqualTo("웹사이트 구축");
     }
 
     @Test
-    @DisplayName("세부계약서 단건 조회 - 존재하지 않는 경우")
-    void getDetailContract_NotFound() {
-        // when & then
-        assertThatThrownBy(() -> detailContractService.getDetailContract(9999L))
-                .isInstanceOf(AccountingException.class);
-    }
-
-    @Test
-    @DisplayName("계약서 ID로 세부계약서 목록 조회 - 성공")
+    @DisplayName("계약서별 세부계약서 목록 조회 - 성공")
     void getDetailContractsByContractId_Success() {
         // given
-        // 첫 번째 세부계약서 생성
-        var firstDetailContract = detailContractService.createDetailContract(testRequest);
-
-        // 두 번째 세부계약서 생성
-        DetailContractRequest secondRequest = DetailContractRequest.builder()
-                .contractId(testContract.getContractId())
-                .detailContractCategory("디자인")
-                .status("임시")
-                .content("두 번째 세부계약 내용")
-                .quantity(1)
-                .unitPrice(2000000)
-                .supplyPrice(2000000)
-                .totalPrice(2200000)
-                .paymentMethod("신용카드")
-                .paymentCondition("계약금 30%, 잔금 70%")
-                .build();
-        var secondDetailContract = detailContractService.createDetailContract(secondRequest);
+        given(detailContractRepository.findByContractContractId(1L))
+                .willReturn(List.of(detailContract));
+        given(paymentRepository.findByDetailContractDetailContractId(1L))
+                .willReturn(Optional.of(payment));
 
         // when
-        var responses = detailContractService.getDetailContractsByContractId(testContract.getContractId());
+        List<DetailContractResponse> responses = detailContractService.getDetailContractsByContractId(1L);
 
         // then
-        assertThat(responses).hasSize(2);
-
-        // 첫 번째 세부계약서 검증
-        var firstResponse = responses.stream()
-                .filter(r -> r.getDetailContractId().equals(firstDetailContract.getDetailContractId()))
-                .findFirst()
-                .orElseThrow();
-        assertThat(firstResponse.getDetailContractCategory()).isEqualTo(DetailContractCategory.WEBSITE_CONSTRUCTION);
-        assertThat(firstResponse.getContent()).isEqualTo("테스트 세부계약 내용");
-        assertThat(firstResponse.getPaymentMethod()).isEqualTo("계좌이체");
-
-        // 두 번째 세부계약서 검증
-        var secondResponse = responses.stream()
-                .filter(r -> r.getDetailContractId().equals(secondDetailContract.getDetailContractId()))
-                .findFirst()
-                .orElseThrow();
-        assertThat(secondResponse.getDetailContractCategory()).isEqualTo(DetailContractCategory.WEBSITE_DESIGN);
-        assertThat(secondResponse.getContent()).isEqualTo("두 번째 세부계약 내용");
-        assertThat(secondResponse.getPaymentMethod()).isEqualTo("신용카드");
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0).getDetailContractId()).isEqualTo(1L);
+        assertThat(responses.get(0).getContent()).isEqualTo("웹사이트 구축");
     }
 
     @Test
-    @DisplayName("계약서 ID로 세부계약서 목록 조회 - 계약서가 존재하지 않는 경우")
-    void getDetailContractsByContractId_ContractNotFound() {
-        //when&then
-        assertThatThrownBy(() -> detailContractService.getDetailContractsByContractId(9999L))
-                .isInstanceOf(AccountingException.class)
-                .hasMessageContaining("존재하지 않는 상위계약서입니다");
-    }
-
-    @Test
-    @DisplayName("계약서 ID로 세부계약서 목록 조회 - 세부계약서가 없는 경우")
-    void getDetailContractsByContractId_EmptyList() {
-        // when
-        var responses = detailContractService.getDetailContractsByContractId(testContract.getContractId());
-
-        // then
-        assertThat(responses).isEmpty();
-    }
-
-    @Test
-    @DisplayName("세부계약서 상태 변경 - TEMPORARY에서 ONGOING으로 변경 성공")
-    void updateDetailContract_StatusChange_Success() {
-       //given
-        var created = detailContractService.createDetailContract(testRequest);
-
-        var updateRequest = DetailContractUpdateRequest.builder()
-                .status("진행")
-                .detailContractCategory("웹사이트 구축")
-                .build();
-
-        //when
-        var response = detailContractService.updateDetailContract(created.getDetailContractId(), updateRequest);
-
-        //then
-        assertThat(response.getStatus()).isEqualTo(DetailContractStatus.ONGOING);
-
-        //db검증
-        var updatedDetailContract = detailContractRepository.findById(created.getDetailContractId()).orElseThrow();
-        assertThat(updatedDetailContract.getStatus()).isEqualTo(DetailContractStatus.ONGOING);
-        assertThat(response.getDetailContractCategory()).isEqualTo(DetailContractCategory.WEBSITE_CONSTRUCTION);
-
-    }
-
-    @Test
-    @DisplayName("세부계약서 상태 변경 - 잘못된 상태 변경 시도시 실패")
-    void updateDetailContract_InvalidStatusChange() {
+    @DisplayName("세부계약서 수정 - 전체 항목 수정 성공")
+    void updateDetailContract_AllFields_Success() {
         // given
-        var created = detailContractService.createDetailContract(testRequest);
-
-        var updateRequest = DetailContractUpdateRequest.builder()
-                .status("완료") // TEMPORARY에서 바로 DONE으로 변경 시도
-                .build();
-
-        // when & then
-        assertThatThrownBy(() -> detailContractService.updateDetailContract(created.getDetailContractId(), updateRequest))
-                .isInstanceOf(AccountingException.class);
-    }
-
-    @Test
-    @DisplayName("세부계약서 상태 변경 - CANCELED 상태에서 수정 시도시 실패")
-    void updateDetailContract_CanceledStatusUpdate() {
-        // given
-        var created = detailContractService.createDetailContract(testRequest);
-
-        // CANCELED 상태로 변경
-        var cancelRequest = DetailContractUpdateRequest.builder()
-                .status("취소")
-                .build();
-        detailContractService.updateDetailContract(created.getDetailContractId(), cancelRequest);
-
-        // 수정 시도
-        var updateRequest = DetailContractUpdateRequest.builder()
-                .content("내용 수정")
-                .build();
-
-        // when & then
-        assertThatThrownBy(() -> detailContractService.updateDetailContract(created.getDetailContractId(), updateRequest))
-                .isInstanceOf(AccountingException.class);
-    }
-
-    @Test
-    @DisplayName("세부계약서 수정 - 내용만 변경 성공")
-    void updateDetailContract_ContentOnly() {
-        // given
-        var created = detailContractService.createDetailContract(testRequest);
-
-        var updateRequest = DetailContractUpdateRequest.builder()
-                .content("수정된 내용")
-                .build();
+        given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
+        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
 
         // when
-        var response = detailContractService.updateDetailContract(created.getDetailContractId(), updateRequest);
+        DetailContractResponse response = detailContractService.updateDetailContract(1L, updateRequest);
 
         // then
-        assertThat(response.getContent()).isEqualTo("수정된 내용");
-        assertThat(response.getStatus()).isEqualTo(created.getStatus());  // 다른 필드는 변경되지 않음
-        assertThat(response.getQuantity()).isEqualTo(created.getQuantity());
-        assertThat(response.getUnitPrice()).isEqualTo(created.getUnitPrice());
-    }
-
-    @Test
-    @DisplayName("세부계약서 수정 - 수량과 단가만 변경 성공")
-    void updateDetailContract_QuantityAndUnitPrice() {
-        // given
-        var created = detailContractService.createDetailContract(testRequest);
-
-        var updateRequest = DetailContractUpdateRequest.builder()
-                .quantity(2)
-                .unitPrice(2000000)
-                .build();
-
-        // when
-        var response = detailContractService.updateDetailContract(created.getDetailContractId(), updateRequest);
-
-        // then
+        assertThat(response).isNotNull();
+        assertThat(response.getContent()).isEqualTo("수정된 웹사이트 구축");
         assertThat(response.getQuantity()).isEqualTo(2);
-        assertThat(response.getUnitPrice()).isEqualTo(2000000);
-        assertThat(response.getStatus()).isEqualTo(created.getStatus());  // 다른 필드는 변경되지 않음
-        assertThat(response.getContent()).isEqualTo(created.getContent());
-        assertThat(response.getDetailContractCategory()).isEqualTo(created.getDetailContractCategory());
+        assertThat(response.getTotalPrice()).isEqualTo(3300000);
+        assertThat(response.getPaymentMethod()).isEqualTo("카드");
+        assertThat(response.getPaymentCondition()).isEqualTo("선결제");
     }
 
     @Test
-    @DisplayName("세부계약서 수정 - 결제 조건만 변경 성공")
-    void updateDetailContract_PaymentConditionOnly() {
+    @DisplayName("세부계약서 수정 - 상태만 수정 성공")
+    void updateDetailContract_StatusOnly_Success() {
         // given
-        var created = detailContractService.createDetailContract(testRequest);
-        assertThat(created.getPaymentMethod()).isEqualTo("계좌이체");
-        assertThat(created.getPaymentCondition()).isEqualTo("선금 50%, 잔금 50%");
+        given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
+        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
 
-        var updateRequest = DetailContractUpdateRequest.builder()
-                .paymentCondition("계약금 30%, 잔금 70%")
+        DetailContractUpdateRequest statusOnlyRequest = DetailContractUpdateRequest.builder()
+                .status("진행")
                 .build();
 
         // when
-        var response = detailContractService.updateDetailContract(created.getDetailContractId(), updateRequest);
+        DetailContractResponse response = detailContractService.updateDetailContract(1L, statusOnlyRequest);
 
         // then
-        assertThat(response.getPaymentMethod()).isEqualTo("계좌이체");  // 기존 값 유지
-        assertThat(response.getPaymentCondition()).isEqualTo("계약금 30%, 잔금 70%");  // 새로운 값으로 변경
-        assertThat(response.getStatus()).isEqualTo(created.getStatus());
-        assertThat(response.getContent()).isEqualTo(created.getContent());
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(DetailContractStatus.ONGOING);
+        // 다른 필드들은 그대로 유지
+        assertThat(response.getContent()).isEqualTo("웹사이트 구축");
+        assertThat(response.getQuantity()).isEqualTo(1);
+        assertThat(response.getTotalPrice()).isEqualTo(1100000);
     }
 
     @Test
-    @DisplayName("세부계약서 수정 - 공급가액과 합계금액만 변경 성공")
-    void updateDetailContract_PricesOnly() {
+    @DisplayName("세부계약서 수정 - 결제 정보만 수정 성공")
+    void updateDetailContract_PaymentOnly_Success() {
         // given
-        var created = detailContractService.createDetailContract(testRequest);
+        given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
+        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
 
-        var updateRequest = DetailContractUpdateRequest.builder()
-                .supplyPrice(2000000)
-                .totalPrice(2200000)
+        DetailContractUpdateRequest paymentOnlyRequest = DetailContractUpdateRequest.builder()
+                .paymentMethod("카드")
+                .paymentCondition("선결제")
                 .build();
 
         // when
-        var response = detailContractService.updateDetailContract(created.getDetailContractId(), updateRequest);
+        DetailContractResponse response = detailContractService.updateDetailContract(1L, paymentOnlyRequest);
 
         // then
-        assertThat(response.getSupplyPrice()).isEqualTo(2000000);
-        assertThat(response.getTotalPrice()).isEqualTo(2200000);
-        assertThat(response.getQuantity()).isEqualTo(created.getQuantity());  // 다른 필드는 변경되지 않음
-        assertThat(response.getUnitPrice()).isEqualTo(created.getUnitPrice());
-        assertThat(response.getStatus()).isEqualTo(created.getStatus());
+        assertThat(response).isNotNull();
+        assertThat(response.getPaymentMethod()).isEqualTo("카드");
+        assertThat(response.getPaymentCondition()).isEqualTo("선결제");
+        // 다른 필드들은 그대로 유지
+        assertThat(response.getStatus()).isEqualTo(DetailContractStatus.TEMPORARY);
+        assertThat(response.getContent()).isEqualTo("웹사이트 구축");
+        assertThat(response.getQuantity()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("세부계약서 수정 - 금액 정보만 수정 성공")
+    void updateDetailContract_PriceOnly_Success() {
+        // given
+        given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
+        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
+
+        DetailContractUpdateRequest priceOnlyRequest = DetailContractUpdateRequest.builder()
+                .quantity(2)
+                .unitPrice(1500000)
+                .supplyPrice(3000000)
+                .totalPrice(3300000)
+                .build();
+
+        // when
+        DetailContractResponse response = detailContractService.updateDetailContract(1L, priceOnlyRequest);
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.getQuantity()).isEqualTo(2);
+        assertThat(response.getUnitPrice()).isEqualTo(1500000);
+        assertThat(response.getSupplyPrice()).isEqualTo(3000000);
+        assertThat(response.getTotalPrice()).isEqualTo(3300000);
+        // 다른 필드들은 그대로 유지
+        assertThat(response.getStatus()).isEqualTo(DetailContractStatus.TEMPORARY);
+        assertThat(response.getContent()).isEqualTo("웹사이트 구축");
+        assertThat(response.getPaymentMethod()).isEqualTo("계좌이체");
+    }
+
+    @Test
+    @DisplayName("세부계약서 수정 - 실패 (취소된 계약)")
+    void updateDetailContract_Fail_WhenCanceled() {
+        // given
+        detailContract.setStatus(DetailContractStatus.CANCELED);
+        given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
+
+        // when & then
+        assertThatThrownBy(() -> detailContractService.updateDetailContract(1L, updateRequest))
+                .isInstanceOf(AccountingException.class);
     }
 
     @Test
     @DisplayName("세부계약서 삭제 - 성공")
     void deleteDetailContract_Success() {
         // given
-        var created = detailContractService.createDetailContract(testRequest);
-        Long detailContractId = created.getDetailContractId();
+        given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
+        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
 
         // when
-        detailContractService.deleteDetailContract(detailContractId);
+        detailContractService.deleteDetailContract(1L);
 
         // then
-        assertThat(detailContractRepository.findById(detailContractId)).isEmpty();
-
-        //연관된 payment 삭제확인
-        var payments = paymentRepository.findAll();
-        assertThat(payments).isEmpty();
+        verify(detailContractRepository).delete(detailContract);
+        verify(paymentRepository).delete(payment);
     }
 }

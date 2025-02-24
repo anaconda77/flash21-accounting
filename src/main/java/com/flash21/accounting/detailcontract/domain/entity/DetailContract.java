@@ -12,6 +12,8 @@ import lombok.*;
 @Entity
 @Getter @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Table(name = "detail_contract")
 public class DetailContract {
     @Id
@@ -46,30 +48,14 @@ public class DetailContract {
     private Integer totalPrice;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean hasOutsourcing = false;
 
-    @Builder
-    public DetailContract(Contract contract, DetailContractCategory detailContractCategory, DetailContractStatus status,
-                          String content, Integer quantity, Integer unitPrice, Integer supplyPrice,
-                          Integer totalPrice, boolean hasOutsourcing) {
-        this.contract = contract;
-        this.detailContractCategory = detailContractCategory;
-        this.status = status;
-        this.content = content;
-        this.quantity = quantity;
-        this.unitPrice = unitPrice;
-        this.supplyPrice = supplyPrice;
-        this.totalPrice = totalPrice;
-        this.hasOutsourcing = hasOutsourcing;
-    }
-
     public void updateDetailContract(DetailContractUpdateRequest updateDto) {
-        // CANCELED 상태일 경우 모든 수정 불가
         if (this.status == DetailContractStatus.CANCELED) {
             throw new AccountingException(DetailContractErrorCode.CANNOT_UPDATE_CANCELED_CONTRACT);
         }
 
-        // 상태 변경 시 검증
         if(updateDto.getStatus() != null) {
             DetailContractStatus newStatus = DetailContractStatus.fromDisplayName(updateDto.getStatus());
             DetailContractStatus.validateStatusTransition(this.status, newStatus);
