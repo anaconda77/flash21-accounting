@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flash21.accounting.common.util.jwt.JWTUtil;
 import com.flash21.accounting.correspondent.domain.Correspondent;
+import com.flash21.accounting.correspondent.domain.Region;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
 import com.flash21.accounting.file.domain.APINumber;
 import com.flash21.accounting.file.domain.AttachmentFile;
@@ -95,7 +96,7 @@ public class CorrespondentApiTest {
         user = userRepository.save(UserFixture.createDefault());
         owner = ownerRepository.save(OwnerFixture.createDefault());
         correspondent = correspondentRepository.save(
-            CorrespondentFixture.createWithAllSearchConditions(owner));
+            CorrespondentFixture.createWithAllSearchConditions(owner, Region.DAEGU));
         accessToken = jwtUtil.createJwt(user.getUsername(), "admin", 10000L);
         businessRegNumberImage = new MockMultipartFile(
             "image1", //name
@@ -132,7 +133,8 @@ public class CorrespondentApiTest {
             	"address":"String",
             	"detailedAddress":"String",
             	"memo":"String",
-            	"categoryName" : "수영장"
+            	"categoryName" : "수영장",
+            	"type" : "수주"
             }
             """;
         MockMultipartFile jsonfile = new MockMultipartFile(

@@ -5,6 +5,7 @@ import static com.flash21.accounting.common.ErrorCodeAssertions.assertErrorCode;
 import com.flash21.accounting.common.exception.errorcode.CorrespondentErrorCode;
 import com.flash21.accounting.common.exception.errorcode.ReflectionErrorCode;
 import com.flash21.accounting.correspondent.domain.Correspondent;
+import com.flash21.accounting.correspondent.domain.Region;
 import com.flash21.accounting.correspondent.repository.CorrespondentRepository;
 import com.flash21.accounting.fixture.OwnerFixture;
 import com.flash21.accounting.fixture.correspondent.CorrespondentFixture;
@@ -39,7 +40,7 @@ class CorrespondentServiceTest {
     @BeforeEach
     void setUp() {
         owner = ownerRepository.save(OwnerFixture.createDefault());
-        correspondent = correspondentRepository.save(CorrespondentFixture.createWithAllSearchConditions(owner));
+        correspondent = correspondentRepository.save(CorrespondentFixture.createWithAllSearchConditions(owner, Region.DAEGU));
     }
 
     @DisplayName("올바른 검색 조건에 대한 조회 성공 테스트")
