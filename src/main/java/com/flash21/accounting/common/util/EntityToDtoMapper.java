@@ -16,6 +16,7 @@ public interface EntityToDtoMapper {
     @Mapping(target = "owner.ownerName", source="owner.name")
     @Mapping(target = "categoryName", source="correspondentCategory.name")
     @Mapping(target = "type", source = "correspondentType.name")
+    @Mapping(target = "region", source = "region.name")
     CorrespondentResponse correspondentToDto(Correspondent correspondent);
 
 }

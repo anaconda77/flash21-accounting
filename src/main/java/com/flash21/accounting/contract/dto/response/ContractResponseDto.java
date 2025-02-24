@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.flash21.accounting.contract.entity.ContractCategory;
 import com.flash21.accounting.contract.entity.Method;
 import com.flash21.accounting.contract.entity.ProcessStatus;
-import com.flash21.accounting.contract.entity.Region;
 import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.user.User;
 import lombok.AllArgsConstructor;
@@ -25,7 +24,6 @@ public class ContractResponseDto {
     private User lastModifyUser;
     private ContractCategory contractCategory;
     private ProcessStatus processStatus;
-    private Region region;
     private Method method;
     private String name;
     private LocalDate registerDate;
