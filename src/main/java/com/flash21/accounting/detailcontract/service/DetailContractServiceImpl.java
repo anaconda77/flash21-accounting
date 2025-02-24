@@ -51,12 +51,13 @@ public class DetailContractServiceImpl implements DetailContractService {
                 .unitPrice(request.getUnitPrice())
                 .supplyPrice(request.getSupplyPrice())
                 .totalPrice(request.getTotalPrice())
+                .hasOutsourcing(request.getIsOutsourcing() != null ? request.getIsOutsourcing() : false)
                 .build();
 
         DetailContract savedDetailContract = detailContractRepository.save(detailContract);
 
         Payment payment = Payment.builder()
-                .detailContract(detailContract)
+                .detailContract(savedDetailContract)
                 .method(request.getPaymentMethod())
                 .condition(request.getPaymentCondition())
                 .build();
@@ -67,7 +68,7 @@ public class DetailContractServiceImpl implements DetailContractService {
     }
 
     private DetailContractResponse createDetailContractResponse(DetailContract detailContract) {
-        Payment payment = paymentRepository.findByDetailContractId(detailContract.getDetailContractId())
+        Payment payment = paymentRepository.findByDetailContractDetailContractId(detailContract.getDetailContractId())
                 .orElseThrow(() -> new AccountingException(DetailContractErrorCode.PAYMENT_NOT_FOUND));
 
         Outsourcing outsourcing = null;
@@ -85,7 +86,7 @@ public class DetailContractServiceImpl implements DetailContractService {
         DetailContract detailContract = detailContractRepository.findById(detailContractId)
                 .orElseThrow(() -> new AccountingException(DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND));
 
-        Payment payment = paymentRepository.findByDetailContractId(detailContractId)
+        Payment payment = paymentRepository.findByDetailContractDetailContractId(detailContractId)
                 .orElseThrow(() -> new AccountingException(DetailContractErrorCode.PAYMENT_NOT_FOUND));
 
         Outsourcing outsourcing = null;
@@ -104,7 +105,7 @@ public class DetailContractServiceImpl implements DetailContractService {
 
         return detailContracts.stream()
                 .map(detailContract -> {
-                    Payment payment = paymentRepository.findByDetailContractId(
+                    Payment payment = paymentRepository.findByDetailContractDetailContractId(
                                     detailContract.getDetailContractId())
                             .orElseThrow(() -> new AccountingException(DetailContractErrorCode.PAYMENT_NOT_FOUND));
 
@@ -129,12 +130,12 @@ public class DetailContractServiceImpl implements DetailContractService {
 
         // Payment 업데이트
         if(request.getPaymentMethod() != null || request.getPaymentCondition() != null) {
-            Payment payment = paymentRepository.findByDetailContractId(detailContractId)
+            Payment payment = paymentRepository.findByDetailContractDetailContractId(detailContractId)
                     .orElseThrow(() -> new AccountingException(DetailContractErrorCode.PAYMENT_NOT_FOUND));
             payment.update(request.getPaymentMethod(), request.getPaymentCondition());
         }
 
-        Payment payment = paymentRepository.findByDetailContractId(detailContractId)
+        Payment payment = paymentRepository.findByDetailContractDetailContractId(detailContractId)
                 .orElseThrow(() -> new AccountingException(DetailContractErrorCode.PAYMENT_NOT_FOUND));
 
         // 수정 시에는 현재 연결된 outsourcing 정보 조회하여 전달
@@ -153,7 +154,7 @@ public class DetailContractServiceImpl implements DetailContractService {
         DetailContract detailContract = detailContractRepository.findById(detailContractId)
                 .orElseThrow(() -> new AccountingException(DetailContractErrorCode.DETAIL_CONTRACT_NOT_FOUND));
 
-        Payment payment = paymentRepository.findByDetailContractId(detailContractId)
+        Payment payment = paymentRepository.findByDetailContractDetailContractId(detailContractId)
                 .orElseThrow(() -> new AccountingException(DetailContractErrorCode.PAYMENT_NOT_FOUND));
         paymentRepository.delete(payment);
 

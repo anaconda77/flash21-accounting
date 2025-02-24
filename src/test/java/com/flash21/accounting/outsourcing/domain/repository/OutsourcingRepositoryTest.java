@@ -1,4 +1,4 @@
-package com.flash21.accounting.detailcontract.domain.repository;
+package com.flash21.accounting.outsourcing.domain.repository;
 
 import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.contract.entity.ContractCategory;
@@ -8,7 +8,8 @@ import com.flash21.accounting.correspondent.domain.Correspondent;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContractCategory;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContractStatus;
-import com.flash21.accounting.detailcontract.domain.entity.Payment;
+import com.flash21.accounting.outsourcing.domain.entity.Outsourcing;
+import com.flash21.accounting.outsourcing.domain.entity.OutsourcingStatus;
 import com.flash21.accounting.user.Role;
 import com.flash21.accounting.user.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +20,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,22 +28,20 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class DetailContractRepositoryTest {
+class OutsourcingRepositoryTest {
 
     @Mock
-    private DetailContractRepository detailContractRepository;
-
-    @Mock
-    private PaymentRepository paymentRepository;
+    private OutsourcingRepository outsourcingRepository;
 
     private User admin;
     private Contract contract;
     private DetailContract detailContract;
-    private Payment payment;
     private Correspondent correspondent;
+    private Outsourcing outsourcing;
 
     @BeforeEach
     void setUp() {
+        // 테스트에 필요한 기본 객체들 생성
         admin = User.builder()
                 .username("admin")
                 .password("password")
@@ -60,7 +58,7 @@ class DetailContractRepositoryTest {
 
         correspondent = Correspondent.builder()
                 .id(1L)
-                .correspondentName("테스트 업체")
+                .correspondentName("외주업체")
                 .businessRegNumber("123-45-67890")
                 .address("서울시")
                 .detailedAddress("강남구")
@@ -90,94 +88,66 @@ class DetailContractRepositoryTest {
                 .unitPrice(1000000)
                 .supplyPrice(1000000)
                 .totalPrice(1100000)
-                .hasOutsourcing(false)
+                .hasOutsourcing(true)
                 .build();
 
-        payment = Payment.builder()
-                .paymentId(1L)
+        outsourcing = Outsourcing.builder()
+                .outsourcingId(1L)
+                .correspondent(correspondent)
                 .detailContract(detailContract)
-                .method("계좌이체")
-                .condition("선금 50%, 잔금 50%")
+                .status(OutsourcingStatus.TEMPORARY)
+                .content("외주 개발")
+                .quantity(1)
+                .unitPrice(800000)
+                .supplyPrice(800000)
+                .totalPrice(880000)
                 .build();
     }
 
-
     @Test
-    @DisplayName("세부계약서 저장 테스트")
+    @DisplayName("외주계약 저장 테스트")
     void save() {
         // given
-        given(detailContractRepository.save(any(DetailContract.class))).willReturn(detailContract);
+        given(outsourcingRepository.save(any(Outsourcing.class))).willReturn(outsourcing);
 
         // when
-        DetailContract savedDetailContract = detailContractRepository.save(detailContract);
+        Outsourcing savedOutsourcing = outsourcingRepository.save(outsourcing);
 
         // then
-        assertThat(savedDetailContract).isNotNull();
-        assertThat(savedDetailContract.getDetailContractId()).isEqualTo(1L);
-        assertThat(savedDetailContract.getContent()).isEqualTo("웹사이트 구축");
-        verify(detailContractRepository).save(any(DetailContract.class));
+        assertThat(savedOutsourcing).isNotNull();
+        assertThat(savedOutsourcing.getOutsourcingId()).isEqualTo(1L);
+        assertThat(savedOutsourcing.getContent()).isEqualTo("외주 개발");
+        verify(outsourcingRepository).save(any(Outsourcing.class));
     }
 
     @Test
-    @DisplayName("ID로 세부계약서 조회 테스트")
+    @DisplayName("ID로 외주계약 조회 테스트")
     void findById() {
         // given
-        given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
+        given(outsourcingRepository.findById(1L)).willReturn(Optional.of(outsourcing));
 
         // when
-        Optional<DetailContract> found = detailContractRepository.findById(1L);
+        Optional<Outsourcing> found = outsourcingRepository.findById(1L);
 
         // then
         assertThat(found).isPresent();
-        assertThat(found.get().getDetailContractId()).isEqualTo(1L);
-        assertThat(found.get().getContent()).isEqualTo("웹사이트 구축");
+        assertThat(found.get().getOutsourcingId()).isEqualTo(1L);
+        assertThat(found.get().getContent()).isEqualTo("외주 개발");
     }
 
     @Test
-    @DisplayName("계약서 ID로 세부계약서 목록 조회 테스트")
-    void findByContractContractId() {
+    @DisplayName("세부계약서 ID로 외주계약 조회 테스트")
+    void findByDetailContractDetailContractId() {
         // given
-        given(detailContractRepository.findByContractContractId(1L))
-                .willReturn(List.of(detailContract));
+        given(outsourcingRepository.findByDetailContractDetailContractId(1L))
+                .willReturn(Optional.of(outsourcing));
 
         // when
-        List<DetailContract> detailContracts = detailContractRepository.findByContractContractId(1L);
+        Optional<Outsourcing> found = outsourcingRepository.findByDetailContractDetailContractId(1L);
 
         // then
-        assertThat(detailContracts).hasSize(1);
-        assertThat(detailContracts.get(0).getDetailContractId()).isEqualTo(1L);
-        assertThat(detailContracts.get(0).getContent()).isEqualTo("웹사이트 구축");
-    }
-
-    @Test
-    @DisplayName("Contract 엔티티로 세부계약서 목록 조회 테스트")
-    void findByContract() {
-        // given
-        given(detailContractRepository.findByContract(contract))
-                .willReturn(List.of(detailContract));
-
-        // when
-        List<DetailContract> detailContracts = detailContractRepository.findByContract(contract);
-
-        // then
-        assertThat(detailContracts).hasSize(1);
-        assertThat(detailContracts.get(0).getContract()).isEqualTo(contract);
-        assertThat(detailContracts.get(0).getContent()).isEqualTo("웹사이트 구축");
-    }
-
-    @Test
-    @DisplayName("세부계약서와 Payment 연관관계 테스트")
-    void detailContractPaymentRelation() {
-        // given
-        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
-
-        // when
-        Optional<Payment> foundPayment = paymentRepository.findByDetailContractDetailContractId(1L);
-
-        // then
-        assertThat(foundPayment).isPresent();
-        assertThat(foundPayment.get().getDetailContract()).isEqualTo(detailContract);
-        assertThat(foundPayment.get().getMethod()).isEqualTo("계좌이체");
-        assertThat(foundPayment.get().getCondition()).isEqualTo("선금 50%, 잔금 50%");
+        assertThat(found).isPresent();
+        assertThat(found.get().getDetailContract().getDetailContractId()).isEqualTo(1L);
+        assertThat(found.get().getContent()).isEqualTo("외주 개발");
     }
 }

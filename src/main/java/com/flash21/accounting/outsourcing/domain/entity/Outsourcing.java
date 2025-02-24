@@ -14,6 +14,8 @@ import lombok.*;
 @Entity
 @Getter @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Table(name = "outsourcing")
 public class Outsourcing {
     @Id
@@ -36,8 +38,10 @@ public class Outsourcing {
 
     @Column(nullable = false, length = 255)
     private String content;
-    @Column(nullable = false )
+
+    @Column(nullable = false)
     private Integer quantity;
+
     @Column(nullable = false)
     private Integer unitPrice;
 
@@ -47,19 +51,7 @@ public class Outsourcing {
     @Column(nullable = false)
     private Integer totalPrice;
 
-    @Builder
-    public Outsourcing(Correspondent correspondent, DetailContract detailContract, OutsourcingStatus status, String content, Integer quantity, Integer unitPrice, Integer supplyPrice, Integer totalPrice) {
-        this.correspondent = correspondent;
-        this.detailContract = detailContract;
-        this.status = status;
-        this.content = content;
-        this.quantity = quantity;
-        this.unitPrice = unitPrice;
-        this.supplyPrice = supplyPrice;
-        this.totalPrice = totalPrice;
-    }
-
-    public void updateOutsourcing(OutsourcingUpdateRequest updateDto){
+    public void updateOutsourcing(OutsourcingUpdateRequest updateDto) {
         if(this.status == OutsourcingStatus.CANCELED){
             throw new AccountingException(DetailContractErrorCode.CANNOT_UPDATE_CANCELED_CONTRACT);
         }
@@ -86,6 +78,7 @@ public class Outsourcing {
             this.totalPrice = updateDto.getTotalPrice();
         }
     }
+
 
     // 연관관계 편의 메서드
     public void setDetailContract(DetailContract detailContract) {
