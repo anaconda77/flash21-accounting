@@ -51,12 +51,13 @@ public class DetailContractServiceImpl implements DetailContractService {
                 .unitPrice(request.getUnitPrice())
                 .supplyPrice(request.getSupplyPrice())
                 .totalPrice(request.getTotalPrice())
+                .hasOutsourcing(request.getIsOutsourcing() != null ? request.getIsOutsourcing() : false)
                 .build();
 
         DetailContract savedDetailContract = detailContractRepository.save(detailContract);
 
         Payment payment = Payment.builder()
-                .detailContract(detailContract)
+                .detailContract(savedDetailContract)
                 .method(request.getPaymentMethod())
                 .condition(request.getPaymentCondition())
                 .build();

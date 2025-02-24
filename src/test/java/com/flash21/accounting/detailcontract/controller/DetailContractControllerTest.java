@@ -1,29 +1,30 @@
 package com.flash21.accounting.detailcontract.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.flash21.accounting.contract.entity.Contract;
+import com.flash21.accounting.contract.entity.ContractCategory;
+import com.flash21.accounting.contract.entity.Method;
+import com.flash21.accounting.contract.entity.ProcessStatus;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContractCategory;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContractStatus;
 import com.flash21.accounting.detailcontract.dto.request.DetailContractRequest;
 import com.flash21.accounting.detailcontract.dto.request.DetailContractUpdateRequest;
 import com.flash21.accounting.detailcontract.dto.response.DetailContractResponse;
 import com.flash21.accounting.detailcontract.service.DetailContractService;
-import com.flash21.accounting.fixture.OwnerFixture;
-import com.flash21.accounting.owner.domain.Owner;
+import com.flash21.accounting.common.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -32,66 +33,52 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
+@ExtendWith(MockitoExtension.class)
 class DetailContractControllerTest {
+    @InjectMocks
+    private DetailContractController detailContractController;
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
+    @Mock
     private DetailContractService detailContractService;
 
-    private String token;
-    private DetailContractRequest testRequest;
-    private DetailContractResponse testResponse;
-    private DetailContractUpdateRequest testUpdateRequest;
+    private MockMvc mockMvc;
+    private ObjectMapper objectMapper;
+    private DetailContractRequest request;
+    private DetailContractResponse response;
+    private DetailContractUpdateRequest updateRequest;
 
     @BeforeEach
-    void setUp() throws Exception {
-        System.out.println("=== 시작: 사용자 로그인 또는 회원가입 ===");
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(detailContractController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
 
-        MvcResult loginResult = performLogin("testuser", "password123");
-        System.out.println("로그인 응답 상태: " + loginResult.getResponse().getStatus());
-        System.out.println("로그인 응답 본문: " + loginResult.getResponse().getContentAsString());
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
 
-        if (loginResult.getResponse().getStatus() != 200) {
-            System.out.println("로그인 실패: 사용자 등록 시도 중...");
-            registerUser("testuser", "password123");
-            loginResult = performLogin("testuser", "password123");
-            System.out.println("재로그인 응답 상태: " + loginResult.getResponse().getStatus());
-            System.out.println("재로그인 응답 본문: " + loginResult.getResponse().getContentAsString());
-        }
-
-        token = loginResult.getResponse().getHeader(HttpHeaders.AUTHORIZATION);
-        System.out.println("발급된 토큰: " + token);
-        System.out.println("=== 종료: 사용자 로그인 또는 회원가입 ===");
-
-        testRequest = DetailContractRequest.builder()
+        request = DetailContractRequest.builder()
                 .contractId(1L)
                 .status("임시")
                 .detailContractCategory("웹사이트 구축")
-                .content("테스트 세부계약 내용")
+                .content("웹사이트 구축 세부계약")
                 .quantity(1)
                 .unitPrice(1000000)
                 .supplyPrice(1000000)
                 .totalPrice(1100000)
                 .paymentMethod("계좌이체")
                 .paymentCondition("선금 50%, 잔금 50%")
+                .isOutsourcing(false)
                 .build();
 
-        testResponse = DetailContractResponse.builder()
+        response = DetailContractResponse.builder()
                 .detailContractId(1L)
                 .contractId(1L)
                 .detailContractCategory(DetailContractCategory.WEBSITE_CONSTRUCTION)
                 .status(DetailContractStatus.TEMPORARY)
-                .content("테스트 세부계약 내용")
+                .content("웹사이트 구축 세부계약")
                 .quantity(1)
                 .unitPrice(1000000)
                 .supplyPrice(1000000)
@@ -100,146 +87,161 @@ class DetailContractControllerTest {
                 .paymentCondition("선금 50%, 잔금 50%")
                 .build();
 
-        testUpdateRequest = DetailContractUpdateRequest.builder()
+        updateRequest = DetailContractUpdateRequest.builder()
                 .status("진행")
-                .detailContractCategory("웹사이트 구축")
-                .content("수정된 내용")
+                .content("수정된 웹사이트 구축")
+                .quantity(2)
+                .unitPrice(1500000)
+                .supplyPrice(3000000)
+                .totalPrice(3300000)
                 .build();
     }
 
-    private void registerUser(String username, String password) throws Exception {
-        String requestBody = "{" +
-                "\"username\": \"" + username + "\"," +
-                "\"password\": \"" + password + "\"," +
-                "\"name\": \"John Doe\"," +
-                "\"phoneNumber\": \"010-1234-5678\"," +
-                "\"email\": \"john@example.com\"," +
-                "\"address\": \"Seoul\"," +
-                "\"addressDetail\": \"Apt 101\"," +
-                "\"role\": \"ROLE_ADMIN\"," +
-                "\"grade\": \"Grade A\"," +
-                "\"companyPhoneNumber\": \"02-1234-5678\"," +
-                "\"companyFaxNumber\": \"02-8765-4321\"}";
-
-        System.out.println("회원가입 요청 본문: " + requestBody);
-
-        MvcResult result = mockMvc.perform(post("/application/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isCreated())
-                .andReturn();
-
-        System.out.println("회원가입 응답 상태: " + result.getResponse().getStatus());
-        System.out.println("회원가입 응답 본문: " + result.getResponse().getContentAsString());
-    }
-
-    private MvcResult performLogin(String username, String password) throws Exception {
-        return mockMvc.perform(post("/login")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("username", username)
-                        .param("password", password))
-                .andReturn();
-    }
-
     @Test
-    @DisplayName("세부계약서 생성 - 성공")
-    void createDetailContract_Success() throws Exception {
-        Owner owner = OwnerFixture.createDefault(); // OwnerFixture 사용
-
+    @DisplayName("세부계약서 생성 API 테스트")
+    void createDetailContract() throws Exception {
+        // given
         given(detailContractService.createDetailContract(any(DetailContractRequest.class)))
-                .willReturn(testResponse);
+                .willReturn(response);
 
+        // when & then
         mockMvc.perform(post("/api/detail-contract")
-                        .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testRequest)))
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.detailContractId").value(testResponse.getDetailContractId()))
-                .andExpect(jsonPath("$.status").value(testResponse.getStatus().name()))
-                .andExpect(jsonPath("$.detailContractCategory").value(testResponse.getDetailContractCategory().name()));
+                .andExpect(jsonPath("$.detailContractId").exists())
+                .andExpect(jsonPath("$.content").value("웹사이트 구축 세부계약"))
+                .andExpect(jsonPath("$.status").value("TEMPORARY"));
     }
 
     @Test
-    @DisplayName("세부계약서 단건 조회 - 성공")
-    void getDetailContract_Success() throws Exception {
+    @DisplayName("세부계약서 생성 API - 유효성 검증 실패")
+    void createDetailContract_ValidationFail() throws Exception {
+        // given
+        DetailContractRequest invalidRequest = DetailContractRequest.builder()
+                .contractId(null)  // 필수 값 누락
+                .status("")
+                .detailContractCategory("")
+                .content("")
+                .quantity(-1)      // 음수 값
+                .unitPrice(0)      // 0원
+                .build();
+
+        // when & then
+        mockMvc.perform(post("/api/detail-contract")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("세부계약서 단건 조회 API 테스트")
+    void getDetailContract() throws Exception {
+        // given
         given(detailContractService.getDetailContract(1L))
-                .willReturn(testResponse);
+                .willReturn(response);
 
-        mockMvc.perform(get("/api/detail-contract/1")
-                        .header(HttpHeaders.AUTHORIZATION, token))
+        // when & then
+        mockMvc.perform(get("/api/detail-contract/{detailContractId}", 1L))
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.detailContractId").value(testResponse.getDetailContractId()))
-                .andExpect(jsonPath("$.status").value(testResponse.getStatus().name()))
-                .andExpect(jsonPath("$.content").value(testResponse.getContent()));
+                .andExpect(jsonPath("$.detailContractId").value(1L))
+                .andExpect(jsonPath("$.content").value("웹사이트 구축 세부계약"));
     }
 
     @Test
-    @DisplayName("계약서 ID로 세부계약서 목록 조회 - 성공")
-    void getDetailContractsByContractId_Success() throws Exception {
-        List<DetailContractResponse> responses = List.of(testResponse);
+    @DisplayName("계약서별 세부계약서 목록 조회 API 테스트")
+    void getDetailContractsByContractId() throws Exception {
+        // given
+        List<DetailContractResponse> responses = Arrays.asList(response);
         given(detailContractService.getDetailContractsByContractId(1L))
                 .willReturn(responses);
 
-        mockMvc.perform(get("/api/detail-contract/contracts/1")
-                        .header(HttpHeaders.AUTHORIZATION, token))
+        // when & then
+        mockMvc.perform(get("/api/detail-contract/contracts/{contractId}", 1L))
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].detailContractId").value(testResponse.getDetailContractId()))
-                .andExpect(jsonPath("$[0].status").value(testResponse.getStatus().name()))
-                .andExpect(jsonPath("$[0].content").value(testResponse.getContent()));
+                .andExpect(jsonPath("$[0].detailContractId").value(1L))
+                .andExpect(jsonPath("$[0].content").value("웹사이트 구축 세부계약"));
     }
 
     @Test
-    @DisplayName("세부계약서 수정 - 성공")
-    void updateDetailContract_Success() throws Exception {
+    @DisplayName("세부계약서 수정 API 테스트")
+    void updateDetailContract() throws Exception {
+        // given
         DetailContractResponse updatedResponse = DetailContractResponse.builder()
                 .detailContractId(1L)
                 .contractId(1L)
                 .status(DetailContractStatus.ONGOING)
-                .detailContractCategory(DetailContractCategory.WEBSITE_CONSTRUCTION)
-                .content("수정된 내용")
+                .content("수정된 웹사이트 구축")
+                .quantity(2)
+                .unitPrice(1500000)
+                .supplyPrice(3000000)
+                .totalPrice(3300000)
                 .build();
 
         given(detailContractService.updateDetailContract(eq(1L), any(DetailContractUpdateRequest.class)))
                 .willReturn(updatedResponse);
 
-        mockMvc.perform(put("/api/detail-contract/1")
-                        .header(HttpHeaders.AUTHORIZATION, token)
+        // when & then
+        mockMvc.perform(put("/api/detail-contract/{detailContractId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testUpdateRequest)))
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.detailContractId").value(updatedResponse.getDetailContractId()))
-                .andExpect(jsonPath("$.status").value(updatedResponse.getStatus().name()))
-                .andExpect(jsonPath("$.content").value(updatedResponse.getContent()));
+                .andExpect(jsonPath("$.status").value("ONGOING"))
+                .andExpect(jsonPath("$.content").value("수정된 웹사이트 구축"))
+                .andExpect(jsonPath("$.totalPrice").value(3300000));
     }
 
     @Test
-    @DisplayName("세부계약서 삭제 - 성공")
-    void deleteDetailContract_Success() throws Exception {
+    @DisplayName("세부계약서 삭제 API 테스트")
+    void deleteDetailContract() throws Exception {
+        // given
         doNothing().when(detailContractService).deleteDetailContract(1L);
 
-        mockMvc.perform(delete("/api/detail-contract/1")
-                        .header(HttpHeaders.AUTHORIZATION, token))
+        // when & then
+        mockMvc.perform(delete("/api/detail-contract/{detailContractId}", 1L))
+                .andDo(print())
                 .andExpect(status().isNoContent());
+
+        verify(detailContractService).deleteDetailContract(1L);
     }
 
     @Test
-    @DisplayName("세부계약서 생성 요청 검증 실패")
-    void createDetailContract_ValidationFail() throws Exception {
-        DetailContractRequest invalidRequest = DetailContractRequest.builder()
-                .contractId(null)
-                .status("")
-                .detailContractCategory("")
-                .content("")
-                .quantity(-1)
-                .unitPrice(0)
-                .supplyPrice(-1000)
-                .totalPrice(0)
+    @DisplayName("세부계약서 수정 API - 부분 수정 테스트")
+    void updateDetailContract_PartialUpdate() throws Exception {
+        // given
+        DetailContractUpdateRequest partialUpdate = DetailContractUpdateRequest.builder()
+                .status("진행")
+                .content("부분 수정된 내용")
                 .build();
 
-        mockMvc.perform(post("/api/detail-contract")
-                        .header(HttpHeaders.AUTHORIZATION, token)
+        DetailContractResponse partialResponse = DetailContractResponse.builder()
+                .detailContractId(1L)
+                .contractId(1L)
+                .status(DetailContractStatus.ONGOING)
+                .content("부분 수정된 내용")
+                .quantity(1)  // 기존 값 유지
+                .unitPrice(1000000)  // 기존 값 유지
+                .supplyPrice(1000000)  // 기존 값 유지
+                .totalPrice(1100000)  // 기존 값 유지
+                .build();
+
+        given(detailContractService.updateDetailContract(eq(1L), any(DetailContractUpdateRequest.class)))
+                .willReturn(partialResponse);
+
+        // when & then
+        mockMvc.perform(put("/api/detail-contract/{detailContractId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-                .andExpect(status().isBadRequest());
+                        .content(objectMapper.writeValueAsString(partialUpdate)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("ONGOING"))
+                .andExpect(jsonPath("$.content").value("부분 수정된 내용"))
+                .andExpect(jsonPath("$.quantity").value(1))
+                .andExpect(jsonPath("$.totalPrice").value(1100000));
     }
 }
