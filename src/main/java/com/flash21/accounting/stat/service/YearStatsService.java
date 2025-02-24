@@ -33,6 +33,7 @@ public class YearStatsService {
     private final UserRepository userRepository;
     public static List<Integer> allYears = Arrays.asList(2025, 2024, 2023, 2022, 2021);
 
+    @Transactional
     public YearStatsResponseDto getYearStatistics(Long userId, CorrespondentCategory category,
         Integer year) {
         YearStats yearStats = statsRepository.findByUserId(userId).stream()
@@ -57,8 +58,9 @@ public class YearStatsService {
     }
 
 
-    private YearStats calculateYearStatistics(Long userId, CorrespondentCategory category,
-        Integer year) {
+    @Transactional
+    protected YearStats calculateYearStatistics(Long userId, CorrespondentCategory category,
+                                                Integer year) {
         List<Contract> returns = statsRepository.getContracts(userId, year).stream()
             .filter(c -> c.getCorrespondent().getCorrespondentCategory() == category)
             .toList();
