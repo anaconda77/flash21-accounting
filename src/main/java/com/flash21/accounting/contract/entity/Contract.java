@@ -49,11 +49,6 @@ public class Contract {
     @Builder.Default
     private ProcessStatus processStatus = ProcessStatus.AWAITING_PAYMENT;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "region", nullable = false, length = 30)
-    @Builder.Default
-    private Region region = Region.DAEGU;
-
     @Column(nullable = false, length = 20)
     private String name;
 

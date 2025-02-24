@@ -58,6 +58,9 @@ public class Correspondent {
     @Enumerated(EnumType.STRING)
     private CorrespondentType correspondentType;
 
+    @Enumerated(EnumType.STRING)
+    private Region region;
+
     public Correspondent(CorrespondentRequest request, Owner owner) {
         correspondentName = request.correspondentName();
         managerName = request.managerName();
@@ -72,6 +75,7 @@ public class Correspondent {
         this.owner = owner;
         correspondentCategory = CorrespondentCategory.of(request.categoryName());
         correspondentType = CorrespondentType.of(request.type());
+        region = Region.of(request.region());
     }
 
     public void updateCorrespondent(CorrespondentRequest request) {
@@ -87,6 +91,7 @@ public class Correspondent {
         memo = request.memo();
         correspondentCategory = CorrespondentCategory.of(request.categoryName());
         correspondentType = CorrespondentType.of(request.type());
+        region = Region.of(request.region());
     }
 }
 
