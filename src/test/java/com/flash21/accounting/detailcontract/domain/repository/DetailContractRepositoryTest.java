@@ -169,10 +169,10 @@ class DetailContractRepositoryTest {
     @DisplayName("세부계약서와 Payment 연관관계 테스트")
     void detailContractPaymentRelation() {
         // given
-        given(paymentRepository.findByDetailContractId(1L)).willReturn(Optional.of(payment));
+        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
 
         // when
-        Optional<Payment> foundPayment = paymentRepository.findByDetailContractId(1L);
+        Optional<Payment> foundPayment = paymentRepository.findByDetailContractDetailContractId(1L);
 
         // then
         assertThat(foundPayment).isPresent();

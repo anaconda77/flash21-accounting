@@ -154,7 +154,7 @@ class DetailContractServiceTest {
         given(contractRepository.findById(1L)).willReturn(Optional.of(contract));
         given(detailContractRepository.save(any(DetailContract.class))).willReturn(detailContract);
         given(paymentRepository.save(any(Payment.class))).willReturn(payment);
-        given(paymentRepository.findByDetailContractId(any())).willReturn(Optional.of(payment));
+        given(paymentRepository.findByDetailContractDetailContractId(any())).willReturn(Optional.of(payment));
 
         // when
         DetailContractResponse response = detailContractService.createDetailContract(request);
@@ -184,7 +184,7 @@ class DetailContractServiceTest {
     void getDetailContract_Success() {
         // given
         given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
-        given(paymentRepository.findByDetailContractId(1L)).willReturn(Optional.of(payment));
+        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
 
         // when
         DetailContractResponse response = detailContractService.getDetailContract(1L);
@@ -201,7 +201,7 @@ class DetailContractServiceTest {
         // given
         given(detailContractRepository.findByContractContractId(1L))
                 .willReturn(List.of(detailContract));
-        given(paymentRepository.findByDetailContractId(1L))
+        given(paymentRepository.findByDetailContractDetailContractId(1L))
                 .willReturn(Optional.of(payment));
 
         // when
@@ -218,7 +218,7 @@ class DetailContractServiceTest {
     void updateDetailContract_AllFields_Success() {
         // given
         given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
-        given(paymentRepository.findByDetailContractId(1L)).willReturn(Optional.of(payment));
+        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
 
         // when
         DetailContractResponse response = detailContractService.updateDetailContract(1L, updateRequest);
@@ -237,7 +237,7 @@ class DetailContractServiceTest {
     void updateDetailContract_StatusOnly_Success() {
         // given
         given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
-        given(paymentRepository.findByDetailContractId(1L)).willReturn(Optional.of(payment));
+        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
 
         DetailContractUpdateRequest statusOnlyRequest = DetailContractUpdateRequest.builder()
                 .status("진행")
@@ -260,7 +260,7 @@ class DetailContractServiceTest {
     void updateDetailContract_PaymentOnly_Success() {
         // given
         given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
-        given(paymentRepository.findByDetailContractId(1L)).willReturn(Optional.of(payment));
+        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
 
         DetailContractUpdateRequest paymentOnlyRequest = DetailContractUpdateRequest.builder()
                 .paymentMethod("카드")
@@ -285,7 +285,7 @@ class DetailContractServiceTest {
     void updateDetailContract_PriceOnly_Success() {
         // given
         given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
-        given(paymentRepository.findByDetailContractId(1L)).willReturn(Optional.of(payment));
+        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
 
         DetailContractUpdateRequest priceOnlyRequest = DetailContractUpdateRequest.builder()
                 .quantity(2)
@@ -326,7 +326,7 @@ class DetailContractServiceTest {
     void deleteDetailContract_Success() {
         // given
         given(detailContractRepository.findById(1L)).willReturn(Optional.of(detailContract));
-        given(paymentRepository.findByDetailContractId(1L)).willReturn(Optional.of(payment));
+        given(paymentRepository.findByDetailContractDetailContractId(1L)).willReturn(Optional.of(payment));
 
         // when
         detailContractService.deleteDetailContract(1L);
