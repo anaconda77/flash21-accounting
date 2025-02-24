@@ -47,7 +47,7 @@ class StatsServiceTest {
         category = CorrespondentCategory.CAFE;
 
         contents = Arrays.stream(Region.values())
-                .map(region -> new YearStatsContent(region.toString(), 1, 100000L))
+                .map(region -> new YearStatsContent(region.toString(), 2, 100000L))
                 .toList();
 
         yearStats = new YearStats(1L, year, category, userId, contents);
