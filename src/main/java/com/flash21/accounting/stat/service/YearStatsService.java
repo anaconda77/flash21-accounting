@@ -8,21 +8,28 @@ import com.flash21.accounting.stat.domain.YearStats;
 import com.flash21.accounting.stat.domain.YearStatsContent;
 import com.flash21.accounting.stat.dto.response.YearStatsResponseDto;
 import com.flash21.accounting.stat.repository.StatsRepository;
+import com.flash21.accounting.user.User;
+import com.flash21.accounting.user.UserRepository;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class YearStatsService {
 
     private final StatsRepository statsRepository;
+    private final UserRepository userRepository;
+    public static List<Integer> allYears = Arrays.asList(2025, 2024, 2023, 2022, 2021);
 
     public YearStatsResponseDto getYearStatistics(Long userId, CorrespondentCategory category,
         Integer year) {
@@ -80,6 +87,36 @@ public class YearStatsService {
             .orElseGet(() -> statsRepository.save(
                 new YearStats(null, year, category, userId, contents)
             ));
+    }
+
+
+    /**
+     * 모든 유저의 거래처 카테고리, 연도별 통계 데이터 계산(매일 오전 2시)
+     */
+    @Scheduled(cron = "0 0 2 * * *")
+    @Transactional
+    public void recalculateAllYearStatistics() {
+        log.info("모든 통계 데이터 재계산 시작");
+        List<Long> userIds = userRepository.findAll().stream()
+            .map(User::getId).toList();
+
+        userIds.forEach(userId -> Arrays.stream(CorrespondentCategory.values())
+            .forEach(category ->
+                allYears.forEach(year -> {
+                        try {
+                            calculateYearStatistics(userId, category, year);
+                            log.debug("통계 계산 완료 - userId: {}, category: {}, year: {}",
+                                userId, category, year);
+                        } catch (Exception e) {
+                            log.error("통계 계산 실패 - userId: {}, category: {}, year: {}",
+                                userId, category, year, e);
+                        }
+                    }
+                )
+            )
+        );
+
+        log.info("모든 통계 데이터 재계산 완료");
     }
 
 }
