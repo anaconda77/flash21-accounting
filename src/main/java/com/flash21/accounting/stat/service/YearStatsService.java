@@ -1,5 +1,7 @@
 package com.flash21.accounting.stat.service;
 
+import com.flash21.accounting.common.exception.AccountingException;
+import com.flash21.accounting.common.exception.errorcode.StatsErrorCode;
 import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.correspondent.domain.CorrespondentCategory;
 import com.flash21.accounting.correspondent.domain.Region;
@@ -8,21 +10,28 @@ import com.flash21.accounting.stat.domain.YearStats;
 import com.flash21.accounting.stat.domain.YearStatsContent;
 import com.flash21.accounting.stat.dto.response.YearStatsResponseDto;
 import com.flash21.accounting.stat.repository.StatsRepository;
+import com.flash21.accounting.user.User;
+import com.flash21.accounting.user.UserRepository;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class YearStatsService {
 
     private final StatsRepository statsRepository;
+    private final UserRepository userRepository;
+    public static List<Integer> allYears = Arrays.asList(2025, 2024, 2023, 2022, 2021);
 
     public YearStatsResponseDto getYearStatistics(Long userId, CorrespondentCategory category,
         Integer year) {
@@ -31,28 +40,39 @@ public class YearStatsService {
             .findFirst()
             .orElse(
                 calculateYearStatistics(userId, category, year)); // db에 해당 통계 데이터가 없으면 계산 및 생성하여 리턴
-
+        if (yearStats == null) {
+            throw AccountingException.of(StatsErrorCode.CANNOT_CALCULATE_STATS);
+        }
         return YearStatsResponseDto.of(yearStats);
     }
 
     @Transactional
     public YearStatsResponseDto createYearStatistics(Long userId, CorrespondentCategory category,
         Integer year) {
-        return YearStatsResponseDto.of(calculateYearStatistics(userId, category, year));
+        YearStats yearStats = calculateYearStatistics(userId, category, year);
+        if (yearStats == null) {
+            throw AccountingException.of(StatsErrorCode.CANNOT_CALCULATE_STATS);
+        }
+        return YearStatsResponseDto.of(yearStats);
     }
 
 
     private YearStats calculateYearStatistics(Long userId, CorrespondentCategory category,
         Integer year) {
-        List<Contract> returns = statsRepository.getContracts(userId, year);
+        List<Contract> returns = statsRepository.getContracts(userId, year).stream()
+            .filter(c -> c.getCorrespondent().getCorrespondentCategory() == category)
+            .toList();
+        if (returns.isEmpty()) { // 계산을 수행하기 위해 필요한 데이터가 존재하지 않으면 null 반환
+            return null;
+        }
+
         Map<String, YearStatsContent> yearStatsContentMap = new HashMap<>();
         Arrays.stream(Region.values())
             .forEach(region -> yearStatsContentMap.put(region.toString(),
                 new YearStatsContent(region.toString(), 0, 0L)));
 
         // yearStats의 content를 각 지역(row) 별로 생성, col에 들어갈 값들을 계산하여 저장
-        returns.stream()
-            .filter(c -> c.getCorrespondent().getCorrespondentCategory() == category)
+        returns
             .forEach(c -> {
                 YearStatsContent yearStatsContent = yearStatsContentMap.get(
                     c.getCorrespondent().getRegion().toString());
@@ -80,6 +100,36 @@ public class YearStatsService {
             .orElseGet(() -> statsRepository.save(
                 new YearStats(null, year, category, userId, contents)
             ));
+    }
+
+
+    /**
+     * 모든 유저의 거래처 카테고리, 연도별 통계 데이터 계산(매일 오전 2시)
+     */
+    @Scheduled(cron = "0 0 2 * * *")
+    @Transactional
+    public void recalculateAllYearStatistics() {
+        log.info("모든 통계 데이터 재계산 시작");
+        List<Long> userIds = userRepository.findAll().stream()
+            .map(User::getId).toList();
+
+        userIds.forEach(userId -> Arrays.stream(CorrespondentCategory.values())
+            .forEach(category ->
+                allYears.forEach(year -> {
+                        try {
+                            calculateYearStatistics(userId, category, year);
+                            log.debug("통계 계산 완료 - userId: {}, category: {}, year: {}",
+                                userId, category, year);
+                        } catch (Exception e) {
+                            log.error("통계 계산 실패 - userId: {}, category: {}, year: {}",
+                                userId, category, year, e);
+                        }
+                    }
+                )
+            )
+        );
+
+        log.info("모든 통계 데이터 재계산 완료");
     }
 
 }

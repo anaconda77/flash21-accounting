@@ -2,6 +2,8 @@ package com.flash21.accounting.stat.repository;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.flash21.accounting.common.ErrorCodeAssertions;
+import com.flash21.accounting.common.exception.errorcode.StatsErrorCode;
 import com.flash21.accounting.contract.entity.Contract;
 import com.flash21.accounting.contract.repository.ContractRepository;
 import com.flash21.accounting.correspondent.domain.Correspondent;
@@ -19,6 +21,7 @@ import com.flash21.accounting.owner.domain.Owner;
 import com.flash21.accounting.owner.repository.OwnerRepository;
 import com.flash21.accounting.stat.domain.YearStats;
 import com.flash21.accounting.stat.domain.YearStatsContent;
+import com.flash21.accounting.stat.service.YearStatsService;
 import com.flash21.accounting.user.User;
 import com.flash21.accounting.user.UserRepository;
 import java.util.ArrayList;
@@ -39,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.shaded.org.checkerframework.checker.units.qual.A;
 
 @SpringBootTest
 @Transactional
@@ -68,6 +72,8 @@ class StatsRepositoryTest {
     private CorrespondentRepository correspondentRepository;
     @Autowired
     private OwnerRepository ownerRepository;
+    @Autowired
+    private YearStatsService yearStatsService;
 
     private Owner owner;
     private User user;
@@ -118,21 +124,20 @@ class StatsRepositoryTest {
      * YearStats가 존재하면 update, 존재하지 않으면 create
      */
 
-    @DisplayName("YearStats 필요한 데이터들을 조립하여 YearStats 생성하기 테스트")
+    @DisplayName("YearStats 필요한 데이터들을 조립하여 YearStats 생성하기 테스트 - TDD")
     @Test
-    void createYearStats() {
+    void createYearStats_TDD() {
 
         CorrespondentCategory requestCategory = correspondent.getCorrespondentCategory();
-        List<Contract> returns = statsRepository.getContracts(user.getId(), year);
+        List<Contract> returns = statsRepository.getContracts(user.getId(), year).stream()
+            .filter(c -> c.getCorrespondent().getCorrespondentCategory() == requestCategory).toList();
         Map<String, YearStatsContent> yearStatsContentMap = new HashMap<>();
         Arrays.stream(Region.values())
             .forEach(region -> yearStatsContentMap.put(region.toString(),
                 new YearStatsContent(region.toString(), 0, 0L)));
 
         // yearStats의 content를 각 지역(row) 별로 생성, col에 들어갈 값들을 계산하여 저장
-        returns.stream()
-            .filter(c -> c.getCorrespondent().getCorrespondentCategory() == requestCategory)
-            .forEach(c -> {
+        returns.forEach(c -> {
                 YearStatsContent yearStatsContent = yearStatsContentMap.get(
                     c.getCorrespondent().getRegion().toString());
                 yearStatsContent.updateCount();
@@ -165,6 +170,16 @@ class StatsRepositoryTest {
         assertThat(yearStats.getUserId()).isEqualTo(user.getId());
         assertThat(yearStats.getContent()).isEqualTo(contents);
         System.out.println(yearStats.getContent());
+    }
+
+
+    @DisplayName("통계 기반 데이터가 존재하지 않는 상황에서 통계 데이터 계산 요청에 대한 예외 반환 테스트")
+    @Test
+    void notHaveMetaDataException() {
+        CorrespondentCategory requestCategory = CorrespondentCategory.CAFE;
+        Integer year = 2019;
+        ErrorCodeAssertions.assertErrorCode(StatsErrorCode.CANNOT_CALCULATE_STATS, () ->
+            yearStatsService.createYearStatistics(user.getId(), requestCategory, year));
     }
 
 }
