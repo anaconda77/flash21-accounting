@@ -76,7 +76,6 @@ public class ContractServiceImpl implements ContractService {
                         .directorSign(directorSign)
                         .contractCategory(contractCategory)
                         .processStatus(processStatus)
-                        .region(requestDto.getRegion())
                         .method(method)
                         .name(requestDto.getName())
                         .contractStartDate(requestDto.getContractStartDate())
@@ -179,7 +178,6 @@ public class ContractServiceImpl implements ContractService {
                 contract.getLastModifyUser(),
                 contract.getContractCategory(),
                 contract.getProcessStatus(),
-                contract.getRegion(),
                 contract.getMethod(),
                 contract.getName(),
                 contract.getRegisterDate(),

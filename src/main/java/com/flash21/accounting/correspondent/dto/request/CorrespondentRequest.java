@@ -34,7 +34,10 @@ public record CorrespondentRequest(
     String categoryName,
     @NotBlank(message = "거래처 유형을 입력해주세요.")
     @Size(max = 50, message = "거래처 유형은 최대 50자까지 입력가능합니다.")
-    String type
+    String type,
+    @NotBlank(message = "지역을 입력해주세요.")
+    @Size(max = 50, message = "지역은 최대 50자까지 입력가능합니다.")
+    String region
 ) {
 
 }
