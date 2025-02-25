@@ -1,6 +1,7 @@
 package com.flash21.accounting.stat.controller;
 
 import com.flash21.accounting.correspondent.domain.CorrespondentCategory;
+import com.flash21.accounting.stat.dto.response.AllYearStatsResponseDto;
 import com.flash21.accounting.stat.dto.response.YearStatsResponseDto;
 import com.flash21.accounting.stat.service.YearStatsService;
 import lombok.RequiredArgsConstructor;
@@ -16,25 +17,33 @@ public class YearStatsController {
 
     private final YearStatsService yearStatsService;
 
-    @GetMapping("/users/{userId}/categories/{category}/years/{year}")
-    public ResponseEntity<YearStatsResponseDto> getYearStatistics(
-            @PathVariable Long userId,
-            @PathVariable CorrespondentCategory category,
-            @PathVariable Integer year
-    ) {
+    @GetMapping
+    public ResponseEntity<AllYearStatsResponseDto> getAllStatistics(
+        @RequestParam("userId") Long userId) {
         return ResponseEntity.ok(
-                yearStatsService.getYearStatistics(userId, category, year)
+            yearStatsService.getAllUserStats(userId)
         );
     }
 
-    @PostMapping("/users/{userId}/categories/{category}/years/{year}")
-    public ResponseEntity<YearStatsResponseDto> createYearStatistics(
-            @PathVariable Long userId,
-            @PathVariable CorrespondentCategory category,
-            @PathVariable Integer year
+    @GetMapping
+    public ResponseEntity<YearStatsResponseDto> getYearStatistics(
+        @RequestParam("userId") Long userId,
+        @RequestParam("category") CorrespondentCategory category,
+        @RequestParam("year") Integer year
     ) {
         return ResponseEntity.ok(
-                yearStatsService.createYearStatistics(userId, category, year)
+            yearStatsService.getYearStatistics(userId, category, year)
+        );
+    }
+
+    @PostMapping
+    public ResponseEntity<YearStatsResponseDto> createYearStatistics(
+        @RequestParam("userId") Long userId,
+        @RequestParam("category") CorrespondentCategory category,
+        @RequestParam("year") Integer year
+    ) {
+        return ResponseEntity.ok(
+            yearStatsService.createYearStatistics(userId, category, year)
         );
     }
 }

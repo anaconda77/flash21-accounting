@@ -8,10 +8,14 @@ import com.flash21.accounting.correspondent.domain.Region;
 import com.flash21.accounting.detailcontract.domain.entity.DetailContract;
 import com.flash21.accounting.stat.domain.YearStats;
 import com.flash21.accounting.stat.domain.YearStatsContent;
+import com.flash21.accounting.stat.dto.response.AllYearStatsResponseDto;
+import com.flash21.accounting.stat.dto.response.AllYearStatsResponseDto.YearStatsResponse;
+import com.flash21.accounting.stat.dto.response.AllYearStatsResponseDto.YearStatsResponse.CategoryStatsResponse;
 import com.flash21.accounting.stat.dto.response.YearStatsResponseDto;
 import com.flash21.accounting.stat.repository.StatsRepository;
 import com.flash21.accounting.user.User;
 import com.flash21.accounting.user.UserRepository;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +36,29 @@ public class YearStatsService {
     private final StatsRepository statsRepository;
     private final UserRepository userRepository;
     public static List<Integer> allYears = Arrays.asList(2025, 2024, 2023, 2022, 2021);
+
+    @Transactional
+    public AllYearStatsResponseDto getAllUserStats(Long userId) {
+        List<YearStats> yearStatsList = statsRepository.findByUserId(userId);
+        AllYearStatsResponseDto allYearStatsResponseDto = new AllYearStatsResponseDto(userId,
+            new ArrayList<>());
+
+        allYears.forEach(year -> {
+            YearStatsResponse yearStatsResponseDto = new YearStatsResponse(year, new ArrayList<>());
+            Arrays.stream(CorrespondentCategory.values()).forEach(category -> {
+                YearStats ys = yearStatsList.stream()
+                    .filter(yearStats -> yearStats.getCategory().equals(category)
+                        && yearStats.getYearNumber().equals(year))
+                    .findFirst().orElse(calculateYearStatistics(userId, category, year));
+                yearStatsResponseDto.stats()
+                    .add(new CategoryStatsResponse(category.toString(), Objects.requireNonNull(
+                        ys).getContent()));
+            });
+            allYearStatsResponseDto.stats().add(yearStatsResponseDto);
+        });
+
+        return allYearStatsResponseDto;
+    }
 
     @Transactional
     public YearStatsResponseDto getYearStatistics(Long userId, CorrespondentCategory category,
@@ -58,9 +85,8 @@ public class YearStatsService {
     }
 
 
-    @Transactional
-    protected YearStats calculateYearStatistics(Long userId, CorrespondentCategory category,
-                                                Integer year) {
+    private YearStats calculateYearStatistics(Long userId, CorrespondentCategory category,
+        Integer year) {
         List<Contract> returns = statsRepository.getContracts(userId, year).stream()
             .filter(c -> c.getCorrespondent().getCorrespondentCategory() == category)
             .toList();
